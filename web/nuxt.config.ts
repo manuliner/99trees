@@ -6,6 +6,16 @@ const rootDir = fileURLToPath(new URL('.', import.meta.url))
 const workspaceRoot = resolve(rootDir, '..')
 const pkg = JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf-8')) as { version?: string }
 
+/** Docker defaults `NUXT_APP_VERSION` to 0.0.0; treat that as unset and use package.json. */
+function resolveAppVersion(pkgVersion: string | undefined): string {
+  const fromEnv =
+    process.env.NUXT_APP_VERSION?.trim() || process.env.NUXT_PUBLIC_APP_VERSION?.trim() || ''
+  const fromPkg = pkgVersion?.trim() || ''
+  if (fromEnv && fromEnv !== '0.0.0') return fromEnv
+  if (fromPkg) return fromPkg
+  return fromEnv || '0.0.0'
+}
+
 export default defineNuxtConfig({
   srcDir: 'app',
 
@@ -35,7 +45,7 @@ export default defineNuxtConfig({
     adminInitSecret: process.env.NUXT_ADMIN_INIT_SECRET || 'dev-init-secret',
     crewSessionPassword: process.env.NUXT_CREW_SESSION_PASSWORD || 'change-me-crew-session-32-chars-min',
     public: {
-      appVersion: pkg.version || '0.0.1',
+      appVersion: resolveAppVersion(pkg.version),
     },
   },
 

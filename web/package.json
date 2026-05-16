@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "nuxt dev --host 0.0.0.0",
-    "build": "nuxt build",
+    "version:generate": "node scripts/generate-version.mjs",
+    "build": "pnpm run version:generate && nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
