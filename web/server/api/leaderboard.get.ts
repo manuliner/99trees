@@ -28,11 +28,24 @@ export default defineEventHandler(async (event) => {
     })
 
   const showOfficialOnly = edition.status === 'ended'
+  let displayTeams = showOfficialOnly ? qualified : allTeams
+
+  if (showOfficialOnly && displayTeams.length === 0) {
+    displayTeams = [...allTeams].sort((a, b) => {
+      if (b.positionConfirmed !== a.positionConfirmed) return b.positionConfirmed - a.positionConfirmed
+      return b.scoreTotal - a.scoreTotal
+    })
+  }
+
+  const winnerTeamId =
+    showOfficialOnly && displayTeams.length > 0 ? displayTeams[0]!.id : null
 
   return {
     edition: { id: edition.id, name: edition.name, status: edition.status, fieldCount: edition.fieldCount },
     updatedAt: new Date().toISOString(),
-    teams: (showOfficialOnly ? qualified : allTeams).map((t) => ({
+    winnerTeamId,
+    fallbackRanking: showOfficialOnly && qualified.length === 0,
+    teams: displayTeams.map((t) => ({
       id: t.id,
       name: t.name,
       position: t.positionConfirmed,
@@ -40,6 +53,6 @@ export default defineEventHandler(async (event) => {
       reachedGoal: t.reachedGoalAt != null,
       underWay: t.reachedGoalAt == null,
     })),
-    officialRanking: showOfficialOnly,
+    officialRanking: showOfficialOnly && qualified.length > 0,
   }
 })
