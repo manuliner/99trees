@@ -257,8 +257,21 @@ onUnmounted(() => {
         <p class="pixel-title text-xs">Hints</p>
         <p v-if="hintVisible(1)" class="pixel-body text-sm">{{ turn.station?.hintLevel1 }}</p>
         <p v-if="hintVisible(2)" class="pixel-body text-sm">{{ turn.station?.hintLevel2 }}</p>
+        <FestivalMap
+          v-if="hintVisible(3) && turn.station"
+          :map-image-url="edition?.mapImageUrl ?? null"
+          :map-x="turn.station.mapX"
+          :map-y="turn.station.mapY"
+          :field-number="turn.station.fieldNumber"
+        />
         <p v-if="!hintUnlocked(1)" class="pixel-body text-xs opacity-70">
           Hint 1 in {{ formatCountdown(turn.hintUnlockAt![0]!) }}
+        </p>
+        <p v-else-if="hintUnlocked(1) && !hintUnlocked(2)" class="pixel-body text-xs opacity-70">
+          Hint 2 in {{ formatCountdown(turn.hintUnlockAt![1]!) }}
+        </p>
+        <p v-else-if="hintUnlocked(2) && !hintUnlocked(3)" class="pixel-body text-xs opacity-70">
+          Hint 3 (map) in {{ formatCountdown(turn.hintUnlockAt![2]!) }}
         </p>
         <PixelButton v-if="!hintVisible(1) && hintUnlocked(1)" variant="secondary" :disabled="loading" @click="useHint(1)">
           Hint 1 (−10 points)
@@ -266,6 +279,17 @@ onUnmounted(() => {
         <PixelButton v-if="!hintVisible(2) && hintUnlocked(2)" variant="secondary" :disabled="loading" @click="useHint(2)">
           Hint 2 (−12 points)
         </PixelButton>
+        <PixelButton
+          v-if="!hintVisible(3) && hintUnlocked(3) && edition?.mapImageUrl"
+          variant="secondary"
+          :disabled="loading"
+          @click="useHint(3)"
+        >
+          Map hint (−15 points)
+        </PixelButton>
+        <p v-else-if="!hintVisible(3) && hintUnlocked(3) && !edition?.mapImageUrl" class="pixel-body text-xs opacity-70">
+          Map hint unavailable — festival map not uploaded
+        </p>
         <PixelButton
           v-if="turn.canRevealAll && turn.hintMode !== 'reveal_all'"
           variant="secondary"
