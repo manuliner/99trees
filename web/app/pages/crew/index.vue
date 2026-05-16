@@ -5,6 +5,8 @@ const { api } = useGameApi()
 const search = ref('')
 const results = ref<{ id: number; name: string }[]>([])
 const pending = ref<{ turnId: number; teamId: number; teamName: string; fieldNumber: number | null }[]>([])
+const showTeamScanner = ref(false)
+const scanError = ref('')
 
 async function loadPending() {
   try {
@@ -29,11 +31,35 @@ watch(search, async (q) => {
   )
   results.value = res.teams
 })
+
+async function onTeamQrScanned(payload: { slug: string; token: string }) {
+  showTeamScanner.value = false
+  scanError.value = ''
+  try {
+    const res = await api<{ teamId: number }>(
+      `/api/crew/teams/resolve?slug=${encodeURIComponent(payload.slug)}&t=${encodeURIComponent(payload.token)}`,
+      { credentials: 'include' },
+    )
+    await navigateTo(`/crew/teams/${res.teamId}`)
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    scanError.value = err.data?.statusMessage ?? 'Invalid team QR'
+  }
+}
+
+async function logout() {
+  await api('/api/crew/logout', { method: 'POST', credentials: 'include' })
+  await navigateTo(`/crew/login?edition=${editionId.value}`)
+}
 </script>
 
 <template>
   <main class="p-4 max-w-md mx-auto space-y-4">
     <h1 class="pixel-title text-center text-base">Crew</h1>
+
+    <PixelButton variant="secondary" @click="showTeamScanner = true">Scan Team QR</PixelButton>
+    <p v-if="scanError" class="text-sm text-[var(--pixel-score-minus)] text-center">{{ scanError }}</p>
 
     <section v-if="pending.length" class="pixel-card p-4 space-y-2">
       <p class="pixel-title text-xs">Waiting for rating</p>
@@ -64,8 +90,13 @@ watch(search, async (q) => {
       </NuxtLink>
     </div>
 
-    <NuxtLink :to="`/crew/login?edition=${editionId}`" class="pixel-body text-sm underline block text-center">
-      Log out / switch edition
-    </NuxtLink>
+    <PixelButton variant="secondary" @click="logout">Log out</PixelButton>
+
+    <StationQrScanner
+      v-if="showTeamScanner"
+      mode="team"
+      @scanned="onTeamQrScanned"
+      @close="showTeamScanner = false"
+    />
   </main>
 </template>

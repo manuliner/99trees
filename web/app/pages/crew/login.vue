@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const route = useRoute()
 const editionId = computed(() => Number(route.query.edition) || 1)
+const teamSlug = computed(() => route.query.teamSlug as string | undefined)
+const teamToken = computed(() => route.query.teamT as string | undefined)
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -14,7 +16,16 @@ async function login() {
       method: 'POST',
       body: { editionId: editionId.value, password: password.value },
     })
-    await navigateTo('/crew')
+    if (teamSlug.value && teamToken.value) {
+      const res = await api<{ teamId: number }>(
+        `/api/crew/teams/resolve?slug=${encodeURIComponent(teamSlug.value)}&t=${encodeURIComponent(teamToken.value)}`,
+        { credentials: 'include' },
+      )
+      await navigateTo(`/crew/teams/${res.teamId}`)
+      return
+    }
+    const next = route.query.next as string | undefined
+    await navigateTo(next && next.startsWith('/crew') ? next : '/crew')
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }

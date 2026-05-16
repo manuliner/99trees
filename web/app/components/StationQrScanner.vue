@@ -1,4 +1,9 @@
 <script setup lang="ts">
+const props = withDefaults(
+  defineProps<{ mode?: 'station' | 'team' }>(),
+  { mode: 'station' },
+)
+
 const emit = defineEmits<{
   scanned: [payload: { slug: string; token: string }]
   close: []
@@ -9,10 +14,11 @@ const error = ref('')
 const scanning = ref(false)
 let controls: { stop: () => void } | null = null
 
-function parseStationUrl(raw: string): { slug: string; token: string } | null {
+function parseQrUrl(raw: string): { slug: string; token: string } | null {
   try {
     const url = new URL(raw, window.location.origin)
-    const match = url.pathname.match(/\/s\/([^/]+)/)
+    const pathPattern = props.mode === 'team' ? /\/t\/([^/]+)/ : /\/s\/([^/]+)/
+    const match = url.pathname.match(pathPattern)
     const token = url.searchParams.get('t')
     if (!match?.[1] || !token) return null
     return { slug: match[1], token }
@@ -36,7 +42,7 @@ onMounted(async () => {
     }
     controls = await reader.decodeFromVideoDevice(undefined, videoRef.value!, (result) => {
       if (!result) return
-      const parsed = parseStationUrl(result.getText())
+      const parsed = parseQrUrl(result.getText())
       if (parsed) {
         stop()
         emit('scanned', parsed)
