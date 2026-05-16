@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
     issues.push(`Station count ${stationRows.length} != field_count ${edition.fieldCount}`)
   }
   if (!edition.crewPasswordHash) issues.push('Crew password not set')
+  if (!edition.mapImagePath) issues.push('Festival map image not uploaded')
   const fields = new Set(stationRows.map((s) => s.fieldNumber))
   for (let i = 1; i <= edition.fieldCount; i++) {
     if (!fields.has(i)) issues.push(`Missing station for field ${i}`)

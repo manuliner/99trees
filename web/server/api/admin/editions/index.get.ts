@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       name: e.name,
       status: e.status,
       fieldCount: e.fieldCount,
+      mapImageUrl: e.mapImagePath ?? null,
     })),
   }
 })
