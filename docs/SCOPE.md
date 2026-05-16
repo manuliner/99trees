@@ -3,8 +3,8 @@
 ## Kontext
 
 - **Produkt:** Progressive Web App für das Geländespiel „Zugvögel“ (Zugvögel Festival, Udenbreth)
-- **Repo:** [`99trees`](/Users/manuel.huettel/Repos/privat/99trees) ist leer (Greenfield)
-- **Referenz-Struktur** (später, nicht Teil dieses Scope-Schritts): Monorepo mit Nuxt-App unter `web/` wie [schwarmplaner](file:///Users/manuel.huettel/Repos/privat/schwarmplaner) / [audio-transcriber](file:///Users/manuel.huettel/Repos/privat/audio-transcriber) — `web/app`, `web/server`, `web/shared`, Root-`package.json` mit `pnpm -C web`, `.cursor/skills` (docs-bootstrap, docs-writer, docs-commit-check, release), `AGENTS.md` + `ARCHITECTURE.md`
+- **Repo:** Nuxt-Monolith unter `web/` (`app`, `server`, `shared`); Agent-Kontext: `AGENTS.md`, `ARCHITECTURE.md`, `docs/AGENTS_*.md`
+- **Implementierungsstand:** MVP-Kern (Team-Loop, Crew, Leaderboard, Admin minimal) — Details siehe Codemaps; Abweichungen von diesem Plan in Code prüfen
 - **Deployment-Kontext:** Docker auf NixOS über [ticketing](file:///Users/manuel.huettel/Repos/privat/ticketing)-Infrastruktur (analog Schwarmplaner-Subdomain)
 - **Entscheidungen (von dir):** MVP fürs erste Festival · **„99“ = Spielname**, nicht Feldanzahl · **Felder = Anzahl Aufgaben/Stationen** (z.B. 30–50, editionabhängig) · Brett zentral (Würfeln + Fortschritt) · **Highscore** entscheidet unter Teams, die das **Ziel-Feld** erreicht haben · **UI-Sprache: Englisch** (alle sichtbaren Texte)
 
