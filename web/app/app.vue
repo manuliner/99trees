@@ -4,6 +4,7 @@
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
+      <PwaInstallHint />
     </div>
   </UApp>
 </template>
