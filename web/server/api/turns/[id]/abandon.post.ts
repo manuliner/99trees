@@ -2,30 +2,50 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '../../../utils/db'
 import { turns } from '../../../database/schema'
 import { requireTeam } from '../../../utils/team-session'
-import { getEditionOrThrow, getOpenTurn } from '../../../services/game'
+import {
+  deductHintCost,
+  getEditionOrThrow,
+  getOpenTurn,
+  parseHintsUsed,
+} from '../../../services/game'
 import { parseEditionConfig } from '../../../utils/edition-config'
+import { assertEditionLive } from '../../../utils/edition-live'
+import { hintPenalty } from '#shared/scoring'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
   const open = await getOpenTurn(team.id)
-  if (!open || open.id !== turnId || open.state !== 'rolled') {
+  if (!open || open.id !== turnId) {
+    throw createError({ statusCode: 400, statusMessage: 'Cannot abandon this turn' })
+  }
+
+  const allowedStates = ['rolled', 'awaiting_crew']
+  if (!allowedStates.includes(open.state)) {
     throw createError({ statusCode: 400, statusMessage: 'Cannot abandon this turn' })
   }
 
   const edition = await getEditionOrThrow(team.editionId)
+  assertEditionLive(edition.status, 'abandon turn')
   const cfg = parseEditionConfig(edition.configJson)
-  const now = Date.now()
-  const rolledAt = open.rolledAt?.getTime() ?? now
-  const allUnlocked =
-    open.hintMode === 'reveal_all' || now >= rolledAt + cfg.hintTimerMinutes[2]! * 60_000
 
-  if (!allUnlocked) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Wait for all hints or use Reveal All first',
-    })
+  if (open.state === 'rolled') {
+    const now = Date.now()
+    const rolledAt = open.rolledAt?.getTime() ?? now
+    const allUnlocked =
+      open.hintMode === 'reveal_all' || now >= rolledAt + cfg.hintTimerMinutes[2]! * 60_000
+
+    if (!allUnlocked) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Wait for all hints or use Reveal All first',
+      })
+    }
   }
+
+  const hintsUsed = parseHintsUsed(open.hintsUsedJson)
+  const hintCost = hintPenalty(cfg, (open.hintMode as 'wait' | 'reveal_all') ?? null, hintsUsed)
+  const deducted = await deductHintCost(team.id, turnId, hintCost)
 
   const db = getDb()
   await db
@@ -33,5 +53,10 @@ export default defineEventHandler(async (event) => {
     .set({ state: 'abandoned', scoreDelta: 0, confirmedAt: new Date() })
     .where(eq(turns.id, turnId))
 
-  return { ok: true, scoreDelta: 0, message: 'Zero round — no progress' }
+  return {
+    ok: true,
+    scoreDelta: 0,
+    hintPointsDeducted: deducted,
+    message: 'Zero round — no progress',
+  }
 })

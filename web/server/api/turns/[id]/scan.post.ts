@@ -4,6 +4,8 @@ import { getDb } from '../../../utils/db'
 import { stations, turns } from '../../../database/schema'
 import { requireTeam } from '../../../utils/team-session'
 import { getEditionOrThrow, getOpenTurn } from '../../../services/game'
+import { assertEditionLive } from '../../../utils/edition-live'
+import { logGameEvent } from '../../../utils/logger'
 
 const scanSchema = z.object({
   stationSlug: z.string().min(1),
@@ -20,6 +22,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const edition = await getEditionOrThrow(team.editionId)
+  assertEditionLive(edition.status, 'scan')
   const db = getDb()
   const stationRows = await db
     .select()
@@ -44,6 +47,13 @@ export default defineEventHandler(async (event) => {
     .update(turns)
     .set({ state: nextState, stationId: station.id, scannedAt: now })
     .where(eq(turns.id, turnId))
+
+  logGameEvent('turn.scan', {
+    teamId: team.id,
+    turnId,
+    field: station.fieldNumber,
+    taskType: station.taskType,
+  })
 
   return {
     taskType: station.taskType,

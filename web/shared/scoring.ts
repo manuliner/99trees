@@ -9,6 +9,8 @@ export interface TurnScoreInput {
   scannedAtMs: number | null
   confirmedAtMs: number
   abandoned?: boolean
+  /** Hint costs already subtracted from team score_total during the turn */
+  hintsAlreadyDeducted?: number
 }
 
 export function timeBonusFromScan(config: EditionConfig, scannedAtMs: number, confirmedAtMs: number): number {
@@ -34,7 +36,9 @@ export function calculateTurnScore(input: TurnScoreInput): number {
     input.scannedAtMs != null
       ? timeBonusFromScan(input.config, input.scannedAtMs, input.confirmedAtMs)
       : 0
-  const hints = hintPenalty(input.config, input.hintMode, input.hintsUsedLevels)
+  const hints =
+    hintPenalty(input.config, input.hintMode, input.hintsUsedLevels)
+    - (input.hintsAlreadyDeducted ?? 0)
   const quiz = input.quizWrongAttempts * 5
 
   return base + time + input.bonusPoints - hints - quiz

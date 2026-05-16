@@ -15,6 +15,13 @@
       "when": 1778929855752,
       "tag": "0001_spooky_rachel_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778931000000,
+      "tag": "0002_hint_points_deducted",
+      "breakpoints": true
     }
   ]
 }

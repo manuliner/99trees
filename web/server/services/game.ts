@@ -5,6 +5,7 @@ import { parseEditionConfig } from '../utils/edition-config'
 import { parseCompletedFields, serializeCompletedFields } from '../utils/team-session'
 import { calculateTurnScore } from '#shared/scoring'
 import type { EditionConfig, TurnState } from '#shared/types'
+import { assertEditionLive } from '../utils/edition-live'
 
 export async function getEditionOrThrow(editionId: number) {
   const db = getDb()
@@ -16,14 +17,21 @@ export async function getEditionOrThrow(editionId: number) {
 
 export async function getOpenTurn(teamId: number) {
   const db = getDb()
-  const openStates: TurnState[] = ['rolled', 'scanned', 'awaiting_crew', 'completed']
+  const activeStates: TurnState[] = ['rolled', 'scanned', 'awaiting_crew', 'completed']
   const rows = await db
     .select()
     .from(turns)
     .where(eq(turns.teamId, teamId))
     .orderBy(desc(turns.id))
     .limit(5)
-  return rows.find((t) => openStates.includes(t.state as TurnState)) ?? null
+  return (
+    rows.find(
+      (t) =>
+        activeStates.includes(t.state as TurnState)
+        && t.confirmedAt == null
+        && t.state !== 'abandoned',
+    ) ?? null
+  )
 }
 
 export function rollDice(config: EditionConfig): number {
@@ -57,6 +65,30 @@ export async function getStationForField(editionId: number, fieldNumber: number)
     .where(and(eq(stations.editionId, editionId), eq(stations.fieldNumber, fieldNumber)))
     .limit(1)
   return rows[0] ?? null
+}
+
+export async function deductHintCost(teamId: number, turnId: number, newTotalHintCost: number) {
+  const db = getDb()
+  const turn = (await db.select().from(turns).where(eq(turns.id, turnId)).limit(1))[0]
+  if (!turn || turn.teamId !== teamId) return 0
+
+  const already = turn.hintPointsDeducted ?? 0
+  const delta = Math.max(0, newTotalHintCost - already)
+  if (delta === 0) return 0
+
+  const team = (await db.select().from(teams).where(eq(teams.id, teamId)).limit(1))[0]
+  if (!team) return 0
+
+  await db
+    .update(teams)
+    .set({ scoreTotal: Math.max(0, team.scoreTotal - delta) })
+    .where(eq(teams.id, teamId))
+  await db
+    .update(turns)
+    .set({ hintPointsDeducted: already + delta })
+    .where(eq(turns.id, turnId))
+
+  return delta
 }
 
 export function parseHintsUsed(json: string): number[] {
@@ -137,6 +169,7 @@ export async function buildMePayload(teamId: number) {
       status: edition.status,
       fieldCount: edition.fieldCount,
       config,
+      mapImageUrl: edition.mapImagePath ?? null,
     },
     openTurn: turnPayload,
   }
@@ -154,6 +187,7 @@ export async function confirmTurn(teamId: number, turnId: number) {
   }
 
   const edition = await getEditionOrThrow(team.editionId)
+  assertEditionLive(edition.status, 'confirm turn')
   const config = parseEditionConfig(edition.configJson)
   const confirmedAt = new Date()
   const scannedAt = turn.scannedAt?.getTime() ?? null
@@ -167,6 +201,7 @@ export async function confirmTurn(teamId: number, turnId: number) {
     bonusPoints: turn.bonusPoints,
     scannedAtMs: scannedAt,
     confirmedAtMs: confirmedAt.getTime(),
+    hintsAlreadyDeducted: turn.hintPointsDeducted ?? 0,
   })
 
   const newPosition = turn.positionPending

@@ -3,8 +3,9 @@ import { hintSchema } from '#shared/schemas'
 import { getDb } from '../../../utils/db'
 import { turns } from '../../../database/schema'
 import { requireTeam } from '../../../utils/team-session'
-import { getEditionOrThrow, getOpenTurn } from '../../../services/game'
+import { deductHintCost, getEditionOrThrow, getOpenTurn } from '../../../services/game'
 import { parseEditionConfig } from '../../../utils/edition-config'
+import { assertEditionLive } from '../../../utils/edition-live'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
@@ -16,6 +17,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const edition = await getEditionOrThrow(team.editionId)
+  assertEditionLive(edition.status, 'use hints')
   const config = parseEditionConfig(edition.configJson)
   const now = Date.now()
   const rolledAt = open.rolledAt?.getTime() ?? now
@@ -58,5 +60,7 @@ export default defineEventHandler(async (event) => {
     .set({ hintsUsedJson: JSON.stringify(hintsUsed), hintMode })
     .where(eq(turns.id, turnId))
 
-  return { hintsUsed, hintMode, pointCostPreview: pointCost }
+  const deducted = await deductHintCost(team.id, turnId, pointCost)
+
+  return { hintsUsed, hintMode, pointCostPreview: pointCost, pointsDeducted: deducted }
 })

@@ -70,6 +70,7 @@ export const turns = sqliteTable('turns', {
   hintsUsedJson: text('hints_used_json').notNull().default('[]'),
   quizWrongAttempts: integer('quiz_wrong_attempts').notNull().default(0),
   bonusPoints: integer('bonus_points').notNull().default(0),
+  hintPointsDeducted: integer('hint_points_deducted').notNull().default(0),
   scoreDelta: integer('score_delta'),
   stationId: integer('station_id').references(() => stations.id),
   rolledAt: integer('rolled_at', { mode: 'timestamp' }),
