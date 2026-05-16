@@ -10,3 +10,6 @@ web/server/database/db.sqlite
 .env
 .env.*
 !.env.example
+web/public/version.json
+web/server/database/uploads/editions/*
+!web/server/database/uploads/editions/.gitkeep

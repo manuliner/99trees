@@ -10,6 +10,7 @@ import {
   getStationForField,
 } from '../../services/game'
 import { parseEditionConfig } from '../../utils/edition-config'
+import { logGameEvent } from '../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
@@ -44,6 +45,8 @@ export default defineEventHandler(async (event) => {
     .returning()
 
   const station = await getStationForField(edition.id, pending)
+
+  logGameEvent('turn.roll', { teamId: team.id, turnId: inserted[0]!.id, dice, pending })
 
   return {
     turnId: inserted[0]!.id,
