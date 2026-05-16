@@ -1,0 +1,18 @@
+{
+  "stations": [
+    {
+      "field": 1,
+      "slug": "south-gate",
+      "hint_vague": "Where the migration begins, you hear drums.",
+      "hint_level_1": "Near the south entrance.",
+      "map": { "x": 12, "y": 88 },
+      "task": { "type": "quiz", "question": "What is the game called?", "answers": ["zugvoegel", "99trees", "zugvögel"] }
+    },
+    {
+      "field": 2,
+      "slug": "forest-clearing",
+      "hint_vague": "A circle of moss between tall pines.",
+      "task": { "type": "performance", "text": "Form a flock and call like migrating birds." }
+    }
+  ]
+}

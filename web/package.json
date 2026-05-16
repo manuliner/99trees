@@ -1,0 +1,42 @@
+{
+  "name": "99trees-web",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev --host 0.0.0.0",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node scripts/seed.mjs",
+    "db:reset": "node scripts/db-reset.mjs"
+  },
+  "dependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@nuxt/ui": "^4.0.0",
+    "@pinia/nuxt": "^0.11.2",
+    "@vueuse/core": "^14.2.1",
+    "@zxing/browser": "^0.1.5",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.4.1",
+    "drizzle-orm": "^0.44.7",
+    "nuxt": "^4.0.0",
+    "nuxt-auth-utils": "^0.5.25",
+    "pinia": "^3.0.3",
+    "tailwindcss": "^4.1.16",
+    "vue": "^3.5.22",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.9.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.10.0",
+    "drizzle-kit": "^0.31.5",
+    "eslint": "^9.38.0",
+    "typescript": "^5.9.3"
+  }
+}

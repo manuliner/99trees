@@ -1,0 +1,101 @@
+:root {
+  --pixel-sky-dawn: #6b5b95;
+  --pixel-sky-warm: #e8a87c;
+  --pixel-forest-dark: #1a1c2c;
+  --pixel-forest-mid: #4a7c59;
+  --pixel-forest-light: #8fbc8f;
+  --pixel-sunrise: #ffb347;
+  --pixel-cream: #f4f1de;
+  --pixel-score-plus: #6bcb77;
+  --pixel-score-minus: #e85d5d;
+  --pixel-gold: #ffd700;
+  --pixel-border: 4px;
+  --pixel-shadow: 4px 4px 0 var(--pixel-forest-dark);
+}
+
+.pixel-bg {
+  background: linear-gradient(180deg, var(--pixel-sky-dawn) 0%, var(--pixel-sky-warm) 45%, var(--pixel-forest-light) 100%);
+  min-height: 100dvh;
+}
+
+.pixel-card {
+  background: var(--pixel-cream);
+  border: var(--pixel-border) solid var(--pixel-forest-dark);
+  box-shadow: var(--pixel-shadow);
+  border-radius: 0;
+}
+
+.pixel-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 14px 16px;
+  border: var(--pixel-border) solid var(--pixel-forest-dark);
+  box-shadow: var(--pixel-shadow);
+  border-radius: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+  min-height: 48px;
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--pixel-forest-dark);
+}
+
+.pixel-btn--primary {
+  background: var(--pixel-sunrise);
+  color: var(--pixel-forest-dark);
+}
+
+.pixel-btn--secondary {
+  background: var(--pixel-forest-mid);
+  color: var(--pixel-cream);
+}
+
+.pixel-btn--danger {
+  background: var(--pixel-score-minus);
+  color: var(--pixel-cream);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pixel-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--pixel-forest-dark);
+}
+
+.pixel-body {
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  color: var(--pixel-forest-dark);
+}
+
+.score-flash-minus {
+  color: var(--pixel-score-minus);
+  animation: score-pop 0.6s ease-out;
+}
+
+.score-flash-plus {
+  color: var(--pixel-score-plus);
+  animation: score-pop 0.6s ease-out;
+}
+
+@keyframes score-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(1);
+  }
+}

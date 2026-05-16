@@ -1,0 +1,10 @@
+---
+globs: web/**
+---
+
+# Web app — Zugvögel
+
+- English UI copy only (MVP).
+- Game state lives on the server; client reflects `/api/me`.
+- Use `web/shared/` for scoring, Zod schemas, types — never import server code from `app/`.
+- Pixel components under `app/components/pixel/`; prefer existing tokens in `pixel-theme.css`.

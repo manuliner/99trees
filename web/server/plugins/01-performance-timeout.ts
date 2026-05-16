@@ -1,0 +1,41 @@
+import { defineNitroPlugin } from 'nitropack/runtime'
+import { eq } from 'drizzle-orm'
+import { getDb } from '../utils/db'
+import { editions, teams, turns } from '../database/schema'
+import { parseEditionConfig } from '../utils/edition-config'
+
+export default defineNitroPlugin(() => {
+  const interval = setInterval(async () => {
+    try {
+      const db = getDb()
+      const awaiting = await db
+        .select({ turn: turns, editionId: teams.editionId })
+        .from(turns)
+        .innerJoin(teams, eq(turns.teamId, teams.id))
+        .where(eq(turns.state, 'awaiting_crew'))
+
+      const now = Date.now()
+      for (const row of awaiting) {
+        const edition = (
+          await db.select().from(editions).where(eq(editions.id, row.editionId)).limit(1)
+        )[0]
+        if (!edition) continue
+        const config = parseEditionConfig(edition.configJson)
+        const scannedAt = row.turn.scannedAt?.getTime()
+        if (!scannedAt) continue
+        const timeoutMs = config.performanceTimeoutMinutes * 60_000
+        if (now - scannedAt < timeoutMs) continue
+
+        await db
+          .update(turns)
+          .set({ state: 'completed', completedAt: new Date(), bonusPoints: 0 })
+          .where(eq(turns.id, row.turn.id))
+      }
+    }
+    catch (e) {
+      console.warn('[performance-timeout]', e)
+    }
+  }, 60_000)
+
+  if (typeof interval.unref === 'function') interval.unref()
+})

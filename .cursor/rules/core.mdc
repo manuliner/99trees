@@ -1,0 +1,20 @@
+---
+alwaysApply: true
+---
+
+# Critical invariants — 99trees (Zugvögel)
+
+## Commits (STRICT)
+- NEVER auto-commit — only commit on explicit user request ("commit", "committe das")
+- NEVER skip hooks (`--no-verify`)
+- NEVER force-push to main/master or tags
+
+## Releases / tags
+- If this repo uses tags for deploys, NEVER force-push tags
+- Prefer release scripts (if present) over manual version bumps for production releases
+
+## Security
+- Secrets stay server-only (runtime config / env) — never ship secrets to the client bundle
+- Do not read `.env`, `.env.*`, credential, token, or private-key files unless the user explicitly asks for a specific value or line
+- Never commit `.env` files or credentials
+

@@ -1,0 +1,26 @@
+{
+  "name": "99trees",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"],
+    "packageExtensions": {
+      "drizzle-kit@*": {
+        "dependencies": {
+          "better-sqlite3": "^12.6.2"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "dev": "pnpm -C web dev",
+    "build": "pnpm -C web build",
+    "generate": "pnpm -C web generate",
+    "preview": "pnpm -C web preview",
+    "postinstall": "pnpm -C web postinstall",
+    "typecheck": "pnpm -C web typecheck",
+    "db:generate": "pnpm -C web db:generate",
+    "db:migrate": "pnpm -C web db:migrate",
+    "db:seed": "pnpm -C web db:seed",
+    "db:reset": "pnpm -C web db:reset"
+  }
+}
