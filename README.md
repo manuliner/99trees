@@ -6,15 +6,15 @@ Nuxt 4 PWA for the Zugvögel festival ground game.
 
 ```bash
 pnpm install
-cp .env.example .env
+cp .env.example web/.env
 pnpm db:migrate
 pnpm db:seed
 pnpm dev
 ```
 
-Open http://localhost:3000/join?edition=1 — demo edition is seeded as `live`.
+Open http://localhost:3000/zv26/join — demo edition is seeded as `live` (slug `zv26`).
 
-- **Crew:** `/crew/login` (password from seed: `crew1234`)
+- **Crew:** `/zv26/crew/login` (password from seed: `crew1234`)
 - **Admin:** `/admin/init` then `/admin/login` (init secret from `.env`)
 - **Scope:** [`docs/SCOPE.md`](docs/SCOPE.md)
 

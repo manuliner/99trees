@@ -40,6 +40,8 @@
 - `docs/SCOPE.md`: repo status no longer “greenfield”
 - `.cursor/rules/main.mdc` points to project context files
 - Cursor doc skills: `docs-sync`, `docs-commit`, `docs-update`, `docs-concepts`, `docs-defrag`, vendor `docs-init`; `release` skill
+- Agent docs: hybrid layout (`AGENTS.md`, `web/README.md`, `.vibe/docs/`); removed `ARCHITECTURE.md` and `docs/AGENTS_*`
+- `docs/SCOPE.md`: edition URLs use `/{slug}/join` and `/{slug}/crew/login`
 
 ## ⚠️ Breaking Changes
 

@@ -38,7 +38,8 @@ web/
   shared/        # types, Zod schemas, scoring (pure — importable both sides)
   data/          # demo-stations.json (seed/import sample)
   scripts/       # seed.mjs, db-reset.mjs
-docs/            # SCOPE (product spec), AGENTS_* codemaps
+docs/            # SCOPE (product spec), DEPLOY, release notes
+.vibe/docs/      # architecture, requirements, design, flows
 ```
 
 ## Conventions
@@ -70,8 +71,6 @@ docs/            # SCOPE (product spec), AGENTS_* codemaps
 | Admin edition live | `web/app/pages/admin/`, `web/server/api/admin/` |
 | DB columns | `web/server/database/schema.ts` → `pnpm db:generate` |
 
-See `docs/AGENTS_*.md` and `ARCHITECTURE.md` for file-level maps.
-
 ## Gotchas
 
 - Migrations run on Nitro boot (`server/plugins/00-database-migration.ts`) — restart dev after schema changes.
@@ -80,8 +79,15 @@ See `docs/AGENTS_*.md` and `ARCHITECTURE.md` for file-level maps.
 - iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`StationQrScanner.vue`).
 - Rejoin invalidates prior team session token (single active device per team).
 
-## Docs
+## Doc index
 
-- Product scope & flows: [`docs/SCOPE.md`](docs/SCOPE.md)
-- Boundaries & codemap: [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- Area guides: [`docs/AGENTS_APP.md`](docs/AGENTS_APP.md), [`docs/AGENTS_SERVER.md`](docs/AGENTS_SERVER.md), [`docs/AGENTS_ARCHITECTURE.md`](docs/AGENTS_ARCHITECTURE.md)
+| Question | Read first |
+|----------|------------|
+| Commands, env, invariants | This file (`AGENTS.md`) |
+| Module map (where is X?) | [`web/README.md`](web/README.md) → per-folder README |
+| Architecture, flows, design | [`.vibe/docs/`](.vibe/docs/) (`architecture.md`, `play-flow.md`, …) |
+| Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) |
+| Deploy, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| Implementation checklist | [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) |
+
+**Maintain docs:** `docs-sync` (factual patches), `docs-update` (module README regen), `docs-concepts` (vibe regen), `docs-defrag` (audit). Verify: `bash .cursor/skills/docs-shared/scripts/verify-docs.sh`

@@ -3,7 +3,7 @@
 ## Kontext
 
 - **Produkt:** Progressive Web App für das Geländespiel „Zugvögel“ (Zugvögel Festival, Udenbreth)
-- **Repo:** Nuxt-Monolith unter `web/` (`app`, `server`, `shared`); Agent-Kontext: `AGENTS.md`, `ARCHITECTURE.md`, `docs/AGENTS_*.md`
+- **Repo:** Nuxt-Monolith unter `web/` (`app`, `server`, `shared`); Agent-Kontext: `AGENTS.md`, `web/README.md`, `.vibe/docs/`
 - **Implementierungsstand:** MVP-Kern (Team-Loop, Crew, Leaderboard, Admin minimal) — Details siehe Codemaps; Abweichungen von diesem Plan in Code prüfen
 - **Deployment-Kontext:** Docker auf NixOS über [ticketing](file:///Users/manuel.huettel/Repos/privat/ticketing)-Infrastruktur (analog Schwarmplaner-Subdomain)
 - **Entscheidungen (von dir):** MVP fürs erste Festival · **„99“ = Spielname**, nicht Feldanzahl · **Felder = Anzahl Aufgaben/Stationen** (z.B. 30–50, editionabhängig) · Brett zentral (Würfeln + Fortschritt) · **Highscore** entscheidet unter Teams, die das **Ziel-Feld** erreicht haben · **UI-Sprache: Englisch** (alle sichtbaren Texte)
@@ -411,7 +411,7 @@ flowchart TD
 | 8 | **Festival-Karte** | PNG/WebP hochladen (Geländeplan) | Gespeichert pro Edition; Stationen referenzieren `map_x` / `map_y` in % |
 | 9 | **QR-Codes erzeugen** | Button „QR-Codes generieren“ | Pro Station URL `https://…/s/{slug}?t={qr_token}`; Download als PDF/ZIP zum Drucken |
 | 10 | **Crew-Zugang** | Crew-Passwort setzen (oder Liste einfacher Crew-Logins) | Hash in DB; gilt nur für diese Edition |
-| 11 | **Eingangs-QR (Teams)** | Vorschau + Download | URL `https://…/join?edition={id}` — ein QR am Festival-Eingang |
+| 11 | **Eingangs-QR (Teams)** | Vorschau + Download | URL `https://…/{slug}/join` — ein QR am Festival-Eingang |
 | 12 | **Checkliste** | UI zeigt: ≥1 Station aktiv, Karte da, Crew-Passwort gesetzt, Edition-Zeitraum plausibel | Blockiert „Live“ bei harten Fehlern |
 | 13 | **Live schalten** | Toggle „Spiel ist live“ | `status = live` → Team-Registrierung + Würfeln freigeschaltet; Leaderboard sichtbar |
 | 14 | **Vor Ort (optional Draft-Test)** | „Test-Team“ anlegen, ein Probedurchlauf | Test-Teams im Leaderboard markieren oder nach Test löschen |
@@ -492,7 +492,7 @@ flowchart TD
 
 | # | Schritt | UI / Aktion | System |
 |---|---------|-------------|--------|
-| 1 | **Eingangs-QR scannen** | Kamera / QR-App → öffnet PWA-URL `/join?edition={id}` | Browser lädt PWA; Service Worker cached Shell |
+| 1 | **Eingangs-QR scannen** | Kamera / QR-App → öffnet PWA-URL `/{slug}/join` | Browser lädt PWA; Service Worker cached Shell |
 | 2 | **Edition prüfen** | Wenn nicht `live`: freundliche Meldung + Festival-Info | `GET /api/editions/:id/public` → status |
 | 3 | **Bestehende Session?** | Cookie/`localStorage` mit Team-Token vorhanden | `GET /api/me` → 200 = direkt Spielbrett; 401 = weiter zu Schritt 4 |
 | 4 | **Willkommensseite** | Kurztext: „Zugvögel — Team anlegen“, Hinweis 1 Gerät pro Team | Kein Account, kein Passwort |
@@ -765,7 +765,7 @@ flowchart TD
 | # | Schritt | UI | System |
 |---|---------|-----|--------|
 | 1 | **Crew-App öffnen** | `/crew` (Bookmark auf Crew-Geräten) | PWA, gleiche Domain wie Spieler-App |
-| 2 | **Login** | Edition vorausgewählt (URL `?edition=` oder einzige live Edition) + **Crew-Passwort** | `POST /api/crew/login` → Crew-Session-Cookie |
+| 2 | **Login** | Edition vorausgewählt (URL `/{slug}/crew/login` oder Crew-Session) + **Crew-Passwort** | `POST /api/crew/login` → Crew-Session-Cookie |
 | 3 | **Dashboard** | „Team bewerten“ · „Team-QR scannen“ · „PIN zurücksetzen“ | Optional: Warteschlange offener Performance-Anfragen |
 
 #### Schritt-für-Schritt — Team identifizieren (Suche **oder** QR)
@@ -874,7 +874,7 @@ sequenceDiagram
 
 **Rolle:** Publikum, Teams (neugierig), Organisator (Großbildschirm)  
 **Ziel:** Jederzeit transparent sehen, welches Team wo auf dem Vogelzug steht — ohne Login.  
-**Route:** `/leaderboard?edition={id}` (QR am Festival / Link aus Team-App)
+**Route:** `/{slug}/leaderboard` (QR am Festival / Link aus Team-App)
 
 #### Phasen des Flows
 
@@ -924,7 +924,7 @@ flowchart TD
 
 | Von | Link |
 |-----|------|
-| Team-App `/play` | Icon „Rangliste“ → `/leaderboard?edition=` |
+| Team-App `/play` | Icon „Rangliste“ → `/{slug}/leaderboard` |
 | Admin Live-Schalten | Leaderboard-QR zum Ausdrucken (wie Eingangs-QR) |
 | Gewinn-Overlay (UF-2 E3) | Button „Zur Rangliste“ |
 
@@ -1131,7 +1131,7 @@ flowchart TD
 
 1. **Spielregel-Klärer:** Default bei „nicht gefunden, keine Hinweise“ final bestätigen (siehe oben)
 2. **Repo-Scaffold** nach Schwarmplaner-Muster (`web/`, pnpm, Nuxt 4, Drizzle, SQLite)
-3. **`.cursor/skills` + `AGENTS.md`** von schwarmplaner/audio-transcriber adaptieren (docs-bootstrap, docs-writer, core rules)
+3. **`.cursor/skills` + `AGENTS.md`** von schwarmplaner/audio-transcriber adaptieren (docs-init, docs-sync, docs-commit, core rules)
 4. **Implementierung in Wellen:** Domain/DB → Team-Loop → Crew → Leaderboard → PWA → Deploy
 
 ---
