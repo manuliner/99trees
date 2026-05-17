@@ -21,6 +21,8 @@ Scripts live at `.cursor/skills/{skill-name}/scripts/`. Run from project root.
 bash .cursor/skills/_vendor/docs-init/install.sh
 ```
 
+Vendor templates use `skill.template.md` (not `SKILL.md`) so Cursor does not register duplicate skills from `_vendor/docs-init/templates/`. Reload the window after install if slash-command suggestions look stale.
+
 **Former names:** `docs-writer` → docs-init, `docs-bootstrap` → docs-sync, `docs-commit-check` → docs-commit, `global-docs-init` → `_vendor/docs-init`
 
 ## Verify documentation layout

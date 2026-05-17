@@ -49,6 +49,19 @@ for dup in docs-sync docs-commit; do
   fi
 done
 
+template_skills=$(find "$ROOT/.cursor/skills" -path "*/templates/*/SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$template_skills" -gt 0 ]]; then
+  fail "templates/*/SKILL.md still present (rename to skill.template.md)"
+else
+  echo "✅ no invokable template SKILL.md under .cursor/skills"
+fi
+
+if [[ -f "$ROOT/.cursor/skills/_vendor/docs-init/SKILL.md" ]]; then
+  fail "_vendor/docs-init/SKILL.md still present (use docs-init.skill.template.md)"
+else
+  echo "✅ vendor docs-init not registered as project skill"
+fi
+
 # Optional: BirdBoard dead reference in agent docs (not product SCOPE)
 if grep -rq 'BirdBoard' "$ROOT/AGENTS.md" "$ROOT/web/README.md" "$ROOT/.vibe/docs" 2>/dev/null; then
   warn "BirdBoard mentioned in agent docs (likely stale — use GameBoard)"
