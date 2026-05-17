@@ -23,7 +23,7 @@ Living checklist against [`SCOPE.md`](SCOPE.md). Last aligned with MVP fixes (B1
 | ID | Status | Notes |
 |----|--------|-------|
 | F1 | Partial | Join/rejoin/crew PIN reset; no team size UI, rejoin rate limit |
-| F2 | Partial | `BirdBoard` strip; not full pixel-art map |
+| F2 | Partial | `GameBoard` strip; not full pixel-art map |
 | F3 | Done | Roll + skip fields; B1 fixed |
 | F4 | Partial | Hints 1–3 + map UI; timers for 2/3 |
 | F5 | Partial | In-app + deep-link scan |

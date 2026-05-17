@@ -130,7 +130,7 @@ Plan-Dokumentation (dieses Dokument) bleibt auf Deutsch; **Produkt-Copy ist Engl
 - `web/app/assets/css/pixel-theme.css` — CSS-Variablen
 - `app.config.ts` / Nuxt UI `ui` overrides wo möglich
 - Komponenten: `web/app/components/pixel/*`
-- Spielbrett: `BirdBoard.vue` + statisches PNG/WebP **oder** Canvas/SVG Pixel-Grid
+- Spielbrett: `GameBoard.vue` + statisches PNG/WebP **oder** Canvas/SVG Pixel-Grid
 - `image-rendering: pixelated` für Sprites
 
 ### Bewusst nicht MVP
