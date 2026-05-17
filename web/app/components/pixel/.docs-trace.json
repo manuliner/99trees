@@ -1,0 +1,26 @@
+{
+  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "createdAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-17T11:31:07Z",
+  "files": [
+    "web/app/components/pixel/FestivalMap.vue",
+    "web/app/components/pixel/FestivalMapFullscreen.vue",
+    "web/app/components/pixel/FestivalMapInteractive.vue",
+    "web/app/components/pixel/FestivalMapPins.vue",
+    "web/app/components/pixel/GameBoard.vue",
+    "web/app/components/pixel/HintBar.vue",
+    "web/app/components/pixel/PixelBadgeDigit.vue",
+    "web/app/components/pixel/PixelButton.vue",
+    "web/app/components/pixel/PixelCard.vue",
+    "web/app/components/pixel/PixelConfirmDialog.vue",
+    "web/app/components/pixel/PixelConfirmHost.vue",
+    "web/app/components/pixel/PixelDiceButton.vue",
+    "web/app/components/pixel/PixelDialog.vue",
+    "web/app/components/pixel/PixelHintIcon.vue",
+    "web/app/components/pixel/PixelIconButton.vue",
+    "web/app/components/pixel/PixelPullToRefresh.vue",
+    "web/app/components/pixel/PixelPullToRefreshClient.client.vue",
+    "web/app/components/pixel/PixelTooltip.vue",
+    "web/app/components/pixel/ScoreFlash.vue"
+  ]
+}

@@ -6,7 +6,7 @@
 
 - **index.vue** — landing; lists live editions
 - **[edition]/join.vue**, **rejoin.vue** — create team / PIN rejoin (slug in path)
-- **play.vue** — main game: roll, hints, scan, quiz/perf, confirm
+- **play.vue** — main game: roll, hints, scan, quiz/perf, confirm; expandable festival map fullscreen
 - **leaderboard.vue** — public ranking (poll)
 - **privacy.vue**, legacy **join.vue** / **rejoin.vue** — redirects via `useLegacyEditionRedirect`
 - **s/[slug].vue** — station QR deep-link → play with query
@@ -24,7 +24,7 @@
 | Dice / hint / confirm UX | `play.vue` |
 | Join / PIN UI | `[edition]/join.vue`, `rejoin.vue` |
 | Score popups | `useScoreFeedback.ts`, `pixel/ScoreFlash.vue` |
-| Board layout | `pixel/GameBoard.vue` |
+| Board / festival map | `pixel/GameBoard.vue`, `FestivalMap*.vue` |
 | QR scanner | `StationQrScanner.vue` |
 | Edition missing state | `EditionMissing.vue` |
 

@@ -1,11 +1,12 @@
 {
-  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-17T11:31:07Z",
   "files": [
     "web/app/composables/useAdminEdition.ts",
     "web/app/composables/useDigitPin.ts",
     "web/app/composables/useEditionId.ts",
+    "web/app/composables/useFestivalMapView.ts",
     "web/app/composables/useGameApi.ts",
     "web/app/composables/useLegacyEditionRedirect.ts",
     "web/app/composables/usePixelConfirm.ts",

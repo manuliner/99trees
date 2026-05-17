@@ -7,7 +7,7 @@
 - **scoring.ts** — `calculateTurnScore`, `timeBonusFromScan`, `hintPenalty` (base 100 + bonuses − penalties)
 - **edition-urls.ts** — edition slug parsing and team QR path builders
 - **station-slug.ts** — slug normalization for stations
-- **game-board-layout.ts** — board cell layout constants for UI
+- **game-board-layout.ts** — `computeGameBoardLayout`, orthogonal `buildOrthogonalPathD` for serpentine board UI
 - **admin-station-import.ts** — shared validation types for station import
 
 **Depends on:** nothing in `web/server` or Vue

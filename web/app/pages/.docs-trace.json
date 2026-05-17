@@ -1,0 +1,28 @@
+{
+  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "createdAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-17T11:31:07Z",
+  "files": [
+    "web/app/pages/[edition]/crew/login.vue",
+    "web/app/pages/[edition]/join.vue",
+    "web/app/pages/[edition]/leaderboard.vue",
+    "web/app/pages/[edition]/privacy.vue",
+    "web/app/pages/[edition]/rejoin.vue",
+    "web/app/pages/[edition]/rules.vue",
+    "web/app/pages/admin/index.vue",
+    "web/app/pages/admin/init.vue",
+    "web/app/pages/admin/login.vue",
+    "web/app/pages/crew/index.vue",
+    "web/app/pages/crew/login.vue",
+    "web/app/pages/crew/teams/[id].vue",
+    "web/app/pages/index.vue",
+    "web/app/pages/join.vue",
+    "web/app/pages/leaderboard.vue",
+    "web/app/pages/play.vue",
+    "web/app/pages/privacy.vue",
+    "web/app/pages/rejoin.vue",
+    "web/app/pages/rules.vue",
+    "web/app/pages/s/[slug].vue",
+    "web/app/pages/t/[slug].vue"
+  ]
+}

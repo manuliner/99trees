@@ -1,0 +1,18 @@
+{
+  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "createdAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-17T11:31:07Z",
+  "files": [
+    "web/app/components/admin/AdminAccordionSection.vue",
+    "web/app/components/admin/AdminCrewPassword.vue",
+    "web/app/components/admin/AdminEditionControl.vue",
+    "web/app/components/admin/AdminEditionHeader.vue",
+    "web/app/components/admin/AdminEditionSettings.vue",
+    "web/app/components/admin/AdminMapUpload.vue",
+    "web/app/components/admin/AdminPrintPack.vue",
+    "web/app/components/admin/AdminStationEditModal.vue",
+    "web/app/components/admin/AdminStationsImportModal.vue",
+    "web/app/components/admin/AdminStationsSection.vue",
+    "web/app/components/admin/AdminTeamsSection.vue"
+  ]
+}

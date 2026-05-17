@@ -48,6 +48,7 @@
 - Vendor `docs-init` templates renamed to `skill.template.md` to avoid duplicate Cursor skill registration
 - `docs/SCOPE.md` and implementation status reference `GameBoard.vue` (not BirdBoard)
 - Module READMEs for `web/app/components/admin/` and `web/app/layouts/`
+- Regenerated module READMEs/traces for festival map, `GameBoard` layout, and expanded `web/README.md` index
 
 ## ⚠️ Breaking Changes
 

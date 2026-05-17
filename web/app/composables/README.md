@@ -12,5 +12,6 @@
 - **useDigitPin.ts** — PIN input UX for join/rejoin
 - **usePixelConfirm.ts** — promise-based confirm dialogs
 - **usePullToRefresh.ts** — pull-to-refresh gesture handler
+- **useFestivalMapView.ts** — pan/zoom transform state for interactive festival map
 
 **Depends on:** `#shared` types only (never `web/server`)
