@@ -1,64 +1,79 @@
 import { eq } from 'drizzle-orm'
 import { randomBytes } from 'node:crypto'
-import { z } from 'zod'
+import { adminStationsImportSchema } from '#shared/schemas'
 import { getDb } from '../../../../../utils/db'
 import { editions, stations } from '../../../../../database/schema'
 import { requireAdmin } from '../../../../../utils/admin-session'
-
-const stationSchema = z.object({
-  field: z.number().int().positive(),
-  slug: z.string().min(1),
-  hint_vague: z.string().min(1),
-  hint_medium: z.string().optional(),
-  hint_level_1: z.string().optional(),
-  hint_level_2: z.string().optional(),
-  map: z.object({ x: z.number(), y: z.number() }).optional(),
-  task: z.object({
-    type: z.enum(['quiz', 'performance']),
-    question: z.string().optional(),
-    answers: z.array(z.string()).optional(),
-    text: z.string().optional(),
-  }),
-})
-
-const importSchema = z.object({
-  stations: z.array(stationSchema).min(1),
-})
+import { buildTaskPayloadJson, resolveHintLevels } from '../../../../../utils/admin-station'
+import {
+  assertNoFieldConflicts,
+  planStationImport,
+} from '../../../../../utils/admin-station-import'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const editionId = Number(getRouterParam(event, 'id'))
-  const body = importSchema.parse(await readBody(event))
+  const body = adminStationsImportSchema.parse(await readBody(event))
   const db = getDb()
 
-  await db.delete(stations).where(eq(stations.editionId, editionId))
+  const edition = (
+    await db.select().from(editions).where(eq(editions.id, editionId)).limit(1)
+  )[0]
+  if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
 
-  const maxField = Math.max(...body.stations.map((s) => s.field))
-  for (const s of body.stations) {
-    const payload =
-      s.task.type === 'quiz'
-        ? { type: 'quiz', question: s.task.question ?? '', answers: s.task.answers ?? [] }
-        : { type: 'performance', text: s.task.text ?? '' }
+  const existingRows = await db
+    .select()
+    .from(stations)
+    .where(eq(stations.editionId, editionId))
 
-    await db.insert(stations).values({
-      editionId,
-      fieldNumber: s.field,
-      slug: s.slug,
-      hintVague: s.hint_vague,
-      hintLevel1: s.hint_level_1 ?? s.hint_medium ?? s.hint_vague,
-      hintLevel2: s.hint_level_2 ?? s.hint_medium ?? s.hint_vague,
-      mapX: s.map?.x ?? s.field * 10,
-      mapY: s.map?.y ?? 50,
-      qrToken: randomBytes(8).toString('hex'),
-      taskType: s.task.type,
-      taskPayloadJson: JSON.stringify(payload),
-    })
+  const plans = planStationImport(body.stations, existingRows)
+  assertNoFieldConflicts(plans, existingRows)
+
+  let created = 0
+  let updated = 0
+
+  for (const plan of plans) {
+    const hints = resolveHintLevels(plan.item)
+    const values = {
+      fieldNumber: plan.item.field,
+      slug: plan.slug,
+      hintVague: plan.item.hint_vague,
+      hintLevel1: hints.hintLevel1,
+      hintLevel2: hints.hintLevel2,
+      mapX: plan.item.map?.x ?? plan.item.field * 10,
+      mapY: plan.item.map?.y ?? 50,
+      taskType: plan.item.task.type,
+      taskPayloadJson: buildTaskPayloadJson(plan.item.task),
+    }
+
+    if (plan.existing) {
+      await db
+        .update(stations)
+        .set(values)
+        .where(eq(stations.id, plan.existing.id))
+      updated++
+    }
+    else {
+      await db.insert(stations).values({
+        editionId,
+        ...values,
+        qrToken: randomBytes(8).toString('hex'),
+      })
+      created++
+    }
   }
 
-  await db
-    .update(editions)
-    .set({ fieldCount: maxField })
-    .where(eq(editions.id, editionId))
+  const allRows = await db
+    .select({ fieldNumber: stations.fieldNumber })
+    .from(stations)
+    .where(eq(stations.editionId, editionId))
 
-  return { imported: body.stations.length, fieldCount: maxField }
+  const maxField = allRows.length
+    ? Math.max(...allRows.map((r) => r.fieldNumber))
+    : edition.fieldCount
+  const fieldCount = Math.max(edition.fieldCount, maxField)
+
+  await db.update(editions).set({ fieldCount }).where(eq(editions.id, editionId))
+
+  return { created, updated, fieldCount }
 })

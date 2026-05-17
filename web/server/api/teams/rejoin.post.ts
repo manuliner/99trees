@@ -1,13 +1,14 @@
 import { and, eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { rejoinTeamSchema } from '#shared/schemas'
+import { parseBody } from '../../utils/parse-body'
 import { getDb } from '../../utils/db'
 import { teams } from '../../database/schema'
 import { setTeamSession } from '../../utils/team-session'
 import { getEditionOrThrow, buildMePayload } from '../../services/game'
 
 export default defineEventHandler(async (event) => {
-  const body = rejoinTeamSchema.parse(await readBody(event))
+  const body = parseBody(rejoinTeamSchema, await readBody(event))
   await getEditionOrThrow(body.editionId)
 
   const db = getDb()

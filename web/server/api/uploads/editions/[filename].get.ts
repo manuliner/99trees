@@ -1,6 +1,5 @@
-import { createReadStream, existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { sendStream } from 'h3'
 
 const MIME: Record<string, string> = {
   png: 'image/png',
@@ -22,6 +21,9 @@ export default defineEventHandler((event) => {
   }
 
   const ext = filename.split('.').pop()?.toLowerCase() ?? 'png'
+  const body = readFileSync(path)
   setHeader(event, 'Content-Type', MIME[ext] ?? 'application/octet-stream')
-  return sendStream(event, createReadStream(path))
+  setHeader(event, 'Content-Length', body.length)
+  setHeader(event, 'Cache-Control', 'public, max-age=3600')
+  return body
 })

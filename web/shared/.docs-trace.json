@@ -1,0 +1,14 @@
+{
+  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "createdAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-17T10:37:34Z",
+  "files": [
+    "web/shared/admin-station-import.ts",
+    "web/shared/edition-urls.ts",
+    "web/shared/game-board-layout.ts",
+    "web/shared/schemas.ts",
+    "web/shared/scoring.ts",
+    "web/shared/station-slug.ts",
+    "web/shared/types.ts"
+  ]
+}

@@ -27,3 +27,7 @@ export async function requireAdmin(event: H3Event) {
   if (!admin) throw createError({ statusCode: 401, statusMessage: 'Admin session required' })
   return admin
 }
+
+export function clearAdminSession(event: H3Event) {
+  deleteCookie(event, ADMIN_COOKIE, { path: '/' })
+}

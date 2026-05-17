@@ -2,13 +2,15 @@ import { eq, and } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { createTeamSchema } from '#shared/schemas'
+import { parseBody } from '../../utils/parse-body'
 import { getDb } from '../../utils/db'
 import { editions, teams } from '../../database/schema'
 import { setTeamSession, slugify, createSessionToken } from '../../utils/team-session'
 import { getEditionOrThrow } from '../../services/game'
+import { teamQrPath } from '#shared/edition-urls'
 
 export default defineEventHandler(async (event) => {
-  const body = createTeamSchema.parse(await readBody(event))
+  const body = parseBody(createTeamSchema, await readBody(event))
   const edition = await getEditionOrThrow(body.editionId)
   if (edition.status !== 'live') {
     throw createError({ statusCode: 403, statusMessage: 'Game is not live yet' })
@@ -50,6 +52,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     team: { id: team.id, name: team.name, editionId: team.editionId },
-    teamQrPath: `/t/${team.slug}?t=${team.teamQrToken}`,
+    teamQrPath: teamQrPath(team.editionId, team.slug, team.teamQrToken),
   }
 })

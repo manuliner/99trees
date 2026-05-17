@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '../../../../../utils/db'
 import { editions, stations } from '../../../../../database/schema'
 import { requireAdmin } from '../../../../../utils/admin-session'
+import { joinPath, stationQrPath } from '#shared/edition-urls'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -20,12 +21,12 @@ export default defineEventHandler(async (event) => {
 
   const host = getRequestURL(event).origin
   const items = stationRows.map((s) => {
-    const url = `${host}/s/${s.slug}?t=${s.qrToken}`
+    const url = `${host}${stationQrPath(editionId, s.slug, s.qrToken)}`
     const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`
     return { field: s.fieldNumber, slug: s.slug, url, qrImg }
   })
 
-  const joinUrl = `${host}/join?edition=${editionId}`
+  const joinUrl = `${host}${joinPath(edition.slug)}`
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>QR export — ${edition.name}</title>
 <style>body{font-family:sans-serif;padding:1rem} .card{display:inline-block;margin:1rem;text-align:center;vertical-align:top}

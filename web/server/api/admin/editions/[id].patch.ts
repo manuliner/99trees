@@ -4,10 +4,13 @@ import bcrypt from 'bcryptjs'
 import { getDb } from '../../../utils/db'
 import { editions, stations } from '../../../database/schema'
 import { requireAdmin } from '../../../utils/admin-session'
+import { assertEditionSlugAvailable } from '../../../utils/edition-slug'
+import { validateEditionSlug } from '#shared/edition-urls'
 
 const schema = z.object({
   status: z.enum(['draft', 'live', 'paused', 'ended']).optional(),
   name: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
   crewPassword: z.string().min(4).optional(),
   config: z.record(z.unknown()).optional(),
 })
@@ -18,9 +21,10 @@ export default defineEventHandler(async (event) => {
   const body = schema.parse(await readBody(event))
   const db = getDb()
 
+  const edition = (await db.select().from(editions).where(eq(editions.id, id)).limit(1))[0]
+  if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
+
   if (body.status === 'live') {
-    const edition = (await db.select().from(editions).where(eq(editions.id, id)).limit(1))[0]
-    if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
 
     const stationRows = await db.select().from(stations).where(eq(stations.editionId, id))
     const issues: string[] = []
@@ -30,6 +34,10 @@ export default defineEventHandler(async (event) => {
     }
     if (!edition.crewPasswordHash && !body.crewPassword) issues.push('Crew password not set')
     if (!edition.mapImagePath) issues.push('Festival map image not uploaded')
+    const slugToCheck = body.slug?.trim().toLowerCase() ?? edition.slug
+    if (!slugToCheck || validateEditionSlug(slugToCheck)) {
+      issues.push('Edition slug not set or invalid')
+    }
     const fields = new Set(stationRows.map((s) => s.fieldNumber))
     for (let i = 1; i <= edition.fieldCount; i++) {
       if (!fields.has(i)) issues.push(`Missing station for field ${i}`)
@@ -42,9 +50,23 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (body.slug) {
+    const nextSlug = body.slug.trim().toLowerCase()
+    const slugErr = validateEditionSlug(nextSlug)
+    if (slugErr) throw createError({ statusCode: 400, statusMessage: slugErr })
+    if (edition.status !== 'draft') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Edition slug can only be changed while draft',
+      })
+    }
+    await assertEditionSlugAvailable(nextSlug, id)
+  }
+
   const patch: Record<string, unknown> = {}
   if (body.status) patch.status = body.status
   if (body.name) patch.name = body.name
+  if (body.slug) patch.slug = body.slug.trim().toLowerCase()
   if (body.config) patch.configJson = JSON.stringify(body.config)
   if (body.crewPassword) patch.crewPasswordHash = await bcrypt.hash(body.crewPassword, 10)
 

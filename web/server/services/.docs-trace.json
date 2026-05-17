@@ -1,0 +1,11 @@
+{
+  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "createdAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-17T10:37:34Z",
+  "files": [
+    "web/server/services/admin-teams.ts",
+    "web/server/services/crew.ts",
+    "web/server/services/game.ts",
+    "web/server/services/turn-scan.ts"
+  ]
+}

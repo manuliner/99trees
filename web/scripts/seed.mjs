@@ -47,10 +47,10 @@ const crewHash = await bcrypt.hash('crew1234', 10)
 
 const editionResult = client
   .prepare(
-    `INSERT INTO editions (name, field_count, status, config_json, crew_password_hash, map_image_path, created_at)
-     VALUES (?, ?, 'live', ?, ?, NULL, ?)`,
+    `INSERT INTO editions (name, slug, field_count, status, config_json, crew_password_hash, map_image_path, created_at)
+     VALUES (?, ?, ?, 'live', ?, ?, NULL, ?)`,
   )
-  .run('Zugvögel Demo', fieldCount, JSON.stringify(DEFAULT_CONFIG), crewHash, now)
+  .run('Zugvögel Demo', 'zv26', fieldCount, JSON.stringify(DEFAULT_CONFIG), crewHash, now)
 
 const editionId = editionResult.lastInsertRowid
 
@@ -101,11 +101,12 @@ for (const s of demo.stations) {
   )
   const answers =
     task.type === 'quiz' ? task.answers.join(', ') : '(performance — crew rates)'
-  console.log(`Station ${s.field}: /s/${s.slug}?t=${token}  (${answers})`)
+  const stationUrl = `/s/${encodeURIComponent(s.slug)}?t=${token}`
+  console.log(`Station ${s.field}: ${stationUrl}  (${answers})`)
 }
 
 client.close()
 console.log('\nSeed complete.')
 console.log(`Edition id: ${editionId} (live, ${fieldCount} fields)`)
 console.log('Crew password: crew1234')
-console.log(`Join: http://localhost:3000/join?edition=${editionId}`)
+console.log('Join: http://localhost:3000/zv26/join')

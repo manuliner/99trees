@@ -1,0 +1,21 @@
+{
+  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "createdAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-17T10:37:34Z",
+  "files": [
+    "web/server/utils/admin-session.ts",
+    "web/server/utils/admin-station-import.ts",
+    "web/server/utils/admin-station.ts",
+    "web/server/utils/crew-session.ts",
+    "web/server/utils/db.ts",
+    "web/server/utils/dev-only.ts",
+    "web/server/utils/edition-config.ts",
+    "web/server/utils/edition-live.ts",
+    "web/server/utils/edition-slug.ts",
+    "web/server/utils/logger.ts",
+    "web/server/utils/parse-body.ts",
+    "web/server/utils/resolve-sqlite-path.ts",
+    "web/server/utils/staff-session.ts",
+    "web/server/utils/team-session.ts"
+  ]
+}

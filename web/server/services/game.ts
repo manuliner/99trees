@@ -1,9 +1,14 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
+import { parseEditionSlug } from '#shared/edition-urls'
 import { getDb } from '../utils/db'
 import { editions, stations, teams, turns } from '../database/schema'
 import { parseEditionConfig } from '../utils/edition-config'
-import { parseCompletedFields, serializeCompletedFields } from '../utils/team-session'
+import {
+  parseCompletedFields,
+  serializeCompletedFields,
+} from '../utils/team-session'
 import { calculateTurnScore } from '#shared/scoring'
+import { teamQrPath } from '#shared/edition-urls'
 import type { EditionConfig, TurnState } from '#shared/types'
 import { assertEditionLive } from '../utils/edition-live'
 
@@ -13,6 +18,28 @@ export async function getEditionOrThrow(editionId: number) {
   const edition = rows[0]
   if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
   return edition
+}
+
+export async function getEditionBySlugOrThrow(rawSlug: string) {
+  const slug = parseEditionSlug(rawSlug)
+  if (!slug) throw createError({ statusCode: 400, statusMessage: 'Invalid edition slug' })
+  const db = getDb()
+  const rows = await db.select().from(editions).where(eq(editions.slug, slug)).limit(1)
+  const edition = rows[0]
+  if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
+  return edition
+}
+
+export function publicEditionPayload(edition: typeof editions.$inferSelect) {
+  return {
+    id: edition.id,
+    slug: edition.slug,
+    name: edition.name,
+    status: edition.status,
+    fieldCount: edition.fieldCount,
+    startsAt: edition.startsAt,
+    endsAt: edition.endsAt,
+  }
 }
 
 export async function getOpenTurn(teamId: number) {
@@ -152,6 +179,50 @@ export async function buildMePayload(teamId: number) {
     }
   }
 
+  const completedFields = parseCompletedFields(team.completedFieldsJson)
+  const mapPins: { fieldNumber: number; mapX: number; mapY: number; kind: 'visited' | 'target' }[] = []
+
+  if (completedFields.length > 0) {
+    const visitedStations = await db
+      .select({
+        fieldNumber: stations.fieldNumber,
+        mapX: stations.mapX,
+        mapY: stations.mapY,
+      })
+      .from(stations)
+      .where(
+        and(
+          eq(stations.editionId, edition.id),
+          inArray(stations.fieldNumber, completedFields),
+        ),
+      )
+    for (const s of visitedStations) {
+      mapPins.push({
+        fieldNumber: s.fieldNumber,
+        mapX: s.mapX,
+        mapY: s.mapY,
+        kind: 'visited',
+      })
+    }
+  }
+
+  if (openTurn?.state === 'rolled' && turnPayload?.station) {
+    const hintsUsed = parseHintsUsed(openTurn.hintsUsedJson)
+    const hint3Visible =
+      hintsUsed.includes(3) || openTurn.hintMode === 'reveal_all'
+    if (hint3Visible) {
+      const st = turnPayload.station
+      if (!mapPins.some((p) => p.fieldNumber === st.fieldNumber && p.kind === 'target')) {
+        mapPins.push({
+          fieldNumber: st.fieldNumber,
+          mapX: st.mapX,
+          mapY: st.mapY,
+          kind: 'target',
+        })
+      }
+    }
+  }
+
   return {
     team: {
       id: team.id,
@@ -161,16 +232,19 @@ export async function buildMePayload(teamId: number) {
       positionConfirmed: team.positionConfirmed,
       scoreTotal: team.scoreTotal,
       reachedGoal: team.reachedGoalAt != null,
-      teamQrPath: `/t/${team.slug}?t=${team.teamQrToken}`,
+      completedFields,
+      teamQrPath: teamQrPath(team.editionId, team.slug, team.teamQrToken),
     },
     edition: {
       id: edition.id,
+      slug: edition.slug,
       name: edition.name,
       status: edition.status,
       fieldCount: edition.fieldCount,
       config,
       mapImageUrl: edition.mapImagePath ?? null,
     },
+    mapPins,
     openTurn: turnPayload,
   }
 }

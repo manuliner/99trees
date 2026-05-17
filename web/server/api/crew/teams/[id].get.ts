@@ -1,8 +1,8 @@
-import { requireCrewEdition } from '../../../utils/crew-session'
+import { requireStaffForTeam } from '../../../utils/staff-session'
 import { getCrewTeamDetail } from '../../../services/crew'
 
 export default defineEventHandler(async (event) => {
-  const editionId = requireCrewEdition(event)
   const teamId = Number(getRouterParam(event, 'id'))
+  const editionId = await requireStaffForTeam(event, teamId)
   return getCrewTeamDetail(editionId, teamId)
 })

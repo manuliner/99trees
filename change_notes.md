@@ -13,6 +13,9 @@
 - PWA: service worker shell cache and install-to-homescreen hint
 - Build: Docker injects `version.json`; app version footer and health endpoint report version
 - Demo: expanded `demo-stations.json` (50 fields) and seed improvements
+- Edition-scoped URLs (`/{slug}/join`, crew, play) with legacy redirects; slug APIs and env validation on boot
+- Admin: station CRUD, team PIN patch, logout; map uploads via `/api/uploads/editions/…`
+- Dev: simulate scan and auto-complete performance endpoints under `/api/dev/turns/…`
 
 ## 🐛 Bug Fixes
 
