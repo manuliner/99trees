@@ -49,6 +49,7 @@
 - `docs/SCOPE.md` and implementation status reference `GameBoard.vue` (not BirdBoard)
 - Module READMEs for `web/app/components/admin/` and `web/app/layouts/`
 - Regenerated module READMEs/traces for festival map, `GameBoard` layout, and expanded `web/README.md` index
+- `.vibe/docs/`: play flow, architecture, and requirements aligned with festival map and board UX
 
 ## ⚠️ Breaking Changes
 

@@ -1,7 +1,7 @@
 {
-  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "commit": "39f6bf30ea320dc0ea332c432dc68b79834312a1",
   "createdAt": "2026-05-17T10:38:05Z",
-  "updatedAt": "2026-05-17T10:38:05Z",
+  "updatedAt": "2026-05-17T11:33:48Z",
   "files": [
     "architecture.md",
     "requirements.md",
@@ -11,7 +11,11 @@
   ],
   "dependsOn": [
     "web/README.md",
+    "web/app/components/admin/README.md",
+    "web/app/components/pixel/README.md",
     "web/app/composables/README.md",
+    "web/app/layouts/README.md",
+    "web/app/pages/README.md",
     "web/app/plugins/README.md",
     "web/app/utils/README.md",
     "web/server/api/README.md",

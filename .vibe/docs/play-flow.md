@@ -4,16 +4,17 @@
 
 ## Components
 
-`app/pages/play.vue` → `useGameApi` → `api/me.get` → `game.buildMePayload` → SQLite `teams` + `turns`
+`play.vue` → `useGameApi` → `api/me` → `game.buildMePayload` → SQLite; pixel `GameBoard`, `HintBar`, `FestivalMap*`; `useTurnHints`, `useFestivalMapView`
 
 ## Flow
 
-1. **Idle:** No open turn — UI shows roll button → `POST /api/turns/roll`.
-2. **Rolled:** Pending field shown; optional hints via `POST /api/turns/:id/hint`.
-3. **Scan:** Camera QR → `POST /api/turns/:id/scan` (validates token vs pending field).
-4. **Task:** Quiz → `answer`; performance → `awaiting_crew` until crew `rate`.
-5. **Confirm:** `POST /api/turns/:id/confirm` applies score, updates position, marks field complete.
-6. **Abandon:** From rolled only → zero delta, return idle.
+1. **Idle:** No open turn — roll → `POST /api/turns/roll`; board shows confirmed position via `GameBoard`.
+2. **Rolled:** Pending field on board; hints → `POST /api/turns/:id/hint` (costs may apply immediately); tips UI via `HintBar` / `PixelTooltip`.
+3. **Map (optional):** Edition map image — inline preview with expand → fullscreen pan/zoom; hint level 3 can show target pin on map.
+4. **Scan:** QR → `POST /api/turns/:id/scan` (token must match pending field).
+5. **Task:** Quiz → `answer`; performance → `awaiting_crew` until crew `rate`.
+6. **Confirm:** `POST /api/turns/:id/confirm` applies `calculateTurnScore`, updates position, marks field complete.
+7. **Abandon:** From `rolled` only → zero delta, return idle.
 
 ## Error paths
 

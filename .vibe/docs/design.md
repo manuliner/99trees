@@ -2,36 +2,40 @@
 
 ## Naming and structure
 
-- API routes follow Nitro file convention (`*.get.ts`, `*.post.ts`) under `server/api/`.
-- Domain logic lives in `server/services/*.ts`, not in handlers.
-- Shared contracts: Zod in `shared/schemas.ts`, types in `shared/types.ts`.
+- API routes follow Nitro file convention under `server/api/`.
+- Domain logic in `server/services/*.ts`, not handlers.
+- Contracts: Zod in `shared/schemas.ts`, types in `shared/types.ts`.
+- Board geometry: `shared/game-board-layout.ts` (`computeGameBoardLayout`, orthogonal path).
 
 ## Error handling
 
-- Handlers use `createError` with HTTP status; `parse-body.ts` maps Zod failures to 400.
-- Services throw on illegal state transitions (wrong turn state, wrong station).
-- `assertEditionLive` guards play endpoints when edition paused/ended.
+- Handlers use `createError` with HTTP status; Zod failures → 400.
+- Services throw on illegal turn transitions or wrong station.
+- `assertEditionLive` guards play mutations when edition paused/ended.
 
 ## Patterns
 
-- **Thin controller:** API file → session helper → service function.
-- **Pure scoring:** All point math in `shared/scoring.ts` via `calculateTurnScore`.
-- **Cookie sessions:** `team-session`, `crew-session`, `admin-session` utilities — no JWT in client storage.
+- **Thin controller:** API → session helper → service.
+- **Pure scoring:** `shared/scoring.ts` / `calculateTurnScore` only.
+- **Cookie sessions:** team, crew, admin utilities — no JWT in client storage.
+- **Play UI:** Composables fetch; pixel components render; `useFestivalMapView` owns map pan/zoom state.
 
 ## Component boundaries
 
-- Pixel UI components under `app/components/pixel/` — presentation only.
-- Composables fetch via `useGameApi()`; no direct DB access from Vue.
-- Admin UI sections split under `app/components/admin/` per concern (stations, teams, edition).
+- **pixel/** — presentation: `GameBoard`, festival map stack, hints, dialogs.
+- **admin/** — organizer sections; data via `useAdminEdition`.
+- **layouts/** — `default`, `crew`, `admin` shells; no server imports.
+- Pages orchestrate composables + pixel; no duplicated game rules.
 
 ## Data design
 
-- SQLite + Drizzle; `configJson` and `completedFieldsJson` as serialized JSON columns.
-- Stations keyed by `(editionId, fieldNumber)` and unique slug per edition.
-- Turns store hint mode, used levels, and `scoreDelta` only on confirm.
+- SQLite + Drizzle; `configJson`, `completedFieldsJson` as JSON columns.
+- Stations: `(editionId, fieldNumber)` + unique slug per edition.
+- Map assets on disk, served under `api/uploads/editions`.
+- Turns store hint usage; score delta on confirm only.
 
 ## Quality attributes
 
-- **Security:** httpOnly cookies, hashed PINs and session tokens, crew password per edition.
-- **Maintainability:** Module READMEs under `web/` + `AGENTS.md` codemaps; run `/docs-update` after refactors.
-- **Operability:** `health` endpoint, env validation plugin in production, dev-only simulate endpoints.
+- **Security:** httpOnly cookies, hashed PINs/tokens, per-edition crew password.
+- **Maintainability:** Module READMEs under `web/` + `AGENTS.md`; `/docs-update` after refactors.
+- **Operability:** health endpoint, env validation plugin, dev simulate endpoints.

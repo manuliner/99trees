@@ -6,35 +6,36 @@ Festival field-game PWA: teams roll dice, scan station QR codes, complete quiz/p
 
 ## Context and scope
 
-- **In scope:** Nuxt 4 monolith (`web/app` + `web/server` + `web/shared`), SQLite, httpOnly cookies (team / crew / admin).
-- **Out of scope:** Multi-tenant SaaS, external auth, websockets (client polls `GET /api/me`).
+- **In scope:** Nuxt 4 (`web/app` + `web/server` + `web/shared`), SQLite, httpOnly cookies.
+- **Out of scope:** Multi-tenant SaaS, external auth, websockets (poll `GET /api/me`).
 
 ## Building block view
 
 | Layer | Responsibility |
 |-------|----------------|
-| `web/app` | Pages, pixel UI, composables — reflects server state |
+| `web/app/pages` | Routes — play, join, crew, admin; reflect `/api/me` |
+| `web/app/components/pixel` | Board, festival map, dice, hints, dialogs |
+| `web/app/components/admin` | Edition setup sections (stations, teams, map, QR) |
+| `web/app/composables` | API client, edition slug, play/admin UX helpers |
+| `web/app/layouts` | Shells — default, crew, admin |
 | `web/server/api` | Thin HTTP — Zod, auth, delegate |
 | `web/server/services` | Turn lifecycle, crew queue, scoring orchestration |
 | `web/server/database` | Drizzle schema + migrations |
-| `web/shared` | Pure types, schemas, `calculateTurnScore` |
+| `web/shared` | Types, schemas, scoring, board layout, URL helpers |
 
 ## Runtime view
 
-**Play:** roll → pending field → hints → scan QR → quiz/performance → crew rate if needed → confirm → score applied, field completed.
+**Play:** roll → pending field → hints (optional, point cost) → scan QR → quiz/performance → crew rate if needed → confirm → score applied, field completed. UI shows serpentine `GameBoard`, optional festival map (preview + fullscreen pan/zoom).
 
-**Turn states:** `rolled` → `scanned` → (`awaiting_crew`) → `completed` → confirm → idle; `abandon` from `rolled` (zero delta). Open turn blocks new rolls (`getOpenTurn` in `game.ts`).
+**Turn states:** `rolled` → `scanned` → (`awaiting_crew`) → `completed` → confirm → idle; `abandon` from `rolled` (zero delta). Open turn blocks new rolls.
 
 ## Crosscutting
 
 - **Sessions:** Separate cookies per role; rejoin invalidates prior team token.
-- **Edition config:** `configJson` — dice, hints, performance timeout.
-- **Plugins:** migrations on boot; performance timeout poll (~60s).
-- **Scoring:** `#shared/scoring` only — server authoritative.
+- **Edition config:** `configJson` — dice, hints, performance timeout; map image via uploads API.
+- **Plugins:** migrations on boot; performance timeout poll.
+- **Scoring:** `#shared/scoring` only; hints may deduct on claim.
 
 ## Decisions
 
-- Server owns position, dice, points — no trusted client mutations.
-- `web/app` must not import `web/server`; shared logic in `web/shared`.
-- Edition URL slugs (`/[edition]/join`) decouple routing from numeric ids.
-- API → services → db; shared has no DB/framework imports.
+Server owns game state; app never imports `web/server`. Edition slugs in URLs. API → services → db; UI components are presentation-only.
