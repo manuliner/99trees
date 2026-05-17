@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'danger'
+    variant?: 'primary' | 'secondary' | 'accent' | 'highlight' | 'danger'
     disabled?: boolean
     type?: 'button' | 'submit'
   }>(),

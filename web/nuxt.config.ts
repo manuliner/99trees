@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    optimizeDeps: {
+      include: ['@vueuse/core'],
+    },
     server: {
       fs: { allow: [rootDir, workspaceRoot] },
       watch: { ignored: ['**/*.db', '**/migrations/**'] },

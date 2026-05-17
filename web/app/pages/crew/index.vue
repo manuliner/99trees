@@ -1,26 +1,31 @@
 <script setup lang="ts">
-const route = useRoute()
-const editionId = computed(() => Number(route.query.edition) || 1)
+import type { PendingApproval } from '#shared/types'
+
+definePageMeta({ layout: 'crew', ssr: false })
+
+const { editionId, editionError, pathWithEdition } = useEditionId({
+  source: 'crew',
+  required: false,
+})
 const { api } = useGameApi()
 const search = ref('')
 const results = ref<{ id: number; name: string }[]>([])
-const pending = ref<{ turnId: number; teamId: number; teamName: string; fieldNumber: number | null }[]>([])
 const showTeamScanner = ref(false)
 const scanError = ref('')
 
-async function loadPending() {
-  try {
-    const res = await api<{ pending: typeof pending.value }>('/api/crew/pending', { credentials: 'include' })
-    pending.value = res.pending
-  }
-  catch {
-    await navigateTo(`/crew/login?edition=${editionId.value}`)
-  }
-}
+const {
+  pending,
+  resolvingTurnId,
+  rate,
+  loadPending,
+} = useStaffApprovals(editionId, { poll: true })
 
-onMounted(loadPending)
+usePullToRefresh(loadPending)
+
+usePullToRefreshDisabled(computed(() => showTeamScanner.value))
 
 watch(search, async (q) => {
+  if (editionId.value == null) return
   if (q.length < 2) {
     results.value = []
     return
@@ -32,6 +37,14 @@ watch(search, async (q) => {
   results.value = res.teams
 })
 
+function crewTeamPath(teamId: number) {
+  return pathWithEdition(`/crew/teams/${teamId}`)
+}
+
+async function onResolve(item: PendingApproval, actionId: string) {
+  await rate(item, actionId)
+}
+
 async function onTeamQrScanned(payload: { slug: string; token: string }) {
   showTeamScanner.value = false
   scanError.value = ''
@@ -40,7 +53,7 @@ async function onTeamQrScanned(payload: { slug: string; token: string }) {
       `/api/crew/teams/resolve?slug=${encodeURIComponent(payload.slug)}&t=${encodeURIComponent(payload.token)}`,
       { credentials: 'include' },
     )
-    await navigateTo(`/crew/teams/${res.teamId}`)
+    await navigateTo(crewTeamPath(res.teamId))
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }
@@ -50,40 +63,38 @@ async function onTeamQrScanned(payload: { slug: string; token: string }) {
 
 async function logout() {
   await api('/api/crew/logout', { method: 'POST', credentials: 'include' })
-  await navigateTo(`/crew/login?edition=${editionId.value}`)
+  await navigateTo(pathWithEdition('/crew/login'))
 }
 </script>
 
 <template>
-  <main class="p-4 max-w-md mx-auto space-y-4">
+  <main v-if="editionError" class="p-4 max-w-md mx-auto space-y-4 text-center">
+    <p class="pixel-card p-4 pixel-body text-sm">{{ editionError }}</p>
+    <NuxtLink to="/" class="pixel-body text-sm underline">Festival overview</NuxtLink>
+  </main>
+  <main v-else-if="editionId != null" class="p-4 max-w-md mx-auto space-y-4">
     <h1 class="pixel-title text-center text-base">Crew</h1>
 
     <PixelButton variant="secondary" @click="showTeamScanner = true">Scan Team QR</PixelButton>
     <p v-if="scanError" class="text-sm text-[var(--pixel-score-minus)] text-center">{{ scanError }}</p>
 
-    <section v-if="pending.length" class="pixel-card p-4 space-y-2">
-      <p class="pixel-title text-xs">Waiting for rating</p>
-      <NuxtLink
-        v-for="p in pending"
-        :key="p.turnId"
-        :to="`/crew/teams/${p.teamId}`"
-        class="block pixel-body text-sm underline"
-      >
-        {{ p.teamName }} — field {{ p.fieldNumber ?? '?' }}
-      </NuxtLink>
-    </section>
+    <StaffApprovalList
+      :items="pending"
+      :resolving-turn-id="resolvingTurnId"
+      @resolve="onResolve"
+    />
 
     <div class="pixel-card p-4 space-y-3">
       <p class="pixel-title text-xs">Find team</p>
       <input
         v-model="search"
         placeholder="Team name…"
-        class="w-full p-3 border-4 border-[var(--pixel-forest-dark)] bg-white"
+        class="pixel-input w-full p-3"
       >
       <NuxtLink
         v-for="t in results"
         :key="t.id"
-        :to="`/crew/teams/${t.id}`"
+        :to="crewTeamPath(t.id)"
         class="block pixel-body text-sm py-2 border-t border-[var(--pixel-forest-dark)]/20"
       >
         {{ t.name }}

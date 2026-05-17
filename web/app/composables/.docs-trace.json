@@ -1,0 +1,17 @@
+{
+  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "createdAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-17T10:37:34Z",
+  "files": [
+    "web/app/composables/useAdminEdition.ts",
+    "web/app/composables/useDigitPin.ts",
+    "web/app/composables/useEditionId.ts",
+    "web/app/composables/useGameApi.ts",
+    "web/app/composables/useLegacyEditionRedirect.ts",
+    "web/app/composables/usePixelConfirm.ts",
+    "web/app/composables/usePullToRefresh.ts",
+    "web/app/composables/useScoreFeedback.ts",
+    "web/app/composables/useStaffApprovals.ts",
+    "web/app/composables/useTurnHints.ts"
+  ]
+}

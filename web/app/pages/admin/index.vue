@@ -1,195 +1,282 @@
 <script setup lang="ts">
-const { api } = useGameApi()
-const editions = ref<{ id: number; name: string; status: string; fieldCount: number; mapImageUrl: string | null }[]>([])
-const checklist = ref<{ ok: boolean; issues: string[] } | null>(null)
-const selectedId = ref(1)
-const crewPassword = ref('crew1234')
-const importJson = ref('')
-const newEditionName = ref('')
-const mapFile = ref<File | null>(null)
-const mapUploadMessage = ref('')
-const error = ref('')
+import type { SetupStepId } from '~/composables/useAdminEdition'
 
-const selectedEdition = computed(() => editions.value.find((e) => e.id === selectedId.value))
+definePageMeta({ layout: 'admin', ssr: false })
 
-async function load() {
+const {
+  editions,
+  selectedId,
+  selectedEdition,
+  checklist,
+  error,
+  success,
+  joinUrl,
+  crewLoginUrl,
+  setupSteps,
+  nextStepId,
+  canGoLive,
+  loading,
+  loadEditions,
+  createEdition,
+  saveEditionSettings,
+  saveCrewPassword,
+  setStatus,
+  stations,
+  importStations,
+  downloadStations,
+  createStation,
+  updateStation,
+  uploadMap,
+  exportStationQr,
+  logout,
+  teams,
+  setTeamPin,
+  approvalPending,
+  approvalCount,
+  approvalResolvingTurnId,
+  resolveApproval,
+  isStepExpanded,
+  toggleStepExpanded,
+} = useAdminEdition()
+
+usePullToRefresh(loadEditions)
+
+const teamsExpanded = ref(false)
+
+watch(
+  () => [selectedEdition.value?.teamCount, approvalCount.value] as const,
+  ([teamCount, waiting]) => {
+    if ((teamCount != null && teamCount > 0) || (waiting != null && waiting > 0)) {
+      teamsExpanded.value = true
+    }
+  },
+  { immediate: true },
+)
+
+async function onSetTeamPin(teamId: number, pin: string) {
+  await setTeamPin(teamId, pin)
+}
+
+async function onResolveApproval(
+  item: (typeof approvalPending.value)[number],
+  actionId: string,
+) {
+  await resolveApproval(item, actionId)
+}
+
+const showNewEdition = ref(false)
+
+onMounted(async () => {
   try {
-    const res = await api<{ editions: typeof editions.value }>('/api/admin/editions', { credentials: 'include' })
-    editions.value = res.editions
-    if (res.editions[0] && !res.editions.some((e) => e.id === selectedId.value)) {
-      selectedId.value = res.editions[0].id
+    await loadEditions()
+  }
+  catch (e) {
+    if ((e as { statusCode?: number }).statusCode === 401) {
+      await navigateTo('/admin/login')
     }
   }
-  catch {
-    await navigateTo('/admin/login')
-  }
-}
-
-onMounted(load)
-
-async function runChecklist() {
-  checklist.value = await api(`/api/admin/editions/${selectedId.value}/checklist`, { credentials: 'include' })
-}
-
-async function createEdition() {
-  error.value = ''
-  try {
-    const res = await api<{ edition: { id: number } }>('/api/admin/editions', {
-      method: 'POST',
-      body: { name: newEditionName.value },
-      credentials: 'include',
-    })
-    newEditionName.value = ''
-    selectedId.value = res.edition.id
-    await load()
-  }
-  catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Create failed'
-  }
-}
-
-async function setStatus(status: 'live' | 'paused' | 'ended') {
-  error.value = ''
-  try {
-    await api(`/api/admin/editions/${selectedId.value}`, {
-      method: 'PATCH',
-      body: { status, crewPassword: status === 'live' ? crewPassword.value : undefined },
-      credentials: 'include',
-    })
-    await load()
-  }
-  catch (e: unknown) {
-    const err = e as { data?: { statusMessage?: string } }
-    error.value = err.data?.statusMessage ?? 'Update failed'
-  }
-}
-
-function exportQr() {
-  window.open(`/api/admin/editions/${selectedId.value}/qr/export`, '_blank')
-}
-
-const joinQrUrl = computed(() => {
-  if (!import.meta.client) return ''
-  return `${window.location.origin}/join?edition=${selectedId.value}`
 })
 
-async function importStations() {
-  error.value = ''
-  try {
-    const parsed = JSON.parse(importJson.value)
-    await api(`/api/admin/editions/${selectedId.value}/stations/import`, {
-      method: 'POST',
-      body: parsed,
-      credentials: 'include',
-    })
-    await runChecklist()
-    await load()
-  }
-  catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Import failed'
-  }
+function stepDone(id: SetupStepId) {
+  return setupSteps.value.find((s) => s.id === id)?.done ?? false
 }
 
-function onMapFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  mapFile.value = input.files?.[0] ?? null
-  mapUploadMessage.value = ''
+function onSelectEdition(id: number) {
+  selectedId.value = id
 }
 
-async function uploadMap() {
-  if (!mapFile.value) {
-    mapUploadMessage.value = 'Choose a PNG, JPEG, or WebP file first'
-    return
-  }
-  error.value = ''
-  mapUploadMessage.value = ''
-  try {
-    const form = new FormData()
-    form.append('map', mapFile.value)
-    const res = await api<{ mapImagePath: string }>(`/api/admin/editions/${selectedId.value}/map`, {
-      method: 'POST',
-      body: form,
-      credentials: 'include',
-    })
-    mapUploadMessage.value = `Map saved: ${res.mapImagePath}`
-    mapFile.value = null
-    await load()
-    await runChecklist()
-  }
-  catch (e: unknown) {
-    const err = e as { data?: { statusMessage?: string } }
-    error.value = err.data?.statusMessage ?? 'Map upload failed'
-  }
+function onShowNewEdition(open: boolean) {
+  showNewEdition.value = open
 }
+
+async function onCreate(payload: { name: string; slug: string }) {
+  await createEdition(payload.name, payload.slug)
+  showNewEdition.value = false
+}
+
+function onDownloadStations() {
+  const slug = selectedEdition.value?.slug
+  if (slug) downloadStations(slug)
+}
+
+const printReady = computed(() => stepDone('print'))
+
+const showSetup = computed(() => {
+  const s = selectedEdition.value?.status
+  return s === 'draft' || s === 'live'
+})
+
+const contentReady = computed(
+  () => selectedEdition.value != null && checklist.value != null && !loading.value,
+)
 </script>
 
 <template>
-  <main class="p-4 max-w-lg mx-auto space-y-4">
-    <h1 class="pixel-title text-center text-base">Admin</h1>
+  <main class="p-4 max-w-lg mx-auto space-y-4 pb-8">
+    <AdminEditionHeader
+      :editions="editions"
+      :selected-id="selectedId"
+      :show-new-edition="showNewEdition"
+      :show-game-control="contentReady"
+      :approval-count="approvalCount"
+      @update:selected-id="onSelectEdition"
+      @update:show-new-edition="onShowNewEdition"
+      @create="onCreate"
+    >
+      <template #actions>
+        <button type="button" class="admin-body text-xs underline opacity-80" @click="logout">
+          Sign out
+        </button>
+      </template>
+      <template #game-control>
+        <AdminEditionControl
+          compact
+          :status="selectedEdition!.status"
+          :slug="selectedEdition!.slug"
+          :can-go-live="canGoLive"
+          :checklist="checklist!"
+          @set-status="setStatus"
+        />
+      </template>
+    </AdminEditionHeader>
 
-    <div class="pixel-card p-4 space-y-3">
-      <p class="pixel-title text-xs">Create edition</p>
-      <input v-model="newEditionName" placeholder="Edition name" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)]">
-      <PixelButton variant="secondary" @click="createEdition">Create draft</PixelButton>
-    </div>
+    <p v-if="error" class="pixel-card p-3 admin-body text-sm text-[var(--pixel-score-minus)]">
+      {{ error }}
+    </p>
+    <p v-if="success" class="pixel-card p-3 admin-body text-sm text-[var(--pixel-score-plus)]">
+      {{ success }}
+    </p>
 
-    <div class="pixel-card p-4 space-y-3">
-      <label class="pixel-body text-sm block">Edition</label>
-      <select v-model="selectedId" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)]">
-        <option v-for="e in editions" :key="e.id" :value="e.id">{{ e.name }} ({{ e.status }})</option>
-      </select>
-      <PixelButton variant="secondary" @click="runChecklist">Run checklist</PixelButton>
-      <ul v-if="checklist" class="pixel-body text-sm list-disc pl-5">
-        <li v-if="checklist.ok">Ready for live</li>
-        <li v-for="issue in checklist.issues" :key="issue" class="text-[var(--pixel-score-minus)]">{{ issue }}</li>
-      </ul>
-      <input v-model="crewPassword" placeholder="Crew password" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)]">
-      <div class="flex flex-wrap gap-2">
-        <PixelButton @click="setStatus('live')">Set LIVE</PixelButton>
-        <PixelButton variant="secondary" @click="setStatus('paused')">Pause</PixelButton>
-        <PixelButton variant="danger" @click="setStatus('ended')">End</PixelButton>
-      </div>
-    </div>
+    <p
+      v-if="loading || (selectedId && !checklist && editions.length)"
+      class="pixel-card p-4 admin-body text-sm text-center"
+    >
+      Loading…
+    </p>
 
-    <div class="pixel-card p-4 space-y-3">
-      <p class="pixel-title text-xs">Entry QR</p>
-      <p class="pixel-body text-xs break-all">{{ joinQrUrl }}</p>
-    </div>
-
-    <div class="pixel-card p-4 space-y-3">
-      <p class="pixel-title text-xs">Station QR export</p>
-      <PixelButton variant="secondary" @click="exportQr">Download QR HTML</PixelButton>
-    </div>
-
-    <div class="pixel-card p-4 space-y-3">
-      <p class="pixel-title text-xs">Festival map</p>
-      <p v-if="selectedEdition?.mapImageUrl" class="pixel-body text-xs break-all opacity-80">
-        Current: {{ selectedEdition.mapImageUrl }}
+    <template v-else-if="contentReady">
+      <p
+        v-if="selectedEdition!.status === 'paused'"
+        class="pixel-card p-3 admin-body text-sm text-center"
+      >
+        Game paused — standings are frozen.
       </p>
-      <img
-        v-if="selectedEdition?.mapImageUrl"
-        :src="selectedEdition.mapImageUrl"
-        alt="Edition map preview"
-        class="w-full border-4 border-[var(--pixel-forest-dark)]"
-        style="image-rendering: pixelated"
+      <p
+        v-else-if="selectedEdition!.status === 'ended'"
+        class="pixel-card p-3 admin-body text-sm text-center"
       >
-      <input
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        class="w-full text-sm"
-        @change="onMapFileChange"
-      >
-      <p v-if="mapUploadMessage" class="pixel-body text-xs text-[var(--pixel-score-plus)]">{{ mapUploadMessage }}</p>
-      <PixelButton variant="secondary" @click="uploadMap">Upload map</PixelButton>
-    </div>
+        Edition ended — final results are fixed.
+      </p>
 
-    <div class="pixel-card p-4 space-y-3">
-      <p class="pixel-title text-xs">Import stations (JSON)</p>
-      <textarea v-model="importJson" rows="8" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] font-mono text-xs" />
-      <p v-if="error" class="text-sm text-[var(--pixel-score-minus)]">{{ error }}</p>
-      <PixelButton variant="secondary" @click="importStations">Import</PixelButton>
-    </div>
+      <section v-if="showSetup" class="space-y-2">
+        <p class="pixel-title text-xs px-1">Setup</p>
 
-    <NuxtLink to="/admin/login" class="pixel-body text-sm underline block text-center">Login</NuxtLink>
+        <AdminAccordionSection
+          title="Edition settings"
+          :done="stepDone('edition')"
+          :is-next="nextStepId === 'edition'"
+          :expanded="isStepExpanded('edition')"
+          @toggle="toggleStepExpanded('edition')"
+        >
+          <AdminEditionSettings
+            :name="selectedEdition!.name"
+            :slug="selectedEdition!.slug"
+            :status="selectedEdition!.status"
+            :config="selectedEdition!.config"
+            :join-url="joinUrl"
+            @save="saveEditionSettings"
+          />
+        </AdminAccordionSection>
+
+        <AdminAccordionSection
+          title="Stations"
+          :done="stepDone('stations')"
+          :is-next="nextStepId === 'stations'"
+          :expanded="isStepExpanded('stations')"
+          @toggle="toggleStepExpanded('stations')"
+        >
+          <AdminStationsSection
+            :edition-slug="selectedEdition!.slug"
+            :station-count="checklist!.stationCount"
+            :field-count="checklist!.fieldCount"
+            :stations="stations"
+            @import="importStations"
+            @download="onDownloadStations"
+            @save-station="updateStation"
+            @create-station="createStation"
+          />
+        </AdminAccordionSection>
+
+        <AdminAccordionSection
+          title="Festival map"
+          :done="stepDone('map')"
+          :is-next="nextStepId === 'map'"
+          :expanded="isStepExpanded('map')"
+          @toggle="toggleStepExpanded('map')"
+        >
+          <AdminMapUpload
+            :map-image-url="selectedEdition!.mapImageUrl"
+            @upload="uploadMap"
+          />
+        </AdminAccordionSection>
+
+        <AdminAccordionSection
+          title="Crew password"
+          :done="stepDone('crew')"
+          :is-next="nextStepId === 'crew'"
+          :expanded="isStepExpanded('crew')"
+          @toggle="toggleStepExpanded('crew')"
+        >
+          <AdminCrewPassword
+            :has-password="checklist!.hasCrewPassword"
+            @save="saveCrewPassword"
+          />
+        </AdminAccordionSection>
+      </section>
+
+      <section class="space-y-2">
+        <p class="pixel-title text-xs px-1">Teams</p>
+        <AdminAccordionSection
+          title="Teams"
+          :done="teams.length > 0"
+          :is-next="false"
+          :expanded="teamsExpanded"
+          @toggle="teamsExpanded = !teamsExpanded"
+        >
+          <AdminTeamsSection
+            :teams="teams"
+            :field-count="checklist!.fieldCount"
+            :edition-status="selectedEdition!.status"
+            :approvals="approvalPending"
+            :approval-resolving-turn-id="approvalResolvingTurnId"
+            :on-set-pin="onSetTeamPin"
+            :on-resolve-approval="onResolveApproval"
+          />
+        </AdminAccordionSection>
+      </section>
+
+      <section class="space-y-2">
+        <p class="pixel-title text-xs px-1">Print &amp; distribute</p>
+        <AdminAccordionSection
+          title="QR codes & entry link"
+          :done="stepDone('print')"
+          :is-next="nextStepId === 'print'"
+          :expanded="isStepExpanded('print')"
+          @toggle="toggleStepExpanded('print')"
+        >
+          <AdminPrintPack
+            :join-url="joinUrl"
+            :crew-login-url="crewLoginUrl"
+            :ready="printReady"
+            @export-qr="exportStationQr"
+          />
+        </AdminAccordionSection>
+      </section>
+
+    </template>
+
+    <p v-else-if="!editions.length && !showNewEdition" class="pixel-card p-4 admin-body text-sm text-center">
+      No editions yet. Tap + to create a draft.
+    </p>
   </main>
 </template>

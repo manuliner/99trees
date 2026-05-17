@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import './pixel-theme.css';
 
 body {

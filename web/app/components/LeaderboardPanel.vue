@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { BoardTeam } from '~/components/pixel/GameBoard.vue'
-
 const props = withDefaults(
   defineProps<{
     editionId: number
@@ -26,7 +24,7 @@ const { data, refresh } = await useAsyncData(
   { watch: [() => props.editionId] },
 )
 
-const me = ref<{ team?: { id: number; positionConfirmed: number } } | null>(null)
+const me = ref<{ team?: { id: number } } | null>(null)
 onMounted(async () => {
   try {
     me.value = await $fetch('/api/me', { credentials: 'include' })
@@ -35,14 +33,6 @@ onMounted(async () => {
     me.value = null
   }
 })
-
-const boardTeams = computed((): BoardTeam[] =>
-  (data.value?.teams ?? []).map((t) => ({
-    id: t.id,
-    name: t.name,
-    position: t.position,
-  })),
-)
 
 const progressSorted = computed(() => {
   const teams = [...(data.value?.teams ?? [])]
@@ -113,16 +103,6 @@ onUnmounted(stopPoll)
       <p v-if="data?.fallbackRanking" class="pixel-body text-xs text-center opacity-70">
         No team reached the goal — ranking by highest field, then points.
       </p>
-
-      <PixelGameBoard
-        v-if="data?.edition"
-        :field-count="data.edition.fieldCount"
-        :position-confirmed="me?.team?.positionConfirmed ?? 0"
-        :my-team-id="me?.team?.id ?? null"
-        :teams="boardTeams"
-        compact
-        class="opacity-90"
-      />
 
       <div class="flex gap-2">
         <PixelButton :variant="tab === 'progress' ? 'primary' : 'secondary'" class="!text-[10px]" @click="tab = 'progress'">

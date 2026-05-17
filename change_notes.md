@@ -16,6 +16,8 @@
 - Edition-scoped URLs (`/{slug}/join`, crew, play) with legacy redirects; slug APIs and env validation on boot
 - Admin: station CRUD, team PIN patch, logout; map uploads via `/api/uploads/editions/…`
 - Dev: simulate scan and auto-complete performance endpoints under `/api/dev/turns/…`
+- Play: `GameBoard` and `HintBar` turn hints; pixel confirm dialogs and pull-to-refresh
+- Admin UI split into accordion sections; crew staff approval list; edition layouts and `[edition]/*` pages
 
 ## 🐛 Bug Fixes
 

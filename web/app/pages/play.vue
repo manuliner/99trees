@@ -2,6 +2,10 @@
 import type { BoardTeam } from '~/components/pixel/GameBoard.vue'
 import type { FestivalMapPin } from '~/components/pixel/FestivalMap.vue'
 import { joinPath } from '#shared/edition-urls'
+import { pickRollDicePrompt } from '~/utils/roll-dice-prompts'
+
+/** Team session, board layout, dialogs, and QR — client-only to avoid SSR/HMR drift in dev. */
+definePageMeta({ ssr: false })
 
 const route = useRoute()
 const { api } = useGameApi()
@@ -15,7 +19,10 @@ const showRules = ref(false)
 const showConfirmBreakdown = ref(false)
 const lastConfirmBreakdown = ref<{ scoreDelta: number } | null>(null)
 
-const { data: me, refresh, error: meError } = await useFetch('/api/me', { credentials: 'include' })
+const { data: me, refresh, error: meError } = await useFetch('/api/me', {
+  credentials: 'include',
+  server: false,
+})
 
 watchEffect(() => {
   if (meError.value && 'statusCode' in meError.value && (meError.value as { statusCode: number }).statusCode === 401) {
@@ -64,6 +71,23 @@ onUnmounted(() => {
   if (boardPoll) clearInterval(boardPoll)
 })
 
+usePullToRefresh(async () => {
+  await refreshLeaderboard()
+})
+
+usePullToRefreshDisabled(
+  computed(
+    () =>
+      showScanner.value
+      || showTeamQr.value
+      || showLeaderboard.value
+      || showRules.value
+      || showConfirmBreakdown.value,
+  ),
+)
+
+const isDev = import.meta.dev
+
 const loading = ref(false)
 const scanSlug = ref('')
 const scanToken = ref('')
@@ -92,18 +116,28 @@ watch(
   { immediate: true },
 )
 
-const diceFace = computed(() => {
-  const fromTurn = toDiceNumber(turn.value?.diceValue)
-  if (fromTurn != null) return fromTurn
-  return lastDiceValue.value
-})
-
 const canRollNext = computed(
   () =>
     !team.value?.reachedGoal
     && edition.value?.status === 'live'
     && !turn.value,
 )
+
+const rollPromptPhrase = ref('')
+watch(
+  canRollNext,
+  (can) => {
+    if (can) rollPromptPhrase.value = pickRollDicePrompt()
+  },
+  { immediate: true },
+)
+
+const diceFace = computed(() => {
+  if (canRollNext.value || turn.value?.state === 'completed') return null
+  const fromTurn = toDiceNumber(turn.value?.diceValue)
+  if (fromTurn != null) return fromTurn
+  return lastDiceValue.value
+})
 
 const canReroll = computed(
   () =>
@@ -118,6 +152,7 @@ const canScanStation = computed(() => turn.value?.state === 'rolled')
 const diceTooltip = computed(() => {
   if (canReroll.value) return 'Re-roll (0-round)'
   if (canRollNext.value) return 'Roll dice'
+  if (turn.value?.state === 'completed') return 'Confirm turn, then roll dice'
   if (diceFace.value != null) return `Last roll: ${diceFace.value}`
   return 'Roll dice'
 })
@@ -137,11 +172,15 @@ const performanceText = computed(() => {
   return payload?.text ?? ''
 })
 
-const teamQrUrl = computed(() => {
-  if (!team.value?.teamQrPath) return ''
-  if (import.meta.client) return `${window.location.origin}${team.value.teamQrPath}`
-  return team.value.teamQrPath
-})
+const teamQrUrl = ref('')
+
+function refreshTeamQrUrl() {
+  const path = team.value?.teamQrPath
+  teamQrUrl.value = path ? `${window.location.origin}${path}` : ''
+}
+
+watch(() => team.value?.teamQrPath, refreshTeamQrUrl)
+onMounted(refreshTeamQrUrl)
 
 const now = ref(Date.now())
 onMounted(() => {
@@ -159,21 +198,17 @@ onMounted(() => {
   }
 })
 
-function hintUnlocked(level: number) {
-  const unlock = turn.value?.hintUnlockAt?.[level - 1]
-  if (!unlock) return false
-  return turn.value?.hintMode === 'reveal_all' || now.value >= unlock
-}
+const hintCosts = computed(() => edition.value?.config?.hintCosts)
 
-function hintVisible(level: number) {
-  return turn.value?.hintsUsed?.includes(level) || turn.value?.hintMode === 'reveal_all'
-}
+const {
+  hintVisible,
+} = useTurnHints(turn, hintCosts, now, {
+  hasMapImage: computed(() => Boolean(edition.value?.mapImageUrl)),
+})
 
-function formatCountdown(ms: number) {
-  const s = Math.max(0, Math.ceil((ms - now.value) / 1000))
-  const m = Math.floor(s / 60)
-  return `${m}:${String(s % 60).padStart(2, '0')}`
-}
+const showHintBar = computed(
+  () => turn.value?.state === 'rolled' && edition.value?.config?.hintCosts,
+)
 
 async function roll() {
   loading.value = true
@@ -196,9 +231,10 @@ async function roll() {
 
 async function useHint(level?: number, mode?: 'reveal_all') {
   if (mode === 'reveal_all') {
+    const cost = edition.value?.config?.hintCosts.revealAll ?? 50
     const ok = await pixelConfirm({
       title: 'Reveal all hints',
-      message: 'Reveal all hints now for −50 points?',
+      message: `Reveal all hints now for −${cost} points?`,
       confirmLabel: 'Reveal all',
       confirmVariant: 'danger',
     })
@@ -247,6 +283,45 @@ function onQrScanned(payload: { slug: string; token: string }) {
   scanSlug.value = payload.slug
   scanToken.value = payload.token
   scanStation()
+}
+
+async function simulateScan() {
+  loading.value = true
+  actionError.value = ''
+  try {
+    await api(`/api/dev/turns/${turn.value!.id}/simulate-scan`, { method: 'POST' })
+    showScanner.value = false
+    await refresh()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = err.data?.statusMessage ?? 'Simulate scan failed'
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function fillCorrectAnswer() {
+  const payload = (turn.value?.station as { taskPayload?: { answers?: string[] } } | null)?.taskPayload
+  const answer = payload?.answers?.[0]
+  if (answer) quizAnswer.value = answer
+}
+
+async function completePerformanceDev() {
+  loading.value = true
+  actionError.value = ''
+  try {
+    await api(`/api/dev/turns/${turn.value!.id}/complete-performance`, { method: 'POST' })
+    await refresh()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = err.data?.statusMessage ?? 'Complete performance failed'
+  }
+  finally {
+    loading.value = false
+  }
 }
 
 async function submitAnswer() {
@@ -393,8 +468,21 @@ onUnmounted(() => {
         :dice-tooltip="diceTooltip"
         :dice-interactive="diceInteractive"
         :dice-loading="loading"
+        :roll-prompt="canRollNext ? rollPromptPhrase : null"
         @dice-click="onDiceClick"
-      />
+      >
+        <template v-if="showHintBar && turn" #board-actions>
+          <PixelHintBar
+            :turn="turn"
+            :hint-costs="edition.config.hintCosts"
+            :has-map-image="Boolean(edition.mapImageUrl)"
+            :disabled="loading"
+            :now="now"
+            @show-now="(level: 1 | 2 | 3) => useHint(level)"
+            @show-all="useHint(undefined, 'reveal_all')"
+          />
+        </template>
+      </PixelGameBoard>
       <template #fallback>
         <div class="pixel-card min-h-[12rem] p-3" aria-hidden="true" />
       </template>
@@ -419,55 +507,17 @@ onUnmounted(() => {
         <p class="text-center text-xs opacity-70">Game status: {{ edition?.status }}</p>
       </section>
 
-      <section v-else-if="turn && turn.state === 'rolled'" class="space-y-4">
-        <div class="pixel-card p-4 text-center">
+      <section v-else-if="turn && turn.state === 'rolled'">
+        <div class="pixel-card space-y-2 p-4 text-center">
           <p class="pixel-body text-sm">
             Seeking field <strong>{{ turn.positionPending }}</strong> of {{ edition?.fieldCount }}
           </p>
-          <p class="pixel-body mt-2 text-sm">{{ turn.station?.hintVague }}</p>
-        </div>
-
-        <div class="pixel-card space-y-3 p-4">
-          <p class="pixel-title text-xs">Hints</p>
+          <p class="pixel-body text-sm">{{ turn.station?.hintVague }}</p>
           <p v-if="hintVisible(1)" class="pixel-body text-sm">{{ turn.station?.hintLevel1 }}</p>
           <p v-if="hintVisible(2)" class="pixel-body text-sm">{{ turn.station?.hintLevel2 }}</p>
           <p v-if="hintVisible(3)" class="pixel-body text-xs opacity-80">
             Map hint unlocked — see the festival map above.
           </p>
-          <p v-if="!hintUnlocked(1)" class="pixel-body text-xs opacity-70">
-            Hint 1 in {{ formatCountdown(turn.hintUnlockAt![0]!) }}
-          </p>
-          <p v-else-if="hintUnlocked(1) && !hintUnlocked(2)" class="pixel-body text-xs opacity-70">
-            Hint 2 in {{ formatCountdown(turn.hintUnlockAt![1]!) }}
-          </p>
-          <p v-else-if="hintUnlocked(2) && !hintUnlocked(3)" class="pixel-body text-xs opacity-70">
-            Hint 3 (map) in {{ formatCountdown(turn.hintUnlockAt![2]!) }}
-          </p>
-          <PixelButton v-if="!hintVisible(1) && hintUnlocked(1)" variant="secondary" :disabled="loading" @click="useHint(1)">
-            Hint 1 (−10 points)
-          </PixelButton>
-          <PixelButton v-if="!hintVisible(2) && hintUnlocked(2)" variant="secondary" :disabled="loading" @click="useHint(2)">
-            Hint 2 (−12 points)
-          </PixelButton>
-          <PixelButton
-            v-if="!hintVisible(3) && hintUnlocked(3) && edition?.mapImageUrl"
-            variant="secondary"
-            :disabled="loading"
-            @click="useHint(3)"
-          >
-            Map hint (−15 points)
-          </PixelButton>
-          <p v-else-if="!hintVisible(3) && hintUnlocked(3) && !edition?.mapImageUrl" class="pixel-body text-xs opacity-70">
-            Map hint unavailable — festival map not uploaded
-          </p>
-          <PixelButton
-            v-if="turn.canRevealAll && turn.hintMode !== 'reveal_all'"
-            variant="secondary"
-            :disabled="loading"
-            @click="useHint(undefined, 'reveal_all')"
-          >
-            REVEAL ALL HINTS (−50 points)
-          </PixelButton>
         </div>
 
       </section>
@@ -476,6 +526,14 @@ onUnmounted(() => {
         <p class="pixel-title text-xs">Quiz</p>
         <p class="pixel-body text-sm">{{ quizQuestion }}</p>
         <input v-model="quizAnswer" class="pixel-input w-full p-3">
+        <PixelButton
+          v-if="isDev"
+          variant="secondary"
+          :disabled="loading"
+          @click="fillCorrectAnswer"
+        >
+          Use correct answer (dev)
+        </PixelButton>
         <PixelButton :disabled="loading" @click="submitAnswer">Submit answer</PixelButton>
       </section>
 
@@ -483,6 +541,14 @@ onUnmounted(() => {
         <p class="pixel-title text-xs">Performance</p>
         <p class="pixel-body text-sm">{{ performanceText }}</p>
         <p class="pixel-body text-sm opacity-80">Waiting for crew…</p>
+        <PixelButton
+          v-if="isDev"
+          variant="secondary"
+          :disabled="loading"
+          @click="completePerformanceDev"
+        >
+          Complete performance (dev)
+        </PixelButton>
       </section>
 
       <section v-else-if="turn && turn.state === 'completed'" class="pixel-card space-y-4 p-4">
@@ -515,6 +581,15 @@ onUnmounted(() => {
         @scanned="onQrScanned"
         @close="showScanner = false"
       />
+      <PixelButton
+        v-if="isDev && canScanStation"
+        variant="secondary"
+        class="w-full"
+        :disabled="loading"
+        @click="simulateScan"
+      >
+        Simulate scan (dev)
+      </PixelButton>
     </PixelDialog>
 
     <PixelDialog :open="showTeamQr" title="Our Team QR" @close="showTeamQr = false">

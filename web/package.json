@@ -14,7 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node scripts/seed.mjs",
-    "db:reset": "node scripts/db-reset.mjs"
+    "db:reset": "node scripts/db-reset.mjs",
+    "admin:reset-password": "node scripts/admin-reset-password.mjs"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.3",

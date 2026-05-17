@@ -6,16 +6,20 @@ const props = defineProps<{
   panelClass?: string
 }>()
 const emit = defineEmits<{ close: [] }>()
+
+/** Teleport overlays are client-only; avoids SSR/client teleport hydration drift. */
+const mounted = ref(false)
+onMounted(() => {
+  mounted.value = true
+})
 </script>
 
 <template>
-  <Teleport to="body" :disabled="!open">
+  <Teleport v-if="mounted && open" to="body">
     <div
-      v-show="open"
       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      :aria-hidden="!open"
     >
       <div class="absolute inset-0 bg-black/50" aria-hidden="true" @click="emit('close')" />
       <div :class="['pixel-card relative w-full max-w-md p-4 space-y-4 z-10', props.panelClass]">
