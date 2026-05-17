@@ -39,6 +39,7 @@
 ## ⚠️ Breaking Changes
 
 - DB migration `0002_hint_points_deducted` — run `pnpm db:migrate` before deploy
+- DB migrations `0003` / `0004`: edition `slug` column and unique `(edition_id, station slug)` — run `pnpm db:migrate` before deploy
 
 ---
 *This file is automatically converted to release notes during production release.*

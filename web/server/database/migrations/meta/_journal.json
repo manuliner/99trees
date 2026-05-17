@@ -22,6 +22,20 @@
       "when": 1778931000000,
       "tag": "0002_hint_points_deducted",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778932752122,
+      "tag": "0003_graceful_ink",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778934000000,
+      "tag": "0004_edition_slug",
+      "breakpoints": true
     }
   ]
 }

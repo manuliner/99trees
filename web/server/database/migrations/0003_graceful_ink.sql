@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `stations_edition_slug` ON `stations` (`edition_id`,`slug`);

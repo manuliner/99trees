@@ -3,6 +3,7 @@ import { sqliteTable, text, integer, unique } from 'drizzle-orm/sqlite-core'
 export const editions = sqliteTable('editions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
   fieldCount: integer('field_count').notNull(),
   status: text('status').notNull().default('draft'), // draft | live | paused | ended
   configJson: text('config_json').notNull().default('{}'),
@@ -32,7 +33,10 @@ export const stations = sqliteTable(
     taskType: text('task_type').notNull().default('quiz'), // quiz | performance
     taskPayloadJson: text('task_payload_json').notNull().default('{}'),
   },
-  (t) => [unique('stations_edition_field').on(t.editionId, t.fieldNumber)],
+  (t) => [
+    unique('stations_edition_field').on(t.editionId, t.fieldNumber),
+    unique('stations_edition_slug').on(t.editionId, t.slug),
+  ],
 )
 
 export const teams = sqliteTable(
