@@ -11,5 +11,6 @@ web/server/database/db.sqlite
 .env.*
 !.env.example
 web/public/version.json
+docs/defrag-report.md
 web/server/database/uploads/editions/*
 !web/server/database/uploads/editions/.gitkeep

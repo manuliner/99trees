@@ -31,6 +31,7 @@
 - Rate limiting on rejoin, roll, turn actions, and leaderboard (in-memory middleware)
 - Structured JSON logging for roll, scan, and crew rating events
 - Map images stored beside SQLite and served via `/api/uploads/editions/…`
+- `.env.example` documents `web/.env` paths; release uses `.build-number`
 - `StationQrScanner` supports `mode="team"` for crew flows
 - Scoring: `hintsAlreadyDeducted` avoids double-charging hints at confirm (migration `0002`)
 
