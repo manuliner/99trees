@@ -5,8 +5,8 @@ alwaysApply: true
 # Project context — 99trees
 
 - **Commands & invariants:** [`AGENTS.md`](../../AGENTS.md)
-- **Architecture & API map:** [`ARCHITECTURE.md`](../../ARCHITECTURE.md)
-- **Area codemaps:** [`docs/AGENTS_ARCHITECTURE.md`](../../docs/AGENTS_ARCHITECTURE.md)
+- **Module map:** [`web/README.md`](../../web/README.md)
+- **Architecture & flows:** [`.vibe/docs/`](../../.vibe/docs/)
 - **Product spec (German):** [`docs/SCOPE.md`](../../docs/SCOPE.md)
 
 Web-specific UI rules: [`web.mdc`](web.mdc). Security/commits: [`core.mdc`](core.mdc).

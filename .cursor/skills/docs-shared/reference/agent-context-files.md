@@ -53,7 +53,9 @@ src/
   models/     # Data models and DB schema
   utils/      # Stateless helpers (no side effects)
 tests/        # Mirrors src/ structure
-docs/         # ADRs in docs/adr/, architecture in docs/ARCHITECTURE.md
+docs/         # ADRs in docs/adr/; product SCOPE (human)
+.vibe/docs/   # architecture.md, requirements.md, design.md (agent concepts)
+web/README.md # module index → per-folder READMEs
 ```
 
 Rules:

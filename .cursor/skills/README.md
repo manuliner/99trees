@@ -1,60 +1,57 @@
 # Reusable Skills
 
-These skills can be used in this project or copied to other projects.
+Scripts live at `.cursor/skills/{skill-name}/scripts/`. Run from project root.
 
-## Using in This Project
+## Doc skills (seven + release)
 
-Scripts are at `.cursor/skills/{skill-name}/scripts/`. Run from project root.
+| Skill | Where | Role |
+|-------|-------|------|
+| **docs-init** | Global `~/.cursor/skills/docs-init` | Bootstrap, legacy migration, vibe generation |
+| **docs-shared** | `.cursor/skills/docs-shared/` | SSOT principles (reference only) |
+| **docs-sync** | `.cursor/skills/docs-sync/` | Factual patches after code changes |
+| **docs-commit** | `.cursor/skills/docs-commit/` | Logical commits + changelog + doc gate |
+| **docs-update** | `.cursor/skills/docs-update/` | Regen `web/**/README.md` + traces |
+| **docs-concepts** | `.cursor/skills/docs-concepts/` | Regen `.vibe/docs/` from READMEs |
+| **docs-defrag** | `.cursor/skills/docs-defrag/` | Principles audit + verify scripts |
+| **release** | `.cursor/skills/release/` | Version tags and release notes |
 
-## Using in Other Projects
-
-### Option 1: Copy to Project
-
-Copy the skill folder(s) into your project's `.cursor/skills/`:
-
-```bash
-# From this repo
-cp -r .cursor/skills/release         /path/to/other-project/.cursor/skills/
-cp -r .cursor/skills/docs-commit-check /path/to/other-project/.cursor/skills/
-cp -r .cursor/skills/docs-bootstrap /path/to/other-project/.cursor/skills/
-cp -r .cursor/skills/docs-writer /path/to/other-project/.cursor/skills/
-```
-
-### Option 2: Personal Skills (All Projects)
-
-Copy to `~/.cursor/skills/` to use across all projects:
+**Install global docs-init (once):**
 
 ```bash
-cp -r .cursor/skills/release         ~/.cursor/skills/
-# etc.
+bash .cursor/skills/_vendor/docs-init/install.sh
 ```
 
-When using personal skills, replace `.cursor/skills/` with `~/.cursor/skills/` in script paths.
+**Former names:** `docs-writer` → docs-init, `docs-bootstrap` → docs-sync, `docs-commit-check` → docs-commit, `global-docs-init` → `_vendor/docs-init`
 
-## Prerequisites by Skill
+## Verify documentation layout
+
+```bash
+bash .cursor/skills/docs-shared/scripts/verify-docs.sh
+bash .cursor/skills/docs-defrag/scripts/verify-docs-principles.sh
+```
+
+## Copy skills to another project
+
+```bash
+cp -r .cursor/skills/{docs-shared,docs-sync,docs-commit,docs-update,docs-concepts,docs-defrag,release} /path/to/project/.cursor/skills/
+```
+
+Then run `bash .cursor/skills/_vendor/docs-init/install.sh` on your machine if global init is not installed.
+
+## Prerequisites
 
 | Skill | Requirements |
-|-------|--------------|
-| **release** | Node.js, pnpm, Git, GitHub Actions (test tags / v* tags) |
-| **docs-commit-check** | Changelog draft file (default: `change_notes.md`) + keep `AGENTS.md`/`ARCHITECTURE.md`/`docs/AGENTS_*.md` accurate |
-| **docs-bootstrap** | `AGENTS.md`, `ARCHITECTURE.md`, and `docs/AGENTS_*.md` present |
-| **docs-writer** | Use when generating/updating AI-optimized docs |
+|-------|----------------|
+| **release** | Node.js, pnpm, Git, GitHub Actions |
+| **docs-init** | Vendor install script; target repo with `web/` or detected app root |
+| **docs-sync** | Hybrid layout: `AGENTS.md`, `web/README.md`, `.vibe/docs/architecture.md` |
+| **docs-commit** | `change_notes.md` at repo root |
 
-## Project Conventions
+## Script paths
 
-Scripts expect these conventions (adapt if your project differs):
-
-- **Version:** `package.json` → `version` field
-- **Changelog draft:** `change_notes.md` in project root
-- **Release notes:** `docs/release-notes/RELEASE_NOTES_v{version}.md`
-- **Build number:** `.build-number` (JSON: version, buildNumber)
-- **Tags:** Test `test-*`, Production `v*.*.*`
-
-## Script Paths
-
-| Skill | Script | Command |
-|-------|--------|---------|
-| release (test) | release-test.sh | `bash .cursor/skills/release/scripts/release-test.sh` |
-| release (prod) | release-prod.sh | `bash .cursor/skills/release/scripts/release-prod.sh patch\|minor\|major` |
-| docs-commit-check | change-notes-template.sh | `bash .cursor/skills/docs-commit-check/scripts/change-notes-template.sh` |
-| docs-bootstrap | verify-docs.sh | `bash .cursor/skills/docs-bootstrap/scripts/verify-docs.sh` |
+| Skill | Script |
+|-------|--------|
+| release (test) | `bash .cursor/skills/release/scripts/release-test.sh` |
+| release (prod) | `bash .cursor/skills/release/scripts/release-prod.sh patch\|minor\|major` |
+| docs-commit | `bash .cursor/skills/docs-commit/scripts/change-notes-template.sh` |
+| verify docs | `bash .cursor/skills/docs-shared/scripts/verify-docs.sh` |

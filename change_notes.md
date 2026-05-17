@@ -31,9 +31,10 @@
 
 ## 📚 Documentation
 
-- Agent docs: `AGENTS.md`, `ARCHITECTURE.md`, `docs/AGENTS_*.md`, `docs/DEPLOY.md`, `docs/IMPLEMENTATION_STATUS.md`
+- Agent docs: hybrid layout (`AGENTS.md`, `web/README.md`, `.vibe/docs/`), unified doc skills
 - `docs/SCOPE.md`: repo status no longer “greenfield”
 - `.cursor/rules/main.mdc` points to project context files
+- Cursor doc skills: `docs-sync`, `docs-commit`, `docs-update`, `docs-concepts`, `docs-defrag`, vendor `docs-init`; `release` skill
 
 ## ⚠️ Breaking Changes
 
