@@ -18,6 +18,8 @@
 - Dev: simulate scan and auto-complete performance endpoints under `/api/dev/turns/…`
 - Play: `GameBoard` and `HintBar` turn hints; pixel confirm dialogs and pull-to-refresh
 - Admin UI split into accordion sections; crew staff approval list; edition layouts and `[edition]/*` pages
+- Play: expandable festival map with fullscreen pan/zoom; pixel-square `GameBoard` tiles and orthogonal track path
+- Play: hint tips dialog (close, Escape); auto-open tips after claiming a hint
 
 ## 🐛 Bug Fixes
 
@@ -43,6 +45,9 @@
 - Cursor doc skills: `docs-sync`, `docs-commit`, `docs-update`, `docs-concepts`, `docs-defrag`, vendor `docs-init`; `release` skill
 - Agent docs: hybrid layout (`AGENTS.md`, `web/README.md`, `.vibe/docs/`); removed `ARCHITECTURE.md` and `docs/AGENTS_*`
 - `docs/SCOPE.md`: edition URLs use `/{slug}/join` and `/{slug}/crew/login`
+- Vendor `docs-init` templates renamed to `skill.template.md` to avoid duplicate Cursor skill registration
+- `docs/SCOPE.md` and implementation status reference `GameBoard.vue` (not BirdBoard)
+- Module READMEs for `web/app/components/admin/` and `web/app/layouts/`
 
 ## ⚠️ Breaking Changes
 

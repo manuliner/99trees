@@ -167,7 +167,7 @@ function setNodeRef(field: number, el: Element | ComponentPublicInstance | null)
   else nodeRefs.value.delete(field)
 }
 
-/** Extra space below node circles for team name chips. */
+/** Extra space below field tiles for team name chips. */
 const VIEWPORT_EXTRA_Y = 28
 
 const fitScale = ref(1)
@@ -259,7 +259,7 @@ defineExpose({ scrollToFocus })
           }"
         >
         <svg
-          class="pointer-events-none absolute inset-0"
+          class="game-board-track pointer-events-none absolute inset-0"
           :width="layout.width"
           :height="layout.height"
           aria-hidden="true"
@@ -268,8 +268,10 @@ defineExpose({ scrollToFocus })
             :d="layout.pathD"
             fill="none"
             stroke="var(--pixel-board-path)"
-            stroke-width="3"
+            stroke-width="4"
             stroke-linecap="square"
+            stroke-linejoin="miter"
+            shape-rendering="crispEdges"
           />
         </svg>
 
@@ -294,26 +296,29 @@ defineExpose({ scrollToFocus })
             <component
               :is="isFieldInteractive(node.field) ? 'button' : 'div'"
               :type="isFieldInteractive(node.field) ? 'button' : undefined"
-              class="game-board-node__circle flex shrink-0 items-center justify-center rounded-full border-[3px] border-[var(--pixel-forest-dark)] text-[10px] font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
+              class="game-board-node__tile flex shrink-0 items-center justify-center"
               :class="[
-                compact ? 'h-9 w-9' : 'h-11 w-11',
+                compact ? 'game-board-node__tile--compact' : 'game-board-node__tile--play',
                 selectable
-                  ? `game-board-node__circle--${adminNodeState(node.field)}`
-                  : `game-board-node__circle--${nodeState(node.field)}`,
+                  ? `game-board-node__tile--${adminNodeState(node.field)}`
+                  : `game-board-node__tile--${nodeState(node.field)}`,
                 {
-                  'game-board-node__circle--focus':
+                  'game-board-node__tile--focus':
                     !selectable && node.field === focusField && nodeState(node.field) !== 'pending',
-                  'game-board-node__circle--pending-pulse':
+                  'game-board-node__tile--pending-blink':
                     !selectable && nodeState(node.field) === 'pending',
-                  'game-board-node__circle--selectable': isFieldInteractive(node.field),
-                  'game-board-node__circle--creatable': isFieldCreatable(node.field),
+                  'game-board-node__tile--selectable': isFieldInteractive(node.field),
+                  'game-board-node__tile--creatable': isFieldCreatable(node.field),
                 },
               ]"
               :disabled="selectable && !isFieldInteractive(node.field) ? true : undefined"
               @click="onNodeActivate(node.field)"
               @keydown="onNodeKeydown($event, node.field)"
             >
-              {{ node.field }}
+              <span
+                class="game-board-node__label"
+                :class="{ 'game-board-node__label--sm': node.field >= 10 }"
+              >{{ node.field }}</span>
             </component>
           </PixelTooltip>
 
@@ -324,7 +329,7 @@ defineExpose({ scrollToFocus })
             <span
               v-for="t in teamsByField.get(node.field)"
               :key="t.id"
-              class="truncate rounded border border-[var(--pixel-forest-dark)] px-1 text-[8px] leading-tight"
+              class="game-board-team-chip truncate px-1 text-[8px] leading-tight"
               :class="
                 t.id === myTeamId
                   ? 'game-board-team--you font-bold'
@@ -394,18 +399,62 @@ defineExpose({ scrollToFocus })
   max-height: 50vh;
 }
 
-.game-board-node__circle--configured {
+.game-board-canvas {
+  background: var(--pixel-cream);
+  outline: 2px solid var(--pixel-forest-dark);
+  outline-offset: -2px;
+}
+
+.game-board-track {
+  shape-rendering: crispEdges;
+}
+
+.game-board-node__tile {
+  border: var(--pixel-border) solid var(--pixel-forest-dark);
+  border-radius: 0;
+  box-shadow: var(--pixel-shadow);
+}
+
+.game-board-node__tile--play {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.game-board-node__tile--compact {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.game-board-node__label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.game-board-node__label--sm {
+  font-size: 7px;
+}
+
+.game-board-node__tile--compact .game-board-node__label {
+  font-size: 7px;
+}
+
+.game-board-node__tile--compact .game-board-node__label--sm {
+  font-size: 6px;
+}
+
+.game-board-node__tile--configured {
   background: var(--pixel-board-configured);
   color: var(--pixel-board-configured-text);
 }
 
-.game-board-node__circle--unconfigured {
+.game-board-node__tile--unconfigured {
   background: var(--pixel-board-unconfigured);
   color: var(--pixel-board-unconfigured-text);
   opacity: 0.75;
 }
 
-.game-board-node__circle--inactive {
+.game-board-node__tile--inactive {
   background: var(--pixel-board-future);
   color: var(--pixel-board-unconfigured-text);
   opacity: 0.6;
@@ -415,66 +464,81 @@ defineExpose({ scrollToFocus })
   display: inline-flex;
 }
 
-.game-board-node__circle--selectable {
+.game-board-node__tile--selectable {
   cursor: pointer;
 }
 
-.game-board-node__circle--selectable:hover {
+.game-board-node__tile--selectable:hover {
   box-shadow:
     0 0 0 2px var(--pixel-board-focus),
-    2px 2px 0 var(--pixel-forest-dark);
+    var(--pixel-shadow);
 }
 
-.game-board-node__circle--creatable {
+.game-board-node__tile--creatable {
   cursor: pointer;
   border-style: dashed;
 }
 
-button.game-board-node__circle {
+button.game-board-node__tile {
   padding: 0;
   font: inherit;
 }
 
-button.game-board-node__circle:disabled {
+button.game-board-node__tile:disabled {
   cursor: default;
 }
 
-.game-board-node__circle--start {
+.game-board-node__tile--start {
   background: var(--pixel-board-start);
   color: var(--pixel-forest-dark);
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.35),
+    var(--pixel-shadow);
 }
 
-.game-board-node__circle--pending {
+.game-board-node__tile--pending {
   background: var(--pixel-board-pending);
   color: var(--pixel-forest-dark);
 }
 
-.game-board-node__circle--pending-pulse {
-  animation: board-pending-pulse 1.2s ease-in-out infinite;
+.game-board-node__tile--pending-blink {
+  animation: board-pending-blink 1s steps(1, end) infinite;
   box-shadow:
     0 0 0 2px var(--pixel-board-focus),
-    2px 2px 0 var(--pixel-forest-dark);
+    var(--pixel-shadow);
 }
 
-.game-board-node__circle--goal {
+.game-board-node__tile--goal {
   background: var(--pixel-board-goal);
   color: var(--pixel-forest-dark);
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.3),
+    var(--pixel-shadow);
 }
 
-.game-board-node__circle--completed {
+.game-board-node__tile--completed {
   background: var(--pixel-board-done);
   color: var(--pixel-board-done-text);
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.25),
+    var(--pixel-shadow);
 }
 
-.game-board-node__circle--future {
+.game-board-node__tile--future {
   background: var(--pixel-board-future);
   color: var(--pixel-board-future-text);
 }
 
-.game-board-node__circle--focus {
+.game-board-node__tile--focus {
   box-shadow:
     0 0 0 2px var(--pixel-board-focus),
-    2px 2px 0 var(--pixel-forest-dark);
+    var(--pixel-shadow);
+}
+
+.game-board-team-chip {
+  border: 2px solid var(--pixel-forest-dark);
+  border-radius: 0;
+  box-shadow: 2px 2px 0 var(--pixel-forest-dark);
 }
 
 .game-board-team--you {
@@ -486,13 +550,14 @@ button.game-board-node__circle:disabled {
   opacity: 0.95;
 }
 
-@keyframes board-pending-pulse {
+@keyframes board-pending-blink {
   0%,
-  100% {
-    transform: scale(1);
+  49% {
+    opacity: 1;
   }
-  50% {
-    transform: scale(1.06);
+  50%,
+  100% {
+    opacity: 0.55;
   }
 }
 </style>

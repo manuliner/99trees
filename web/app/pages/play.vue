@@ -17,6 +17,7 @@ const showTeamQr = ref(false)
 const showLeaderboard = ref(false)
 const showRules = ref(false)
 const showConfirmBreakdown = ref(false)
+const showFestivalMapFullscreen = ref(false)
 const lastConfirmBreakdown = ref<{ scoreDelta: number } | null>(null)
 
 const { data: me, refresh, error: meError } = await useFetch('/api/me', {
@@ -82,7 +83,8 @@ usePullToRefreshDisabled(
       || showTeamQr.value
       || showLeaderboard.value
       || showRules.value
-      || showConfirmBreakdown.value,
+      || showConfirmBreakdown.value
+      || showFestivalMapFullscreen.value,
   ),
 )
 
@@ -210,6 +212,8 @@ const showHintBar = computed(
   () => turn.value?.state === 'rolled' && edition.value?.config?.hintCosts,
 )
 
+const hintBarRef = ref<{ showTipsPopover: () => void } | null>(null)
+
 async function roll() {
   loading.value = true
   actionError.value = ''
@@ -249,6 +253,7 @@ async function useHint(level?: number, mode?: 'reveal_all') {
     })
     if (res.pointCostPreview) showScore(-res.pointCostPreview)
     await refresh()
+    hintBarRef.value?.showTipsPopover()
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }
@@ -473,6 +478,7 @@ onUnmounted(() => {
       >
         <template v-if="showHintBar && turn" #board-actions>
           <PixelHintBar
+            ref="hintBarRef"
             :turn="turn"
             :hint-costs="edition.config.hintCosts"
             :has-map-image="Boolean(edition.mapImageUrl)"
@@ -491,8 +497,16 @@ onUnmounted(() => {
     <section v-if="edition" class="pixel-card space-y-2 p-3">
       <p class="pixel-title text-xs text-center">Festival map</p>
       <PixelFestivalMap
+        expandable
         :map-image-url="edition.mapImageUrl ?? null"
         :pins="mapPins"
+        @expand="showFestivalMapFullscreen = true"
+      />
+      <PixelFestivalMapFullscreen
+        :open="showFestivalMapFullscreen"
+        :map-image-url="edition.mapImageUrl ?? null"
+        :pins="mapPins"
+        @close="showFestivalMapFullscreen = false"
       />
     </section>
 
@@ -592,7 +606,7 @@ onUnmounted(() => {
       </PixelButton>
     </PixelDialog>
 
-    <PixelDialog :open="showTeamQr" title="Our Team QR" @close="showTeamQr = false">
+    <PixelDialog :open="showTeamQr" title="Your Team QR" @close="showTeamQr = false">
       <p class="pixel-body text-center text-sm">{{ team?.name }}</p>
       <img
         v-if="teamQrUrl"

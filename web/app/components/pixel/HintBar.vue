@@ -27,7 +27,6 @@ const {
   showNowVisible,
   showAllVisible,
   showNowPenalty,
-  showAllPenalty,
   revealedHintsTooltip,
   revealedHintSections,
   revealedHintCount,
@@ -40,10 +39,18 @@ const badgeDigit = computed((): 1 | 2 | 3 | null => {
   return null
 })
 
+const tipsTooltipRef = ref<{ show: () => void } | null>(null)
+
 function onShowNow() {
   const level = nextClaimableLevel.value
   if (level != null) emit('showNow', level)
 }
+
+function showTipsPopover() {
+  nextTick(() => tipsTooltipRef.value?.show())
+}
+
+defineExpose({ showTipsPopover })
 </script>
 
 <template>
@@ -54,6 +61,7 @@ function onShowNow() {
   >
     <div class="hint-bar__lead">
       <PixelTooltip
+        ref="tipsTooltipRef"
         :text="revealedHintsTooltip"
         :sections="revealedHintSections"
         :gap="8"
@@ -108,13 +116,8 @@ function onShowNow() {
       </button>
     </PixelTooltip>
 
-    <PixelTooltip
-      v-if="showAllVisible"
-      :text="showAllPenalty"
-      :gap="6"
-      toggle-on-click
-    >
       <button
+        v-if="showAllVisible"
         type="button"
         class="hint-bar__action"
         :disabled="disabled"
@@ -123,7 +126,6 @@ function onShowNow() {
         <span class="hint-bar__action-long">Reveal all</span>
         <span class="hint-bar__action-short">All</span>
       </button>
-    </PixelTooltip>
     </div>
   </div>
 </template>

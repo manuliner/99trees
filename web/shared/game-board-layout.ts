@@ -24,6 +24,24 @@ function cellStep(): number {
   return GAME_BOARD_NODE_SIZE + GAME_BOARD_GAP
 }
 
+/** Axis-aligned track between node centers (horizontal, then vertical). */
+export function buildOrthogonalPathD(nodes: BoardNode[]): string {
+  if (nodes.length === 0) return ''
+  const first = nodes[0]!
+  let d = `M ${first.x} ${first.y}`
+  for (let i = 1; i < nodes.length; i++) {
+    const prev = nodes[i - 1]!
+    const curr = nodes[i]!
+    if (prev.x !== curr.x) {
+      d += ` L ${curr.x} ${prev.y}`
+    }
+    if (prev.y !== curr.y) {
+      d += ` L ${curr.x} ${curr.y}`
+    }
+  }
+  return d
+}
+
 /** Fields 0…fieldCount inclusive (start + N stations). */
 export function computeGameBoardLayout(
   fieldCount: number,
@@ -53,9 +71,7 @@ export function computeGameBoardLayout(
   const height =
     GAME_BOARD_PADDING * 2 + (totalRows - 1) * step + GAME_BOARD_NODE_SIZE
 
-  const pathD = nodes
-    .map((n, idx) => `${idx === 0 ? 'M' : 'L'} ${n.x} ${n.y}`)
-    .join(' ')
+  const pathD = buildOrthogonalPathD(nodes)
 
   return { nodes, width, height, pathD }
 }

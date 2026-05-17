@@ -91,11 +91,34 @@ function onTriggerClick() {
   }
 }
 
+function onMouseLeave() {
+  if (!props.hints) hide()
+}
+
 function onFocusOut(event: FocusEvent) {
+  if (props.hints) return
   const next = event.relatedTarget
   if (next instanceof Node && triggerRef.value?.contains(next)) return
   hide()
 }
+
+function onDocumentKeydown(event: KeyboardEvent) {
+  if (props.hints && visible.value && event.key === 'Escape') hide()
+}
+
+watch(visible, (isVisible) => {
+  if (!import.meta.client) return
+  if (props.hints && isVisible) {
+    document.addEventListener('keydown', onDocumentKeydown)
+  }
+  else {
+    document.removeEventListener('keydown', onDocumentKeydown)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onDocumentKeydown)
+})
 
 watchEffect(() => {
   if (!visible.value) return
@@ -109,6 +132,8 @@ watchEffect(() => {
 onMounted(() => {
   mounted.value = true
 })
+
+defineExpose({ show, hide })
 </script>
 
 <template>
@@ -116,7 +141,7 @@ onMounted(() => {
     ref="triggerRef"
     class="pixel-tooltip-trigger inline-flex"
     @mouseenter="show"
-    @mouseleave="hide"
+    @mouseleave="onMouseLeave"
     @focusin="show"
     @focusout="onFocusOut"
     @click="onTriggerClick"
@@ -124,8 +149,15 @@ onMounted(() => {
     <slot />
     <Teleport v-if="mounted && visible && hasContent" to="body">
       <div
+        v-if="hints"
+        class="pixel-tooltip-backdrop fixed inset-0 z-[44]"
+        aria-hidden="true"
+        @click="hide"
+      />
+      <div
         ref="tooltipRef"
-        role="tooltip"
+        :role="hints ? 'dialog' : 'tooltip'"
+        :aria-modal="hints ? true : undefined"
         class="pixel-tooltip pixel-body fixed z-[45] opacity-100"
         :class="{
           'pixel-tooltip--station': taskType,
@@ -133,7 +165,17 @@ onMounted(() => {
           'pixel-tooltip--hints': hints,
         }"
         :style="tooltipStyle"
+        @click.stop
       >
+        <button
+          v-if="hints"
+          type="button"
+          class="pixel-tooltip__close"
+          aria-label="Close tips"
+          @click="hide"
+        >
+          ×
+        </button>
         <span v-if="taskType" class="pixel-tooltip__kind">
           <svg
             v-if="taskType === 'quiz'"
