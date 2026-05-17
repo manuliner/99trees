@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "code-index": {
+      "command": "uvx",
+      "args": [
+        "code-index-mcp",
+        "--project-path",
+        "/Users/manuel.huettel/Repos/privat/99trees"
+      ]
+    }
+  }
+}
