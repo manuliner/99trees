@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import type { AdminTeamListItem, TurnState } from '#shared/types'
 import { getDb } from '../utils/db'
-import { editions, stations, teams, turns } from '../database/schema'
+import { editions, tasks, teams, turns } from '../database/schema'
 
 const OPEN_TURN_STATES = ['rolled', 'scanned', 'awaiting_crew', 'completed'] as const
 
@@ -36,10 +36,10 @@ export async function listAdminTeams(editionId: number): Promise<AdminTeamListIt
       teamId: turns.teamId,
       state: turns.state,
       positionPending: turns.positionPending,
-      fieldNumber: stations.fieldNumber,
+      fieldNumber: tasks.fieldNumber,
     })
     .from(turns)
-    .leftJoin(stations, eq(turns.stationId, stations.id))
+    .leftJoin(tasks, eq(turns.taskId, tasks.id))
     .where(
       and(
         inArray(turns.teamId, teamIds),

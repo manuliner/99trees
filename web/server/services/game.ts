@@ -1,14 +1,16 @@
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import { parseEditionSlug } from '#shared/edition-urls'
+import { parseHintColumn } from '../utils/admin-task'
 import { getDb } from '../utils/db'
-import { editions, stations, teams, turns } from '../database/schema'
+import { editions, tasks, teams, turns } from '../database/schema'
 import { parseEditionConfig } from '../utils/edition-config'
 import {
   parseCompletedFields,
   serializeCompletedFields,
 } from '../utils/team-session'
-import { calculateTurnScore } from '#shared/scoring'
+import { calculateTurnScoreBreakdown, type TurnScoreInput } from '#shared/scoring'
 import { teamQrPath } from '#shared/edition-urls'
+import { activityPayloadForTeam, parseActivityPayload } from '#shared/quiz-payload'
 import type { EditionConfig, TurnState } from '#shared/types'
 import { assertEditionLive } from '../utils/edition-live'
 
@@ -84,15 +86,18 @@ export function resolvePendingPosition(
   return Math.min(pos, fieldCount)
 }
 
-export async function getStationForField(editionId: number, fieldNumber: number) {
+export async function getTaskForField(editionId: number, fieldNumber: number) {
   const db = getDb()
   const rows = await db
     .select()
-    .from(stations)
-    .where(and(eq(stations.editionId, editionId), eq(stations.fieldNumber, fieldNumber)))
+    .from(tasks)
+    .where(and(eq(tasks.editionId, editionId), eq(tasks.fieldNumber, fieldNumber)))
     .limit(1)
   return rows[0] ?? null
 }
+
+/** @deprecated Use getTaskForField */
+export const getStationForField = getTaskForField
 
 export async function deductHintCost(teamId: number, turnId: number, newTotalHintCost: number) {
   const db = getDb()
@@ -139,10 +144,10 @@ export async function buildMePayload(teamId: number) {
   let turnPayload = null
   if (openTurn) {
     const hintsUsed = parseHintsUsed(openTurn.hintsUsedJson)
-    const station =
-      openTurn.stationId != null
-        ? (await db.select().from(stations).where(eq(stations.id, openTurn.stationId)).limit(1))[0]
-        : await getStationForField(edition.id, openTurn.positionPending)
+    const task =
+      openTurn.taskId != null
+        ? (await db.select().from(tasks).where(eq(tasks.id, openTurn.taskId)).limit(1))[0]
+        : await getTaskForField(edition.id, openTurn.positionPending)
 
     const now = Date.now()
     const rolledAt = openTurn.rolledAt?.getTime() ?? now
@@ -158,16 +163,18 @@ export async function buildMePayload(teamId: number) {
       hintUnlockAt,
       canRevealAll: openTurn.state === 'rolled',
       canRollAgain: false,
-      station: station
+      task: task
         ? {
-            fieldNumber: station.fieldNumber,
-            hintVague: station.hintVague,
-            hintLevel1: station.hintLevel1,
-            hintLevel2: station.hintLevel2,
-            mapX: station.mapX,
-            mapY: station.mapY,
-            taskType: station.taskType,
-            taskPayload: JSON.parse(station.taskPayloadJson),
+            fieldNumber: task.fieldNumber,
+            hintVague: parseHintColumn(task.hintVague),
+            hintLevel1: parseHintColumn(task.hintLevel1),
+            hintLevel2: parseHintColumn(task.hintLevel2),
+            mapX: task.mapX,
+            mapY: task.mapY,
+            activityType: task.activityType,
+            activityPayload: activityPayloadForTeam(
+              parseActivityPayload(JSON.parse(task.activityPayloadJson)),
+            ),
           }
         : null,
     }
@@ -183,40 +190,40 @@ export async function buildMePayload(teamId: number) {
   const mapPins: { fieldNumber: number; mapX: number; mapY: number; kind: 'visited' | 'target' }[] = []
 
   if (completedFields.length > 0) {
-    const visitedStations = await db
+    const visitedTasks = await db
       .select({
-        fieldNumber: stations.fieldNumber,
-        mapX: stations.mapX,
-        mapY: stations.mapY,
+        fieldNumber: tasks.fieldNumber,
+        mapX: tasks.mapX,
+        mapY: tasks.mapY,
       })
-      .from(stations)
+      .from(tasks)
       .where(
         and(
-          eq(stations.editionId, edition.id),
-          inArray(stations.fieldNumber, completedFields),
+          eq(tasks.editionId, edition.id),
+          inArray(tasks.fieldNumber, completedFields),
         ),
       )
-    for (const s of visitedStations) {
+    for (const t of visitedTasks) {
       mapPins.push({
-        fieldNumber: s.fieldNumber,
-        mapX: s.mapX,
-        mapY: s.mapY,
+        fieldNumber: t.fieldNumber,
+        mapX: t.mapX,
+        mapY: t.mapY,
         kind: 'visited',
       })
     }
   }
 
-  if (openTurn?.state === 'rolled' && turnPayload?.station) {
+  if (openTurn?.state === 'rolled' && turnPayload?.task) {
     const hintsUsed = parseHintsUsed(openTurn.hintsUsedJson)
     const hint3Visible =
       hintsUsed.includes(3) || openTurn.hintMode === 'reveal_all'
     if (hint3Visible) {
-      const st = turnPayload.station
-      if (!mapPins.some((p) => p.fieldNumber === st.fieldNumber && p.kind === 'target')) {
+      const tk = turnPayload.task
+      if (!mapPins.some((p) => p.fieldNumber === tk.fieldNumber && p.kind === 'target')) {
         mapPins.push({
-          fieldNumber: st.fieldNumber,
-          mapX: st.mapX,
-          mapY: st.mapY,
+          fieldNumber: tk.fieldNumber,
+          mapX: tk.mapX,
+          mapY: tk.mapY,
           kind: 'target',
         })
       }
@@ -249,6 +256,54 @@ export async function buildMePayload(teamId: number) {
   }
 }
 
+function buildTurnScoreInput(
+  turn: {
+    hintMode: string | null
+    hintsUsedJson: string
+    quizWrongAttempts: number
+    bonusPoints: number
+    scannedAt: Date | null
+    hintPointsDeducted: number
+  },
+  config: EditionConfig,
+  confirmedAtMs: number,
+): TurnScoreInput {
+  return {
+    config,
+    hintMode: (turn.hintMode as 'wait' | 'reveal_all') ?? null,
+    hintsUsedLevels: parseHintsUsed(turn.hintsUsedJson),
+    quizWrongAttempts: turn.quizWrongAttempts,
+    bonusPoints: turn.bonusPoints,
+    scannedAtMs: turn.scannedAt?.getTime() ?? null,
+    confirmedAtMs: confirmedAtMs,
+    hintsAlreadyDeducted: turn.hintPointsDeducted ?? 0,
+  }
+}
+
+export async function getTurnScoreSummary(teamId: number, turnId: number) {
+  const db = getDb()
+  const team = (await db.select().from(teams).where(eq(teams.id, teamId)).limit(1))[0]
+  if (!team) throw createError({ statusCode: 404, statusMessage: 'Team not found' })
+
+  const turn = (await db.select().from(turns).where(eq(turns.id, turnId)).limit(1))[0]
+  if (!turn || turn.teamId !== teamId) throw createError({ statusCode: 404, statusMessage: 'Turn not found' })
+  if (!turn.confirmedAt) {
+    throw createError({ statusCode: 400, statusMessage: 'Turn not confirmed yet' })
+  }
+
+  const edition = await getEditionOrThrow(team.editionId)
+  const config = parseEditionConfig(edition.configJson)
+  const breakdown = calculateTurnScoreBreakdown(
+    buildTurnScoreInput(turn, config, turn.confirmedAt.getTime()),
+  )
+
+  return {
+    breakdown,
+    newScore: team.scoreTotal,
+    scoreDelta: turn.scoreDelta ?? breakdown.total,
+  }
+}
+
 export async function confirmTurn(teamId: number, turnId: number) {
   const db = getDb()
   const team = (await db.select().from(teams).where(eq(teams.id, teamId)).limit(1))[0]
@@ -264,19 +319,11 @@ export async function confirmTurn(teamId: number, turnId: number) {
   assertEditionLive(edition.status, 'confirm turn')
   const config = parseEditionConfig(edition.configJson)
   const confirmedAt = new Date()
-  const scannedAt = turn.scannedAt?.getTime() ?? null
-  const hintsUsed = parseHintsUsed(turn.hintsUsedJson)
 
-  const scoreDelta = calculateTurnScore({
-    config,
-    hintMode: (turn.hintMode as 'wait' | 'reveal_all') ?? null,
-    hintsUsedLevels: hintsUsed,
-    quizWrongAttempts: turn.quizWrongAttempts,
-    bonusPoints: turn.bonusPoints,
-    scannedAtMs: scannedAt,
-    confirmedAtMs: confirmedAt.getTime(),
-    hintsAlreadyDeducted: turn.hintPointsDeducted ?? 0,
-  })
+  const breakdown = calculateTurnScoreBreakdown(
+    buildTurnScoreInput(turn, config, confirmedAt.getTime()),
+  )
+  const scoreDelta = breakdown.total
 
   const newPosition = turn.positionPending
   const completed = parseCompletedFields(team.completedFieldsJson)
@@ -301,5 +348,5 @@ export async function confirmTurn(teamId: number, turnId: number) {
     })
     .where(eq(teams.id, teamId))
 
-  return { scoreDelta, newPosition, newScore, reachedGoal }
+  return { scoreDelta, breakdown, newPosition, newScore, reachedGoal }
 }

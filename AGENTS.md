@@ -30,7 +30,8 @@ Never commit `.env` or expose secrets in `web/app/`.
 
 ```
 web/
-  app/           # Nuxt pages, pixel UI, composables (English copy)
+  app/           # Nuxt pages, pixel UI, composables
+  i18n/locales/  # Player UI strings (de default, en) — @nuxtjs/i18n
   server/api/    # Nitro REST — thin handlers
   server/services/  # game.ts, crew.ts — domain orchestration
   server/database/  # Drizzle schema + migrations
@@ -48,7 +49,7 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 - **API client:** `useGameApi()` → `$fetch` with `credentials: 'include'`.
 - **State:** Server owns turns/positions/points; UI polls/refreshes `GET /api/me`.
 - **Scoring:** Change `web/shared/scoring.ts` only — handlers call `calculateTurnScore`.
-- **UI language:** English only (MVP); product spec in `docs/SCOPE.md` is German.
+- **UI language:** Player flows (join, rejoin, play, rules, privacy) — **DE default / EN** via `@nuxtjs/i18n` (`web/i18n/locales/`, `layouts/player.vue` switcher). Admin and crew stay English. **Task content** (quiz, hints, performance text) is **bilingual edition data** (`de`/`en` per field in import/DB); player UI resolves by active locale. Product spec in `docs/SCOPE.md` is German.
 - **Styling:** Pixel tokens in `app/assets/css/pixel-theme.css`; components in `app/components/pixel/`.
 
 ## Invariants
@@ -76,7 +77,7 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 - Migrations run on Nitro boot (`server/plugins/00-database-migration.ts`) — restart dev after schema changes.
 - Performance tasks auto-complete after `performanceTimeoutMinutes` (`server/plugins/01-performance-timeout.ts`).
 - `pnpm db:seed` reads `web/data/demo-stations.json`; import API for admin is YAML-shaped JSON.
-- iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`StationQrScanner.vue`).
+- iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`TaskQrScanner.vue`).
 - Rejoin invalidates prior team session token (single active device per team).
 
 ## Doc index
@@ -87,7 +88,7 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 | Module map (where is X?) | [`web/README.md`](web/README.md) → per-folder README |
 | Architecture, flows, design | [`.vibe/docs/`](.vibe/docs/) (`architecture.md`, `play-flow.md`, …) |
 | Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) |
-| Deploy, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| Deploy, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md), operator runbook [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Implementation checklist | [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) |
 
 **Maintain docs:** `docs-sync` (factual patches), `docs-update` (module README regen), `docs-concepts` (vibe regen), `docs-defrag` (audit). Verify: `bash .cursor/skills/docs-shared/scripts/verify-docs.sh`

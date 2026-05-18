@@ -15,8 +15,8 @@ export const editions = sqliteTable('editions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const stations = sqliteTable(
-  'stations',
+export const tasks = sqliteTable(
+  'tasks',
   {
     id: integer('id').primaryKey({ autoIncrement: true }),
     editionId: integer('edition_id')
@@ -30,12 +30,12 @@ export const stations = sqliteTable(
     mapX: integer('map_x').notNull(),
     mapY: integer('map_y').notNull(),
     qrToken: text('qr_token').notNull(),
-    taskType: text('task_type').notNull().default('quiz'), // quiz | performance
-    taskPayloadJson: text('task_payload_json').notNull().default('{}'),
+    activityType: text('activity_type').notNull().default('quiz'), // quiz | performance
+    activityPayloadJson: text('activity_payload_json').notNull().default('{}'),
   },
   (t) => [
-    unique('stations_edition_field').on(t.editionId, t.fieldNumber),
-    unique('stations_edition_slug').on(t.editionId, t.slug),
+    unique('tasks_edition_field').on(t.editionId, t.fieldNumber),
+    unique('tasks_edition_slug').on(t.editionId, t.slug),
   ],
 )
 
@@ -76,7 +76,7 @@ export const turns = sqliteTable('turns', {
   bonusPoints: integer('bonus_points').notNull().default(0),
   hintPointsDeducted: integer('hint_points_deducted').notNull().default(0),
   scoreDelta: integer('score_delta'),
-  stationId: integer('station_id').references(() => stations.id),
+  taskId: integer('task_id').references(() => tasks.id),
   rolledAt: integer('rolled_at', { mode: 'timestamp' }),
   scannedAt: integer('scanned_at', { mode: 'timestamp' }),
   completedAt: integer('completed_at', { mode: 'timestamp' }),

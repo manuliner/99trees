@@ -1,8 +1,8 @@
 import { asc, eq } from 'drizzle-orm'
 import { getDb } from '../../../../../utils/db'
-import { editions, stations } from '../../../../../database/schema'
+import { editions, tasks } from '../../../../../database/schema'
 import { requireAdmin } from '../../../../../utils/admin-session'
-import { stationRowToAdminStation } from '../../../../../utils/admin-station'
+import { taskRowToAdminTask } from '../../../../../utils/admin-task'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
 
   const rows = await db
     .select()
-    .from(stations)
-    .where(eq(stations.editionId, editionId))
-    .orderBy(asc(stations.fieldNumber))
+    .from(tasks)
+    .where(eq(tasks.editionId, editionId))
+    .orderBy(asc(tasks.fieldNumber))
 
-  return { stations: rows.map(stationRowToAdminStation) }
+  return { tasks: rows.map(taskRowToAdminTask) }
 })

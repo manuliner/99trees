@@ -6,6 +6,11 @@ import { randomBytes } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  buildActivityPayload,
+  resolveHintLevels,
+  serializeLocalizedString,
+} from './seed-task-i18n.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const webRoot = resolve(__dirname, '..')
@@ -13,7 +18,8 @@ const dbPath = process.env.NUXT_SQLITE_DATABASE_PATH
   ? resolve(process.env.NUXT_SQLITE_DATABASE_PATH)
   : join(webRoot, 'server/database/db.sqlite')
 const migrationsFolder = join(webRoot, 'server/database/migrations')
-const demoStationsPath = join(webRoot, 'data/demo-stations.json')
+const demoTasksPath = join(webRoot, 'data/demo-tasks.json')
+const demoLegacyPath = join(webRoot, 'data/demo-stations.json')
 const festivalMapSource = join(webRoot, 'data/festival-map.png')
 
 mkdirSync(dirname(dbPath), { recursive: true })
@@ -33,14 +39,16 @@ const DEFAULT_CONFIG = {
   performanceTimeoutMinutes: 10,
 }
 
-const demo = JSON.parse(readFileSync(demoStationsPath, 'utf8'))
-const fieldCount = Math.max(...demo.stations.map((s) => s.field))
+const demoPath = existsSync(demoTasksPath) ? demoTasksPath : demoLegacyPath
+const demo = JSON.parse(readFileSync(demoPath, 'utf8'))
+const items = demo.tasks ?? demo.stations ?? []
+const fieldCount = Math.max(...items.map((s) => s.field))
 const now = Date.now()
 
 client.exec('DELETE FROM crew_ratings')
 client.exec('DELETE FROM turns')
 client.exec('DELETE FROM teams')
-client.exec('DELETE FROM stations')
+client.exec('DELETE FROM tasks')
 client.exec('DELETE FROM editions')
 
 const crewHash = await bcrypt.hash('crew1234', 10)
@@ -68,41 +76,38 @@ else {
   console.warn('No web/data/festival-map.png — upload map in admin before going live')
 }
 
-const insertStation = client.prepare(
-  `INSERT INTO stations (
+const insertTask = client.prepare(
+  `INSERT INTO tasks (
     edition_id, field_number, slug, hint_vague, hint_level_1, hint_level_2,
-    map_x, map_y, qr_token, task_type, task_payload_json
+    map_x, map_y, qr_token, activity_type, activity_payload_json
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 )
 
-for (const s of demo.stations) {
+for (const s of items) {
   const token = randomBytes(8).toString('hex')
-  const task =
-    s.task.type === 'performance'
-      ? { type: 'performance', text: s.task.text ?? '' }
-      : {
-          type: 'quiz',
-          question: s.task.question ?? '',
-          answers: s.task.answers ?? [],
-        }
+  const activityRaw = s.activity ?? s.task
+  const activity = buildActivityPayload(activityRaw)
+  const hints = resolveHintLevels(s)
 
-  insertStation.run(
+  insertTask.run(
     editionId,
     s.field,
     s.slug,
-    s.hint_vague,
-    s.hint_level_1 ?? s.hint_vague,
-    s.hint_level_2 ?? s.hint_level_1 ?? s.hint_vague,
+    serializeLocalizedString(hints.hintVague),
+    serializeLocalizedString(hints.hintLevel1),
+    serializeLocalizedString(hints.hintLevel2),
     s.map?.x ?? s.field * 2,
     s.map?.y ?? 50,
     token,
-    task.type,
-    JSON.stringify(task),
+    activity.type,
+    JSON.stringify(activity),
   )
   const answers =
-    task.type === 'quiz' ? task.answers.join(', ') : '(performance — crew rates)'
-  const stationUrl = `/s/${encodeURIComponent(s.slug)}?t=${token}`
-  console.log(`Station ${s.field}: ${stationUrl}  (${answers})`)
+    activity.type === 'quiz'
+      ? `${activity.answers.de.join(', ')} / ${activity.answers.en.join(', ')}`
+      : '(performance — crew rates)'
+  const taskUrl = `/s/${encodeURIComponent(s.slug)}?t=${token}`
+  console.log(`Task ${s.field}: ${taskUrl}  (${answers})`)
 }
 
 client.close()

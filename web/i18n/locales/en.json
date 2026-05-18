@@ -1,0 +1,225 @@
+{
+  "common": {
+    "loadingEvent": "Loading event…",
+    "back": "Back",
+    "you": "You",
+    "pts": "pts",
+    "continue": "Continue",
+    "rules": "Rules",
+    "privacy": "Privacy",
+    "teamQr": "Team QR",
+    "teamQrAlt": "Team QR",
+    "pointsPenalty": "−{n} pts"
+  },
+  "language": {
+    "switcherLabel": "Language",
+    "de": "DE",
+    "en": "EN"
+  },
+  "join": {
+    "teamName": "Team name",
+    "teamNamePlaceholder": "3–32 characters",
+    "pin4": "4-digit PIN",
+    "confirmPin": "Confirm PIN",
+    "creatingTeam": "Creating team…",
+    "startGame": "Start game",
+    "findYourTeam": "Find your team",
+    "sessionMismatchBefore": "You are signed in to a different event. Use",
+    "sessionMismatchRejoin": "Find your team",
+    "sessionMismatchMiddle": "for this festival, or continue your current game on",
+    "sessionMismatchBoard": "the board",
+    "navAria": "Join page links",
+    "errors": {
+      "pinLength": "PIN must be 4 digits",
+      "pinMismatch": "PINs do not match",
+      "createFailed": "Could not create team"
+    }
+  },
+  "rejoin": {
+    "teamName": "Team name",
+    "teamNamePlaceholder": "3–32 characters",
+    "pin": "PIN",
+    "signingIn": "Signing in…",
+    "continue": "Continue",
+    "newTeam": "New team",
+    "navAria": "Rejoin page links",
+    "errors": {
+      "pinLength": "PIN must be 4 digits",
+      "rejoinFailed": "Could not rejoin"
+    }
+  },
+  "hero": {
+    "joinTagline": "Roll the dice, scan the stations, race your flock to the goal.",
+    "rejoinTagline": "Pick up where you left off — same team, same trail."
+  },
+  "teamName": {
+    "tooShort": "Team name must be at least {min} characters",
+    "tooLong": "Team name must be at most {max} characters"
+  },
+  "editionStatus": {
+    "draft": "The game has not started yet. Check back when the festival opens.",
+    "paused": "The game is paused. New teams cannot join right now.",
+    "ended": "This festival game has ended. New teams cannot join.",
+    "unknown": "Registration is not open ({status})."
+  },
+  "play": {
+    "score": "Score: {n}",
+    "menu": "Menu",
+    "step1": "Step 1 of 3 — Roll dice",
+    "step2": "Step 2 of 3 — Find the QR code",
+    "step3": "Step 3 of 3 — Complete the task",
+    "reachedGoal": "You reached the goal!",
+    "gameStatus": "Game status: {status}",
+    "findSpot": "Find the next QR Code",
+    "scanQr": "Scan QR",
+    "hintsSection": "Hints",
+    "hintN": "Hint {n}:",
+    "rollAgain": "Roll again (zero round)",
+    "quiz": "Quiz",
+    "submit": "Submit",
+    "useCorrectAnswerDev": "Use correct answer (dev)",
+    "performance": "Performance",
+    "showQrToCrew": "Show this QR to crew",
+    "waitingForCrew": "Waiting for crew…",
+    "completePerformanceDev": "Complete performance (dev)",
+    "festivalMap": "Festival map",
+    "gameRules": "Game rules",
+    "leaderboard": "Leaderboard",
+    "yourTeamQr": "Your Team QR",
+    "diceRoll": "Roll dice",
+    "diceLastRoll": "Last roll: {n}",
+    "revealAllTitle": "Reveal all hints",
+    "revealAllMessage": "Reveal all hints now for −{cost} points?",
+    "revealAllConfirm": "Reveal all",
+    "zeroRoundTitle": "Zero round",
+    "zeroRoundMessage": "Zero round — no field progress and no points for this attempt. Continue?",
+    "simulateScanDev": "Simulate scan (dev)",
+    "turnScore": {
+      "title": "Turn complete",
+      "gained": "Gained",
+      "deducted": "Deducted",
+      "base": "Base",
+      "time": "Time bonus",
+      "crewBonus": "Crew bonus",
+      "hintsDuringTurn": "Hints (already)",
+      "hintsAtConfirm": "Hints (turn)",
+      "quizPenalty": "Wrong answers",
+      "newTotal": "New total: {n} points",
+      "continue": "Continue",
+      "linePlus": "+{n}",
+      "lineMinus": "−{n}"
+    },
+    "errors": {
+      "rollFailed": "Could not roll",
+      "hintFailed": "Hint failed",
+      "scanFailed": "Scan failed",
+      "simulateScanFailed": "Simulate scan failed",
+      "completePerformanceFailed": "Complete performance failed",
+      "answerFailed": "Answer failed",
+      "abandonFailed": "Abandon failed"
+    }
+  },
+  "hints": {
+    "mapBelow": "See festival map below.",
+    "mapUnavailable": "Map unavailable — festival map not uploaded.",
+    "revealNextAria": "Reveal next hint",
+    "revealHintsAria": "Reveal hints",
+    "revealNow": "Reveal now",
+    "revealAll": "Reveal all hints"
+  },
+  "festivalMap": {
+    "expand": "Expand",
+    "notConfigured": "Festival map not configured",
+    "captionTarget": "Target field on the festival map",
+    "captionVisited": "Tasks you have completed",
+    "captionDefault": "Festival grounds",
+    "captionTapToExpand": "{caption} — tap to expand",
+    "ariaDefault": "Festival map",
+    "ariaWithVisited": "Festival map with {visited} completed tasks",
+    "ariaWithTarget": "Festival map with {visited} completed tasks and search target",
+    "ariaTapToOpen": "Tap to open fullscreen map.",
+    "reset": "Reset",
+    "close": "Close",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "gestureHint": "Pinch to zoom · drag to pan · double-tap to zoom"
+  },
+  "dice": {
+    "prompts": [
+      "Roll the dice",
+      "Your move — roll the dice!",
+      "Fate awaits — give the dice a shake",
+      "Tap the dice and let luck decide",
+      "Ready? Roll for your next field",
+      "The board is calling — roll the dice",
+      "Send the dice flying",
+      "One roll away from adventure",
+      "Spin those pixels of destiny",
+      "Roll to see where you land",
+      "Shake the dice and start your turn",
+      "Let the dice pick your path",
+      "Time to roll — the festival waits",
+      "Hit the dice and chase the next station",
+      "Your next field is one roll away",
+      "Roll now — the crowd is watching",
+      "Dice up! See how far you go",
+      "Take a chance — roll the dice",
+      "The die is cast… well, almost — roll it!",
+      "Fortune favors the bold — roll the dice"
+    ]
+  },
+  "rules": {
+    "title": "Game rules",
+    "p1": "One phone per team. Roll the dice, find your spot, scan the QR, complete the task, then lock in your turn.",
+    "p2": "Hints cost points. Waiting unlocks cheaper hints. Reveal all hints costs 50 points.",
+    "p3": "If you cannot find the spot, use Roll again (zero round) after all hints are available — no progress, no points.",
+    "p4": "Highscore counts only for teams that reach the final field. Fastest finish breaks ties."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "body": "We store your team name, game progress, and scores for the duration of the festival edition. Data is deleted after the event. No marketing emails. Contact the festival info desk for deletion requests."
+  },
+  "leaderboard": {
+    "draft": "The game starts soon — check back when it is live.",
+    "paused": "Game paused — standings are frozen.",
+    "officialRanking": "Official ranking",
+    "live": "Live",
+    "winner": "Winner: {name}",
+    "fallbackRanking": "No team reached the goal — ranking by highest field, then points.",
+    "progress": "Progress",
+    "highscore": "Highscore",
+    "youMarker": "(you)",
+    "field": "Field {n}",
+    "enRoute": "en route"
+  },
+  "scanner": {
+    "cameraError": "Camera access denied or unavailable",
+    "pointAtQr": "Point at the QR code",
+    "scanTeamQr": "Scan team QR",
+    "scanQr": "Scan QR",
+    "close": "Close",
+    "pointAtTeamQr": "Point at the team QR code",
+    "pointAtTaskQr": "Point at the QR code"
+  },
+  "errors": {
+    "unknown": "Something went wrong",
+    "invalidTeamOrPin": "Invalid team or PIN",
+    "gameNotLiveYet": "Game is not live yet",
+    "gameNotLive": "Game is not live",
+    "teamNameTaken": "Team name already taken",
+    "finishOrAbandonTurn": "Finish or abandon current turn first",
+    "scanNotAllowed": "Scan not allowed now",
+    "invalidQr": "Invalid QR code",
+    "wrongSpot": "Wrong spot — you need field {field}",
+    "noQuizTask": "No quiz task active",
+    "taskNotFound": "Task not found",
+    "answerInvalid": "Answer is not a valid choice",
+    "noActiveSearchTurn": "No active search turn",
+    "hintNotUnlocked": "Hint not unlocked yet",
+    "cannotAbandon": "Cannot abandon this turn",
+    "waitForHints": "Wait for all hints or use Reveal All first",
+    "taskNotCompleted": "Task not completed yet",
+    "tooManyRequests": "Too many requests",
+    "teamSessionRequired": "Team session required"
+  }
+}

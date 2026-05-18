@@ -49,7 +49,6 @@ function openTurnLabel(state: TurnState | null): string | null {
   if (state === 'awaiting_crew') return 'Needs approval'
   if (state === 'rolled') return 'Rolled'
   if (state === 'scanned') return 'Scanned'
-  if (state === 'completed') return 'Confirm pending'
   return state
 }
 

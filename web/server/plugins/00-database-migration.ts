@@ -5,6 +5,7 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { repoPath, resolveSqliteDatabasePath } from '../utils/resolve-sqlite-path'
+import { migrateTaskContentToI18n } from '../utils/migrate-task-i18n'
 
 const MIGRATIONS_TABLE = '__drizzle_migrations'
 
@@ -88,6 +89,11 @@ export default defineNitroPlugin(async () => {
     }
     else {
       console.log('[db-migration] Schema up to date, no new migrations')
+    }
+
+    const migratedTasks = migrateTaskContentToI18n(client)
+    if (migratedTasks > 0) {
+      console.log(`[db-migration] Migrated ${migratedTasks} task row(s) to localized content`)
     }
 
     client.close()

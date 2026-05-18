@@ -1,22 +1,17 @@
-import { z } from 'zod'
+import { scanSchema } from '#shared/schemas'
 import { requireTeam } from '../../../utils/team-session'
-import { applyStationScan } from '../../../services/turn-scan'
-
-const scanSchema = z.object({
-  stationSlug: z.string().min(1),
-  token: z.string().min(1),
-})
+import { applyTaskScan } from '../../../services/turn-scan'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
   const body = scanSchema.parse(await readBody(event))
 
-  return applyStationScan({
+  return applyTaskScan({
     teamId: team.id,
     editionId: team.editionId,
     turnId,
-    stationSlug: body.stationSlug,
+    taskSlug: body.taskSlug,
     token: body.token,
   })
 })

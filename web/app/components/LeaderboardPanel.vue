@@ -7,6 +7,8 @@ const props = withDefaults(
   { active: true },
 )
 
+const { t } = useI18n()
+
 const tab = ref<'progress' | 'highscore'>('highscore')
 
 type LeaderboardData = {
@@ -85,69 +87,69 @@ onUnmounted(stopPoll)
 <template>
   <div class="space-y-4">
     <p v-if="data?.edition?.status === 'draft'" class="pixel-card p-4 pixel-body text-sm text-center">
-      The game starts soon — check back when it is live.
+      {{ t('leaderboard.draft') }}
     </p>
 
     <p v-else-if="data?.edition?.status === 'paused'" class="pixel-card p-4 pixel-body text-sm text-center">
-      Game paused — standings are frozen.
+      {{ t('leaderboard.paused') }}
     </p>
 
     <template v-else>
       <p v-if="data?.edition" class="pixel-body text-sm text-center opacity-80">
-        {{ data.edition.name }} · {{ data.officialRanking ? 'Official ranking' : 'Live' }}
+        {{ data.edition.name }} · {{ data.officialRanking ? t('leaderboard.officialRanking') : t('leaderboard.live') }}
       </p>
 
       <p v-if="winnerName" class="pixel-card p-3 pixel-title text-xs text-center text-[var(--pixel-gold)]">
-        Winner: {{ winnerName }}
+        {{ t('leaderboard.winner', { name: winnerName }) }}
       </p>
       <p v-if="data?.fallbackRanking" class="pixel-body text-xs text-center opacity-70">
-        No team reached the goal — ranking by highest field, then points.
+        {{ t('leaderboard.fallbackRanking') }}
       </p>
 
       <div class="flex gap-2">
         <PixelButton :variant="tab === 'progress' ? 'primary' : 'secondary'" class="!text-[10px]" @click="tab = 'progress'">
-          Progress
+          {{ t('leaderboard.progress') }}
         </PixelButton>
         <PixelButton :variant="tab === 'highscore' ? 'primary' : 'secondary'" class="!text-[10px]" @click="tab = 'highscore'">
-          Highscore
+          {{ t('leaderboard.highscore') }}
         </PixelButton>
       </div>
 
       <ol v-if="tab === 'progress'" class="space-y-2">
         <li
-          v-for="(t, i) in progressSorted"
-          :key="t.id"
+          v-for="(team, i) in progressSorted"
+          :key="team.id"
           class="pixel-card p-3 flex justify-between items-center gap-2"
-          :class="{ 'ring-2 ring-[var(--sunrise)]': me?.team?.id === t.id }"
+          :class="{ 'ring-2 ring-[var(--sunrise)]': me?.team?.id === team.id }"
         >
           <span class="pixel-title text-xs w-6">{{ i + 1 }}</span>
           <span class="pixel-body text-sm flex-1 truncate">
-            {{ t.name }}
-            <span v-if="me?.team?.id === t.id" class="text-[10px] opacity-70"> (you)</span>
+            {{ team.name }}
+            <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
           </span>
-          <span class="pixel-body text-xs">Field {{ t.position }}</span>
+          <span class="pixel-body text-xs">{{ t('leaderboard.field', { n: team.position }) }}</span>
         </li>
       </ol>
 
       <ol v-else class="space-y-2">
         <li
-          v-for="(t, i) in highscoreSorted"
-          :key="t.id"
+          v-for="(team, i) in highscoreSorted"
+          :key="team.id"
           class="pixel-card p-3 flex justify-between items-center gap-2"
           :class="{
-            'opacity-60': !t.reachedGoal && !data?.officialRanking,
-            'ring-2 ring-[var(--sunrise)]': me?.team?.id === t.id,
+            'opacity-60': !team.reachedGoal && !data?.officialRanking,
+            'ring-2 ring-[var(--sunrise)]': me?.team?.id === team.id,
           }"
         >
           <span class="pixel-title text-xs w-6">{{ i + 1 }}</span>
           <span class="pixel-body text-sm flex-1 truncate">
-            {{ t.name }}
-            <span v-if="me?.team?.id === t.id" class="text-[10px] opacity-70"> (you)</span>
+            {{ team.name }}
+            <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
           </span>
           <span class="pixel-body text-xs text-right">
-            {{ t.scoreTotal }} pts
-            <span v-if="t.reachedGoal" class="text-[var(--pixel-gold)]"> ★</span>
-            <span v-else-if="!data?.officialRanking" class="block text-[10px]">en route</span>
+            {{ team.scoreTotal }} {{ t('common.pts') }}
+            <span v-if="team.reachedGoal" class="text-[var(--pixel-gold)]"> ★</span>
+            <span v-else-if="!data?.officialRanking" class="block text-[10px]">{{ t('leaderboard.enRoute') }}</span>
           </span>
         </li>
       </ol>

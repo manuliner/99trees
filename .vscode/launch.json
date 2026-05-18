@@ -7,7 +7,19 @@
       "name": "client: chrome",
       "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}/web/app",
-      "userDataDir": false
+      "userDataDir": false,
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "http://localhost:3000/**",
+        "!file:///**",
+        "!**/node_modules/**"
+      ],
+      "sourceMapPathOverrides": {
+        "/@fs/*": "${workspaceFolder}/web/*",
+        "/@id/*": "${workspaceFolder}/web/*",
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///*": "${webRoot}/*"
+      }
     },
     {
       "type": "node",

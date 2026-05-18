@@ -3,13 +3,14 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '../utils/db'
 import { editions, teams, turns } from '../database/schema'
 import { parseEditionConfig } from '../utils/edition-config'
+import { confirmTurn } from '../services/game'
 
 export default defineNitroPlugin(() => {
   const interval = setInterval(async () => {
     try {
       const db = getDb()
       const awaiting = await db
-        .select({ turn: turns, editionId: teams.editionId })
+        .select({ turn: turns, teamId: teams.id, editionId: teams.editionId })
         .from(turns)
         .innerJoin(teams, eq(turns.teamId, teams.id))
         .where(eq(turns.state, 'awaiting_crew'))
@@ -30,6 +31,7 @@ export default defineNitroPlugin(() => {
           .update(turns)
           .set({ state: 'completed', completedAt: new Date(), bonusPoints: 0 })
           .where(eq(turns.id, row.turn.id))
+        await confirmTurn(row.teamId, row.turn.id)
       }
     }
     catch (e) {

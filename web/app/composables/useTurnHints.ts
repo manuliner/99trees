@@ -1,15 +1,11 @@
 import type { EditionConfig } from '#shared/types'
+import type { LocalizedString } from '#shared/localized'
 import type { Ref } from 'vue'
 
-export type TurnHintStation = {
-  hintVague?: string
-  hintLevel1?: string
-  hintLevel2?: string
-}
-
-export type HintTooltipSection = {
-  label: string
-  text: string
+export type TurnHintTask = {
+  hintVague?: LocalizedString | string
+  hintLevel1?: LocalizedString | string
+  hintLevel2?: LocalizedString | string
 }
 
 export type TurnForHints = {
@@ -17,7 +13,7 @@ export type TurnForHints = {
   hintMode?: string | null
   hintsUsed?: number[]
   canRevealAll?: boolean
-  station?: TurnHintStation | null
+  task?: TurnHintTask | null
 }
 
 export function useTurnHints(
@@ -26,6 +22,7 @@ export function useTurnHints(
   now: Ref<number>,
   options?: { hasMapImage?: Ref<boolean> },
 ) {
+  const { t } = useI18n()
   function hintUnlocked(level: number) {
     const unlock = turn.value?.hintUnlockAt?.[level - 1]
     if (!unlock) return false
@@ -88,12 +85,17 @@ export function useTurnHints(
     const level = nextClaimableLevel.value
     const costs = hintCosts.value?.wait
     if (level == null || !costs) return ''
-    return `−${costs[level - 1]} points`
+    return t('common.pointsPenalty', { n: costs[level - 1] })
   })
 
   const showAllPenalty = computed(() => {
     const cost = hintCosts.value?.revealAll
-    return cost != null ? `−${cost} points` : ''
+    return cost != null ? t('common.pointsPenalty', { n: cost }) : ''
+  })
+
+  const hint3Text = computed(() => {
+    const mapOk = options?.hasMapImage?.value !== false
+    return mapOk ? t('hints.mapBelow') : t('hints.mapUnavailable')
   })
 
   const revealedHintCount = computed(() => {
@@ -104,30 +106,8 @@ export function useTurnHints(
 
   const showRevealedCount = computed(() => revealedHintCount.value > 0)
 
-  const revealedHintSections = computed((): HintTooltipSection[] => {
-    const station = turn.value?.station
-    const sections: HintTooltipSection[] = []
-    if (station?.hintVague) sections.push({ label: 'Area', text: station.hintVague })
-    if (hintVisible(1) && station?.hintLevel1) {
-      sections.push({ label: 'Hint 1', text: station.hintLevel1 })
-    }
-    if (hintVisible(2) && station?.hintLevel2) {
-      sections.push({ label: 'Hint 2', text: station.hintLevel2 })
-    }
-    if (hintVisible(3)) {
-      const mapOk = options?.hasMapImage?.value !== false
-      sections.push({
-        label: 'Hint 3',
-        text: mapOk
-          ? 'Map pin — see festival map above.'
-          : 'Map unavailable — festival map not uploaded.',
-      })
-    }
-    return sections
-  })
-
-  const revealedHintsTooltip = computed(() =>
-    revealedHintSections.value.length === 0 ? 'No hints revealed yet.' : '',
+  const nextHintLevel = computed((): 1 | 2 | 3 | null =>
+    nextClaimableLevel.value ?? nextLockedLevel.value,
   )
 
   return {
@@ -136,6 +116,7 @@ export function useTurnHints(
     formatCountdown,
     nextClaimableLevel,
     nextLockedLevel,
+    nextHintLevel,
     countdownMs,
     countdownLabel,
     showCountdown,
@@ -144,8 +125,7 @@ export function useTurnHints(
     showAllVisible,
     showNowPenalty,
     showAllPenalty,
-    revealedHintsTooltip,
-    revealedHintSections,
+    hint3Text,
     revealedHintCount,
     showRevealedCount,
   }

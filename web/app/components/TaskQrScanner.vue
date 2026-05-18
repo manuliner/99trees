@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    mode?: 'station' | 'team'
+    mode?: 'task' | 'team'
     embedded?: boolean
   }>(),
-  { mode: 'station', embedded: false },
+  { mode: 'task', embedded: false },
 )
 
 const emit = defineEmits<{
@@ -12,9 +12,10 @@ const emit = defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
+
 const videoRef = ref<HTMLVideoElement | null>(null)
 const error = ref('')
-const scanning = ref(false)
 let controls: { stop: () => void } | null = null
 
 function parseQrUrl(raw: string): { slug: string; token: string } | null {
@@ -24,8 +25,7 @@ function parseQrUrl(raw: string): { slug: string; token: string } | null {
     const match = url.pathname.match(pathPattern)
     const token = url.searchParams.get('t')
     if (!match?.[1] || !token) return null
-    const slug = decodeURIComponent(match[1])
-    return { slug, token }
+    return { slug: decodeURIComponent(match[1]), token }
   }
   catch {
     return null
@@ -33,7 +33,6 @@ function parseQrUrl(raw: string): { slug: string; token: string } | null {
 }
 
 onMounted(async () => {
-  scanning.value = true
   try {
     const { BrowserMultiFormatReader } = await import('@zxing/browser')
     const reader = new BrowserMultiFormatReader()
@@ -54,17 +53,16 @@ onMounted(async () => {
     })
   }
   catch (e) {
-    error.value = 'Camera access denied or unavailable'
+    error.value = t('scanner.cameraError')
     console.warn(e)
   }
 })
 
 function stop() {
-  scanning.value = false
   controls?.stop()
   controls = null
   const stream = videoRef.value?.srcObject as MediaStream | undefined
-  stream?.getTracks().forEach((t) => t.stop())
+  stream?.getTracks().forEach((track) => track.stop())
 }
 
 function onClose() {
@@ -75,7 +73,11 @@ function onClose() {
 onUnmounted(stop)
 
 const scanTitle = computed(() =>
-  props.mode === 'team' ? 'Scan team QR' : 'Scan station QR',
+  props.mode === 'team' ? t('scanner.scanTeamQr') : t('scanner.scanQr'),
+)
+
+const pointHint = computed(() =>
+  props.mode === 'team' ? t('scanner.pointAtTeamQr') : t('scanner.pointAtTaskQr'),
 )
 </script>
 
@@ -89,16 +91,14 @@ const scanTitle = computed(() =>
       />
     </div>
     <p v-if="error" class="text-center text-sm text-[var(--pixel-score-minus)] pixel-body">{{ error }}</p>
-    <p v-else class="pixel-body text-center text-sm opacity-80">
-      Point at the station QR code
-    </p>
+    <p v-else class="pixel-body text-center text-sm opacity-80">{{ t('scanner.pointAtQr') }}</p>
   </div>
 
   <div v-else class="fixed inset-0 z-50 flex flex-col bg-black">
     <div class="flex items-center justify-between p-4">
       <p class="pixel-title text-xs text-[var(--pixel-cream)]">{{ scanTitle }}</p>
       <button type="button" class="pixel-body text-sm text-[var(--pixel-cream)] underline" @click="onClose">
-        Close
+        {{ t('scanner.close') }}
       </button>
     </div>
     <div class="relative flex flex-1 items-center justify-center">
@@ -110,7 +110,7 @@ const scanTitle = computed(() =>
     </div>
     <p v-if="error" class="p-4 text-center text-sm text-[var(--pixel-score-minus)] pixel-body">{{ error }}</p>
     <p v-else class="p-4 text-center pixel-body text-sm text-[var(--pixel-cream)] opacity-80">
-      Point at the {{ mode === 'team' ? 'team' : 'station' }} QR code
+      {{ pointHint }}
     </p>
   </div>
 </template>

@@ -1,18 +1,19 @@
 import { and, eq } from 'drizzle-orm'
+import { activityPayloadForTeam, parseActivityPayload } from '#shared/quiz-payload'
 import { getDb } from '../utils/db'
-import { stations, turns } from '../database/schema'
+import { tasks, turns } from '../database/schema'
 import { getEditionOrThrow, getOpenTurn } from './game'
 import { assertEditionLive } from '../utils/edition-live'
 import { logGameEvent } from '../utils/logger'
 
-export async function applyStationScan(params: {
+export async function applyTaskScan(params: {
   teamId: number
   editionId: number
   turnId: number
-  stationSlug: string
+  taskSlug: string
   token: string
 }) {
-  const { teamId, editionId, turnId, stationSlug, token } = params
+  const { teamId, editionId, turnId, taskSlug, token } = params
   const open = await getOpenTurn(teamId)
   if (!open || open.id !== turnId || open.state !== 'rolled') {
     throw createError({ statusCode: 400, statusMessage: 'Scan not allowed now' })
@@ -21,40 +22,45 @@ export async function applyStationScan(params: {
   const edition = await getEditionOrThrow(editionId)
   assertEditionLive(edition.status, 'scan')
   const db = getDb()
-  const stationRows = await db
+  const taskRows = await db
     .select()
-    .from(stations)
-    .where(and(eq(stations.slug, stationSlug), eq(stations.editionId, edition.id)))
+    .from(tasks)
+    .where(and(eq(tasks.slug, taskSlug), eq(tasks.editionId, edition.id)))
     .limit(1)
-  const station = stationRows[0]
-  if (!station || station.qrToken !== token) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid station QR' })
+  const task = taskRows[0]
+  if (!task || task.qrToken !== token) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid QR code' })
   }
-  if (station.fieldNumber !== open.positionPending) {
+  if (task.fieldNumber !== open.positionPending) {
     throw createError({
       statusCode: 400,
-      statusMessage: `Wrong station — you need field ${open.positionPending}`,
+      statusMessage: `Wrong spot — you need field ${open.positionPending}`,
     })
   }
 
   const now = new Date()
-  const nextState = station.taskType === 'performance' ? 'awaiting_crew' : 'scanned'
+  const nextState = task.activityType === 'performance' ? 'awaiting_crew' : 'scanned'
 
   await db
     .update(turns)
-    .set({ state: nextState, stationId: station.id, scannedAt: now })
+    .set({ state: nextState, taskId: task.id, scannedAt: now })
     .where(eq(turns.id, turnId))
 
   logGameEvent('turn.scan', {
     teamId,
     turnId,
-    field: station.fieldNumber,
-    taskType: station.taskType,
+    field: task.fieldNumber,
+    activityType: task.activityType,
   })
 
   return {
-    taskType: station.taskType,
-    taskPayload: JSON.parse(station.taskPayloadJson),
-    fieldNumber: station.fieldNumber,
+    activityType: task.activityType,
+    activityPayload: activityPayloadForTeam(
+      parseActivityPayload(JSON.parse(task.activityPayloadJson)),
+    ),
+    fieldNumber: task.fieldNumber,
   }
 }
+
+/** @deprecated Use applyTaskScan */
+export const applyStationScan = applyTaskScan

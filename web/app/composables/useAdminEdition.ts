@@ -1,6 +1,6 @@
-import type { AdminStationCreateInput, AdminStationPatchInput } from '#shared/schemas'
-import type { AdminStation, AdminTeamListItem, EditionConfig, EditionStatus, PendingApproval } from '#shared/types'
-import { adminStationsToImportDocument } from '#shared/admin-station-import'
+import type { AdminTaskCreateInput, AdminTaskPatchInput } from '#shared/schemas'
+import type { AdminTask, AdminTeamListItem, EditionConfig, EditionStatus, PendingApproval } from '#shared/types'
+import { adminTasksToImportDocument } from '#shared/admin-task-import'
 import { cloneEditionConfig, DEFAULT_EDITION_CONFIG } from '#shared/types'
 import { editionPath, isValidEditionSlug, joinPath } from '#shared/edition-urls'
 
@@ -18,13 +18,13 @@ export interface AdminEdition {
 export interface AdminChecklist {
   ok: boolean
   issues: string[]
-  stationCount: number
+  taskCount: number
   fieldCount: number
   hasCrewPassword: boolean
   status: EditionStatus
 }
 
-export type SetupStepId = 'edition' | 'stations' | 'map' | 'crew' | 'print' | 'live'
+export type SetupStepId = 'edition' | 'tasks' | 'map' | 'crew' | 'print' | 'live'
 
 export interface SetupStep {
   id: SetupStepId
@@ -44,7 +44,7 @@ export function useAdminEdition() {
   const editions = ref<AdminEdition[]>([])
   const selectedId = ref<number | null>(null)
   const checklist = ref<AdminChecklist | null>(null)
-  const stations = ref<AdminStation[]>([])
+  const tasks = ref<AdminTask[]>([])
   const teams = ref<AdminTeamListItem[]>([])
   const {
     pending: approvalPending,
@@ -87,18 +87,18 @@ export function useAdminEdition() {
 
     const editionDone =
       edition.name.length > 0 && !!edition.slug && isValidEditionSlug(edition.slug)
-    const stationsDone =
-      c.stationCount > 0
-      && c.stationCount === c.fieldCount
-      && !c.issues.some((i) => i.includes('station') || i.includes('Missing station'))
+    const tasksDone =
+      c.taskCount > 0
+      && c.taskCount === c.fieldCount
+      && !c.issues.some((i) => i.includes('task') || i.includes('Missing task'))
     const mapDone = !!edition.mapImageUrl && !c.issues.some((i) => i.includes('map'))
     const crewDone = c.hasCrewPassword
-    const printReady = editionDone && stationsDone && mapDone && crewDone
+    const printReady = editionDone && tasksDone && mapDone && crewDone
     const liveDone = c.status === 'live'
 
     return [
       { id: 'edition', number: 1, label: 'Edition name & URL slug', done: editionDone },
-      { id: 'stations', number: 2, label: 'Stations', done: stationsDone },
+      { id: 'tasks', number: 2, label: 'Tasks', done: tasksDone },
       { id: 'map', number: 3, label: 'Festival map', done: mapDone },
       { id: 'crew', number: 4, label: 'Crew password', done: crewDone },
       { id: 'print', number: 5, label: 'Print QRs', done: printReady },
@@ -158,20 +158,20 @@ export function useAdminEdition() {
     }
   }
 
-  async function loadStations() {
+  async function loadTasks() {
     if (selectedId.value == null) {
-      stations.value = []
+      tasks.value = []
       return
     }
     try {
-      const res = await api<{ stations: AdminStation[] }>(
-        `/api/admin/editions/${selectedId.value}/stations`,
+      const res = await api<{ tasks: AdminTask[] }>(
+        `/api/admin/editions/${selectedId.value}/tasks`,
         { credentials: 'include' },
       )
-      stations.value = res.stations
+      tasks.value = res.tasks
     }
     catch {
-      stations.value = []
+      tasks.value = []
     }
   }
 
@@ -225,13 +225,13 @@ export function useAdminEdition() {
     if (id == null) {
       expandedSteps.value = {}
       checklist.value = null
-      stations.value = []
+      tasks.value = []
       teams.value = []
       return
     }
     if (id === prev && checklist.value != null) return
     await refreshChecklist()
-    await loadStations()
+    await loadTasks()
     await loadTeams()
     const next = nextStepId.value
     expandedSteps.value = next ? { [next]: true } : {}
@@ -310,22 +310,31 @@ export function useAdminEdition() {
     setMessage(undefined, `Edition is now ${status}`)
   }
 
-  async function importStations(json: string): Promise<boolean> {
+  async function importTasks(json: string, overwrite = false): Promise<boolean> {
     if (selectedId.value == null) return false
     setMessage()
     try {
-      const parsed = JSON.parse(json)
-      const res = await api<{ created: number; updated: number; fieldCount: number }>(
-        `/api/admin/editions/${selectedId.value}/stations/import`,
+      const parsed = JSON.parse(json) as Record<string, unknown>
+      parsed.overwrite = overwrite
+      const res = await api<{
+        created: number
+        updated: number
+        deleted: number
+        fieldCount: number
+      }>(
+        `/api/admin/editions/${selectedId.value}/tasks/import`,
         { method: 'POST', body: parsed, credentials: 'include' },
       )
       await loadEditions()
-      await loadStations()
+      await loadTasks()
       await refreshChecklist()
-      setMessage(
-        undefined,
-        `Created ${res.created}, updated ${res.updated} (${res.fieldCount} fields)`,
-      )
+      const parts = [
+        `Created ${res.created}`,
+        `updated ${res.updated}`,
+      ]
+      if (res.deleted > 0) parts.push(`removed ${res.deleted}`)
+      parts.push(`(${res.fieldCount} fields)`)
+      setMessage(undefined, parts.join(', '))
       return true
     }
     catch (e: unknown) {
@@ -334,46 +343,46 @@ export function useAdminEdition() {
     }
   }
 
-  function downloadStations(editionSlug: string) {
-    const doc = adminStationsToImportDocument(stations.value)
+  function downloadTasks(editionSlug: string) {
+    const doc = adminTasksToImportDocument(tasks.value)
     const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `stations-${editionSlug}.json`
+    a.download = `tasks-${editionSlug}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  async function createStation(body: AdminStationCreateInput) {
+  async function createTask(body: AdminTaskCreateInput) {
     if (selectedId.value == null) return
     setMessage()
     try {
-      await api<{ station: AdminStation }>(
-        `/api/admin/editions/${selectedId.value}/stations`,
+      await api<{ task: AdminTask }>(
+        `/api/admin/editions/${selectedId.value}/tasks`,
         { method: 'POST', body, credentials: 'include' },
       )
       await loadEditions()
-      await loadStations()
+      await loadTasks()
       await refreshChecklist()
-      setMessage(undefined, 'Station created')
+      setMessage(undefined, 'Task created')
     }
     catch (e: unknown) {
       setMessage(apiErrorMessage(e, 'Create failed'))
     }
   }
 
-  async function updateStation(stationId: number, body: AdminStationPatchInput) {
+  async function updateTask(taskId: number, body: AdminTaskPatchInput) {
     if (selectedId.value == null) return
     setMessage()
     try {
-      await api<{ station: AdminStation }>(
-        `/api/admin/editions/${selectedId.value}/stations/${stationId}`,
+      await api<{ task: AdminTask }>(
+        `/api/admin/editions/${selectedId.value}/tasks/${taskId}`,
         { method: 'PATCH', body, credentials: 'include' },
       )
-      await loadStations()
+      await loadTasks()
       await refreshChecklist()
-      setMessage(undefined, 'Station saved')
+      setMessage(undefined, 'Task saved')
     }
     catch (e: unknown) {
       setMessage(apiErrorMessage(e, 'Save failed'))
@@ -398,7 +407,7 @@ export function useAdminEdition() {
     }
   }
 
-  function exportStationQr() {
+  function exportTaskQr() {
     if (selectedId.value == null) return
     window.open(`/api/admin/editions/${selectedId.value}/qr/export`, '_blank')
   }
@@ -417,7 +426,7 @@ export function useAdminEdition() {
     selectedId,
     selectedEdition,
     checklist,
-    stations,
+    tasks,
     loading,
     error,
     success,
@@ -435,9 +444,9 @@ export function useAdminEdition() {
     saveEditionSettings,
     saveCrewPassword,
     setStatus,
-    importStations,
-    downloadStations,
-    loadStations,
+    importTasks,
+    downloadTasks,
+    loadTasks,
     teams,
     loadTeams,
     approvalPending,
@@ -445,10 +454,10 @@ export function useAdminEdition() {
     approvalResolvingTurnId,
     resolveApproval,
     setTeamPin,
-    createStation,
-    updateStation,
+    createTask,
+    updateTask,
     uploadMap,
-    exportStationQr,
+    exportTaskQr,
     logout,
     defaultConfig,
     setMessage,

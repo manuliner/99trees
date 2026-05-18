@@ -14,11 +14,11 @@
 
 | Bereich | Sprache |
 |---------|---------|
-| **App-UI** (Team, Crew, Leaderboard, Admin) | **English** |
-| **Fehlermeldungen, Buttons, Dialoge, Toasts** | **English** |
-| **Stations-Content** (Quiz-Fragen, Hinweise, Performance-Texte) | **English** (YAML-Import) |
-| **Rechtliches** (`/privacy`, `/imprint` falls MVP) | **English** |
-| **Technik** | `lang="en"` auf `<html>`; MVP **kein** i18n-Framework — nur `en`, keine Sprachumschaltung |
+| **Spieler-UI** (Join, Rejoin, Play, Regeln, Datenschutz) | **Deutsch (Standard)** + **Englisch** (Umschalter, `@nuxtjs/i18n`) |
+| **Crew- & Admin-UI** | **English** |
+| **Fehlermeldungen (API)** | English (Server); Spieler-UI mappt bekannte Meldungen clientseitig |
+| **Task-Content** (Quiz-Fragen, Hinweise, Performance-Texte) | Edition-Daten (JSON/YAML-Import): **DE + EN** pro Feld; Spieler-UI wählt per Locale |
+| **Technik** | `<html lang>` folgt aktiver Locale; Cookie-Persistenz für Spieler-Sprache |
 
 **Beispiel-Copy (Referenz für Implementierung):**
 
@@ -34,7 +34,7 @@
 | Team wiederfinden | `Find your team` |
 | Falsche Station | `Wrong station — you're looking for field {n}` |
 
-Plan-Dokumentation (dieses Dokument) bleibt auf Deutsch; **Produkt-Copy ist Englisch**.
+Plan-Dokumentation (dieses Dokument) bleibt auf Deutsch; **Spieler-Copy ist DE/EN**, Crew/Admin weiter Englisch.
 
 ---
 
@@ -445,21 +445,31 @@ flowchart TD
 #### Beispiel YAML (Import, vereinfacht)
 
 ```yaml
-stations:
+tasks:
   - field: 1
     slug: sueden-tor
-    hint_vague: "Dort wo der Vogelzug beginnt, hörst du Trommeln."
-    hint_medium: "Südlicher Eingang, große Bühne in der Nähe."
+    hint_vague:
+      de: "Dort wo der Vogelzug beginnt, hörst du Trommeln."
+      en: "Where the migration begins, you hear drums."
+    hint_medium:
+      de: "Südlicher Eingang, große Bühne in der Nähe."
+      en: "South entrance, main stage nearby."
     map: { x: 12, y: 88 }
-    task:
+    activity:
       type: quiz
-      question: "Wie viele Felder hat der Vogelzug?"
-      answers: ["99", "neunundneunzig"]
+      question:
+        de: "Wie viele Felder hat der Vogelzug?"
+        en: "How many fields does the migration have?"
+      answers:
+        de: ["99", "neunundneunzig"]
+        en: ["99", "ninety-nine"]
   - field: 2
     slug: ...
-    task:
+    activity:
       type: performance
-      text: "Stellt euch als Schwarm vor und ruft einen Vogelruf."
+      text:
+        de: "Stellt euch als Schwarm vor und ruft einen Vogelruf."
+        en: "Form a flock and call like migrating birds."
 ```
 
 ### UF-1 — Team-Onboarding (Eingangs-QR → Spielbereit)

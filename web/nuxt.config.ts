@@ -19,14 +19,14 @@ function resolveAppVersion(pkgVersion: string | undefined): string {
 export default defineNuxtConfig({
   srcDir: 'app',
 
-  modules: ['@nuxt/ui', '@nuxt/eslint', '@pinia/nuxt', 'nuxt-auth-utils'],
+  modules: ['@nuxt/ui', '@nuxt/eslint', '@pinia/nuxt', 'nuxt-auth-utils', '@nuxtjs/i18n'],
 
   devtools: { enabled: true },
 
   app: {
     head: {
       title: 'Zugvögel',
-      htmlAttrs: { lang: 'en' },
+      htmlAttrs: {},
       meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
@@ -51,6 +51,8 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-01',
 
+  sourcemap: { server: false },
+
   nitro: {
     nodeModulesDirs: [resolve(rootDir, 'node_modules'), resolve(workspaceRoot, 'node_modules')],
     moduleSideEffects: ['better-sqlite3'],
@@ -74,4 +76,15 @@ export default defineNuxtConfig({
   },
 
   typescript: { strict: true },
+
+  i18n: {
+    locales: [
+      { code: 'de', language: 'de-DE', file: 'de.json' },
+      { code: 'en', language: 'en-US', file: 'en.json' },
+    ],
+    defaultLocale: 'de',
+    strategy: 'no_prefix',
+    langDir: 'locales',
+    detectBrowserLanguage: false,
+  },
 })

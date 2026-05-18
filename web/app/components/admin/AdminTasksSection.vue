@@ -1,70 +1,70 @@
 <script setup lang="ts">
-import type { AdminStationCreateInput, AdminStationPatchInput } from '#shared/schemas'
-import type { AdminStation } from '#shared/types'
-import { adminStationFieldTooltip } from '#shared/station-slug'
+import type { AdminTaskCreateInput, AdminTaskPatchInput } from '#shared/schemas'
+import type { AdminTask } from '#shared/types'
+import { adminTaskFieldTooltip } from '#shared/task-slug'
 
 const props = defineProps<{
-  stationCount?: number
+  taskCount?: number
   fieldCount?: number
   editionSlug?: string
-  stations: AdminStation[]
-  onImport: (json: string) => Promise<boolean>
+  tasks: AdminTask[]
+  onImport: (json: string, overwrite: boolean) => Promise<boolean>
 }>()
 
 const emit = defineEmits<{
   download: []
-  saveStation: [stationId: number, payload: AdminStationPatchInput]
-  createStation: [payload: AdminStationCreateInput]
+  saveTask: [taskId: number, payload: AdminTaskPatchInput]
+  createTask: [payload: AdminTaskCreateInput]
 }>()
 
 const importOpen = ref(false)
 const editOpen = ref(false)
-const editingStation = ref<AdminStation | null>(null)
+const editingTask = ref<AdminTask | null>(null)
 const createField = ref<number | null>(null)
 
 const showBoard = computed(() => props.fieldCount != null && props.fieldCount > 0)
 
 const fieldTooltips = computed(() => {
-  const map: Record<number, { taskType: 'quiz' | 'performance'; text: string }> = {}
-  for (const s of props.stations) {
-    const tip = adminStationFieldTooltip(s)
+  const map: Record<number, { activityType: 'quiz' | 'performance'; text: string }> = {}
+  for (const s of props.tasks) {
+    const tip = adminTaskFieldTooltip(s)
     if (tip) map[s.fieldNumber] = tip
   }
   return map
 })
 
-const usedSlugs = computed(() => props.stations.map((s) => s.slug))
+const usedSlugs = computed(() => props.tasks.map((s) => s.slug))
 
 const canDownload = computed(
-  () => props.stationCount != null && props.stationCount > 0,
+  () => props.taskCount != null && props.taskCount > 0,
 )
 
 function openEditForField(field: number) {
-  const station = props.stations.find((s) => s.fieldNumber === field)
-  editingStation.value = station ?? null
-  createField.value = station ? null : field
+  const task = props.tasks.find((s) => s.fieldNumber === field)
+  editingTask.value = task ?? null
+  createField.value = task ? null : field
   editOpen.value = true
 }
 
 function closeEdit() {
   editOpen.value = false
-  editingStation.value = null
+  editingTask.value = null
   createField.value = null
 }
 
-function onSaveEdit(payload: AdminStationPatchInput) {
-  if (!editingStation.value) return
-  emit('saveStation', editingStation.value.id, payload)
+function onSaveEdit(payload: AdminTaskPatchInput) {
+  if (!editingTask.value) return
+  emit('saveTask', editingTask.value.id, payload)
   closeEdit()
 }
 
-function onSaveCreate(payload: AdminStationCreateInput) {
-  emit('createStation', payload)
+function onSaveCreate(payload: AdminTaskCreateInput) {
+  emit('createTask', payload)
   closeEdit()
 }
 
-async function onImport(json: string) {
-  const ok = await props.onImport(json)
+async function onImport(json: string, overwrite: boolean) {
+  const ok = await props.onImport(json, overwrite)
   if (ok) importOpen.value = false
 }
 </script>
@@ -72,18 +72,18 @@ async function onImport(json: string) {
 <template>
   <div class="space-y-4">
     <p
-      v-if="stationCount != null && fieldCount != null && stationCount > 0"
+      v-if="props.taskCount != null && fieldCount != null && props.taskCount > 0"
       class="admin-body text-xs text-[var(--pixel-score-plus)]"
     >
-      Current: {{ stationCount }} / {{ fieldCount }} fields
+      Current: {{ props.taskCount }} / {{ fieldCount }} fields
     </p>
 
     <div class="flex gap-2 items-center">
       <div class="flex-1 min-w-0">
-        <PixelButton variant="secondary" @click="importOpen = true">Import stations</PixelButton>
+        <PixelButton variant="secondary" @click="importOpen = true">Import tasks</PixelButton>
       </div>
       <PixelIconButton
-        label="Download stations"
+        label="Download tasks"
         variant="accent"
         :disabled="!canDownload"
         @click="emit('download')"
@@ -111,7 +111,7 @@ async function onImport(json: string) {
           :position-confirmed="0"
           selectable
           creatable
-          :configured-fields="stations.map((s) => s.fieldNumber)"
+          :configured-fields="props.tasks.map((s) => s.fieldNumber)"
           :field-tooltips="fieldTooltips"
           @field-select="openEditForField"
         />
@@ -122,18 +122,18 @@ async function onImport(json: string) {
     </ClientOnly>
 
     <p v-else class="admin-body text-xs opacity-70">
-      Set field count in edition settings, or import stations to use the board.
+      Set field count in edition settings, or import tasks to use the board.
     </p>
 
-    <AdminStationsImportModal
+    <AdminTasksImportModal
       :open="importOpen"
       @close="importOpen = false"
       @import="onImport"
     />
 
-    <AdminStationEditModal
+    <AdminTaskEditModal
       :open="editOpen"
-      :station="editingStation"
+      :task="editingTask"
       :create-field="createField"
       :used-slugs="usedSlugs"
       @close="closeEdit"

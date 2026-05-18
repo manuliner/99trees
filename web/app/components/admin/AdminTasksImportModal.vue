@@ -5,16 +5,20 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
-  import: [json: string]
+  import: [json: string, overwrite: boolean]
 }>()
 
 const importJson = ref('')
+const overwrite = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 watch(
   () => props.open,
   (isOpen) => {
-    if (!isOpen) importJson.value = ''
+    if (!isOpen) {
+      importJson.value = ''
+      overwrite.value = false
+    }
   },
 )
 
@@ -35,7 +39,7 @@ function onFileSelected(event: Event) {
 }
 
 function onImport() {
-  emit('import', importJson.value)
+  emit('import', importJson.value, overwrite.value)
 }
 
 function onClose() {
@@ -44,19 +48,30 @@ function onClose() {
 </script>
 
 <template>
-  <PixelDialog :open="open" title="Import stations" scrollable panel-class="max-w-lg" @close="onClose">
+  <PixelDialog :open="open" title="Import tasks" scrollable panel-class="max-w-lg" @close="onClose">
     <p class="admin-body text-xs opacity-80">
-      Import merges by slug; QR tokens stay the same for updated stations.
+      Import merges by slug; QR tokens stay the same for updated tasks.
     </p>
     <p class="admin-body text-xs opacity-70">
       <code class="text-[10px]">slug</code> is optional (generated from question or performance text if omitted).
-      Stations not in the file are kept. Duplicate slugs in one file are rejected.
+      By default, tasks not in the file are kept. Duplicate slugs in one file are rejected.
     </p>
+    <label class="admin-body flex items-start gap-2 text-xs cursor-pointer">
+      <input
+        v-model="overwrite"
+        type="checkbox"
+        class="mt-0.5 shrink-0"
+      >
+      <span>
+        <strong>Overwrite edition tasks</strong> — remove tasks whose slug is not in the file and
+        allow field moves (including swaps). Use for a full replace; cannot be undone if teams already played those tasks.
+      </span>
+    </label>
     <textarea
       v-model="importJson"
       rows="10"
       class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] font-mono text-xs admin-body"
-      placeholder='{ "stations": [ ... ] }'
+      placeholder='{ "tasks": [ ... ] }'
     />
     <input
       ref="fileInputRef"

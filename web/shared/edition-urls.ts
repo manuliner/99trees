@@ -67,10 +67,13 @@ export function editionPath(slug: string, subpath: string): string {
   return `/${encodeURIComponent(slug)}${path}`
 }
 
-export function stationQrPath(_editionId: number, slug: string, token: string): string {
+export function taskQrPath(_editionId: number, slug: string, token: string): string {
   const params = new URLSearchParams({ t: token })
   return `/s/${encodeURIComponent(slug)}?${params}`
 }
+
+/** @deprecated Use taskQrPath */
+export const stationQrPath = taskQrPath
 
 export function teamQrPath(_editionId: number, slug: string, token: string): string {
   const params = new URLSearchParams({ t: token })

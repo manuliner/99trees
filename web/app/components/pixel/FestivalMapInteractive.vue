@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import { useEventListener, useResizeObserver } from '@vueuse/core'
 import type { FestivalMapPin } from '~/components/pixel/FestivalMap.vue'
-import {
-  FESTIVAL_MAP_MIN_SCALE,
-  useFestivalMapView,
-} from '~/composables/useFestivalMapView'
+import { useFestivalMapView } from '~/composables/useFestivalMapView'
 
 const props = withDefaults(
   defineProps<{
     mapImageUrl: string | null
     pins?: FestivalMapPin[]
-    largePinTouch?: boolean
     /** Pan/zoom to target pin on mount */
     autoFocusTarget?: boolean
   }>(),
   {
     pins: () => [],
-    largePinTouch: false,
     autoFocusTarget: false,
   },
 )
@@ -35,12 +30,16 @@ function getContentSize() {
 const {
   scale,
   reset,
+  fitInitial,
   clamp,
   zoomAt,
   zoomBy,
   panBy,
   focusPin,
-  transformStyle,
+  pinViewportPosition,
+  getInitialScale,
+  panStyle,
+  contentStyle,
 } = useFestivalMapView({ viewportRef, getContentSize })
 
 function onImageLoad(event: Event) {
@@ -154,7 +153,7 @@ function onPointerUp(event: PointerEvent) {
       const local = viewportPoint(event.clientX, event.clientY)
       const now = Date.now()
       if (now - lastTapTime < 320 && Math.hypot(local.x - lastTapPos.x, local.y - lastTapPos.y) < 28) {
-        if (scale.value > FESTIVAL_MAP_MIN_SCALE + 0.05) reset()
+        if (scale.value > getInitialScale() + 0.05) reset()
         else zoomAt(local.x, local.y, 2)
         lastTapTime = 0
       }
@@ -183,7 +182,10 @@ useEventListener(viewportRef, 'pointercancel', onPointerUp)
 useEventListener(viewportRef, 'wheel', onWheel, { passive: false })
 
 useResizeObserver(viewportRef, () => {
-  if (imageNatural.value) clamp()
+  if (!imageNatural.value) return
+  const initial = getInitialScale()
+  if (Math.abs(scale.value - initial) < 0.08) fitInitial()
+  else clamp()
 })
 
 watch(
@@ -203,21 +205,26 @@ watch(
   >
     <div
       v-if="mapImageUrl"
-      class="absolute left-0 top-0 w-full will-change-transform"
-      :style="transformStyle"
+      class="absolute left-0 top-0"
+      :style="panStyle"
     >
-      <div class="relative w-full">
+      <div class="relative" :style="contentStyle">
         <img
           :src="mapImageUrl"
           alt=""
-          class="block h-auto w-full select-none"
-          style="image-rendering: pixelated"
+          class="festival-map-image block h-auto w-full select-none"
           draggable="false"
           @load="onImageLoad"
         >
-        <PixelFestivalMapPins :pins="pins" :large-touch="largePinTouch" />
       </div>
     </div>
+    <PixelFestivalMapPins
+      v-if="mapImageUrl"
+      :pins="pins"
+      size="sm"
+      overlay
+      :pin-viewport-position="pinViewportPosition"
+    />
     <div
       v-else
       class="flex h-full min-h-[12rem] items-center justify-center bg-[var(--pixel-forest-light)]"
@@ -226,3 +233,11 @@ watch(
     </div>
   </div>
 </template>
+
+<style scoped>
+.festival-map-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+</style>

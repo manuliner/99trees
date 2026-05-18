@@ -13,6 +13,16 @@ export interface TurnScoreInput {
   hintsAlreadyDeducted?: number
 }
 
+export interface TurnScoreBreakdown {
+  base: number
+  timeBonus: number
+  crewBonus: number
+  hintsDuringTurn: number
+  hintsAtConfirm: number
+  quizPenalty: number
+  total: number
+}
+
 export function timeBonusFromScan(config: EditionConfig, scannedAtMs: number, confirmedAtMs: number): number {
   const seconds = Math.max(0, Math.floor((confirmedAtMs - scannedAtMs) / 1000))
   return Math.max(0, 50 - Math.floor(seconds / 60) * 5)
@@ -28,18 +38,38 @@ export function hintPenalty(config: EditionConfig, hintMode: 'wait' | 'reveal_al
   return total
 }
 
-export function calculateTurnScore(input: TurnScoreInput): number {
-  if (input.abandoned) return 0
+function scoreParts(input: TurnScoreInput): TurnScoreBreakdown {
+  if (input.abandoned) {
+    return {
+      base: 0,
+      timeBonus: 0,
+      crewBonus: 0,
+      hintsDuringTurn: input.hintsAlreadyDeducted ?? 0,
+      hintsAtConfirm: 0,
+      quizPenalty: 0,
+      total: 0,
+    }
+  }
 
   const base = 100
-  const time =
+  const timeBonus =
     input.scannedAtMs != null
       ? timeBonusFromScan(input.config, input.scannedAtMs, input.confirmedAtMs)
       : 0
-  const hints =
-    hintPenalty(input.config, input.hintMode, input.hintsUsedLevels)
-    - (input.hintsAlreadyDeducted ?? 0)
-  const quiz = input.quizWrongAttempts * 5
+  const crewBonus = input.bonusPoints
+  const hintsDuringTurn = input.hintsAlreadyDeducted ?? 0
+  const hintsAtConfirm =
+    hintPenalty(input.config, input.hintMode, input.hintsUsedLevels) - hintsDuringTurn
+  const quizPenalty = input.quizWrongAttempts * 5
+  const total = base + timeBonus + crewBonus - hintsAtConfirm - quizPenalty
 
-  return base + time + input.bonusPoints - hints - quiz
+  return { base, timeBonus, crewBonus, hintsDuringTurn, hintsAtConfirm, quizPenalty, total }
+}
+
+export function calculateTurnScoreBreakdown(input: TurnScoreInput): TurnScoreBreakdown {
+  return scoreParts(input)
+}
+
+export function calculateTurnScore(input: TurnScoreInput): number {
+  return scoreParts(input).total
 }

@@ -34,13 +34,28 @@ function normalizeDice(v: unknown): number | null {
 
 const faceValue = computed(() => normalizeDice(props.value))
 
-const showPipFace = computed(
-  () => faceValue.value != null && faceValue.value >= 1 && faceValue.value <= 6,
-)
+function randomDiceFace() {
+  return 1 + Math.floor(Math.random() * 6)
+}
+
+const idleFace = ref(randomDiceFace())
+
+watch(faceValue, (v, prev) => {
+  if (v == null && prev != null) idleFace.value = randomDiceFace()
+})
+
+const pipFace = computed((): number | null => {
+  const v = faceValue.value
+  if (v != null && v >= 1 && v <= 6) return v
+  if (v == null) return idleFace.value
+  return null
+})
+
+const showPipFace = computed(() => pipFace.value != null)
 
 const activePips = computed(() => {
-  if (!showPipFace.value || faceValue.value == null) return new Set<string>()
-  const positions = PIP_LAYOUTS[faceValue.value] ?? []
+  if (!showPipFace.value || pipFace.value == null) return new Set<string>()
+  const positions = PIP_LAYOUTS[pipFace.value] ?? []
   return new Set(positions.map(([r, c]) => `${r}-${c}`))
 })
 
@@ -89,7 +104,7 @@ function onClick() {
                 <span
                   v-if="hasPip(row - 1, col - 1)"
                   class="pixel-dice__pip"
-                  :class="{ 'pixel-dice__pip--solo': faceValue === 1 }"
+                  :class="{ 'pixel-dice__pip--solo': pipFace === 1 }"
                 />
               </span>
             </span>
@@ -99,7 +114,6 @@ function onClick() {
             class="pixel-dice__digit"
             aria-hidden="true"
           >{{ faceValue }}</span>
-          <span v-else class="pixel-dice__digit pixel-dice__digit--idle" aria-hidden="true">?</span>
           <span class="sr-only">{{ faceValue ?? 'Not rolled' }}</span>
         </span>
       </button>
@@ -189,11 +203,6 @@ function onClick() {
   text-shadow:
     2px 2px 0 var(--pixel-forest-dark),
     -1px -1px 0 var(--pixel-dice-shadow);
-}
-
-.pixel-dice__digit--idle {
-  font-size: 1rem;
-  opacity: 0.85;
 }
 
 .sr-only {

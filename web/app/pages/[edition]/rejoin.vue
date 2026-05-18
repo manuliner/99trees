@@ -1,10 +1,29 @@
 <script setup lang="ts">
-const { editionId, editionError, pathWithEdition } = useEditionId()
+import {
+  trimTeamName,
+  validateTeamName,
+  TEAM_NAME_MAX,
+  TEAM_NAME_MIN,
+} from '~/utils/team-form'
+import { mapApiError } from '~/utils/api-errors'
+
+definePageMeta({ layout: 'player' })
+
+const { t } = useI18n()
+
+const {
+  editionId,
+  editionError,
+  editionPublic,
+  editionPublicPending,
+  editionSlugLookupSettled,
+  pathWithEdition,
+} = useEditionId()
 
 watch(
-  () => editionError.value,
-  (err) => {
-    if (err) navigateTo('/')
+  () => ({ err: editionError.value, settled: editionSlugLookupSettled.value }),
+  ({ err, settled }) => {
+    if (settled && err) navigateTo('/')
   },
   { immediate: true },
 )
@@ -16,24 +35,55 @@ const loading = ref(false)
 
 const { api } = useGameApi()
 
+const { data: existingSession } = await useFetch('/api/me', { credentials: 'include' })
+
+const { sessionGateReady } = useJoinSessionGate({
+  editionId,
+  editionSlugLookupSettled,
+  existingSession,
+})
+
+const editionLoading = computed(
+  () => !editionSlugLookupSettled.value || editionPublicPending.value,
+)
+
+const showPage = computed(
+  () => editionSlugLookupSettled.value && !editionError.value,
+)
+
+const showForm = computed(() => sessionGateReady.value && !editionLoading.value)
+
 async function rejoin() {
   if (editionId.value == null) return
   error.value = ''
+  const nameErrorKey = validateTeamName(name.value)
+  if (nameErrorKey) {
+    error.value = t(nameErrorKey, { min: TEAM_NAME_MIN, max: TEAM_NAME_MAX })
+    return
+  }
   if (pin.value.length !== 4) {
-    error.value = 'PIN must be 4 digits'
+    error.value = t('rejoin.errors.pinLength')
     return
   }
   loading.value = true
   try {
     await api('/api/teams/rejoin', {
       method: 'POST',
-      body: { editionId: editionId.value, name: name.value, pin: pin.value },
+      body: {
+        editionId: editionId.value,
+        name: trimTeamName(name.value),
+        pin: pin.value,
+      },
     })
     await navigateTo('/play')
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string }; statusMessage?: string }
-    error.value = err.data?.statusMessage ?? err.statusMessage ?? 'Could not rejoin'
+    error.value = mapApiError(
+      err.data?.statusMessage ?? err.statusMessage,
+      'rejoin.errors.rejoinFailed',
+      t,
+    )
   }
   finally {
     loading.value = false
@@ -42,16 +92,35 @@ async function rejoin() {
 </script>
 
 <template>
-  <main v-if="!editionError" class="p-4 max-w-md mx-auto space-y-4">
-    <h1 class="pixel-title text-center text-base">Find your team</h1>
+  <main v-if="showPage" class="join-page-main p-4 max-w-md mx-auto space-y-4">
+    <PixelJoinHero
+      variant="rejoin"
+      :edition-name="editionPublic?.name ?? null"
+      :loading="editionLoading"
+    />
 
-    <div class="pixel-card p-4 space-y-4">
+    <p v-if="editionLoading" class="pixel-body text-center text-sm opacity-70">
+      {{ $t('common.loadingEvent') }}
+    </p>
+
+    <form
+      v-else-if="showForm"
+      class="pixel-card p-4 space-y-4"
+      @submit.prevent="rejoin"
+    >
       <label class="block space-y-2">
-        <span class="pixel-body text-sm">Team name</span>
-        <input v-model="name" class="pixel-input w-full p-3" />
+        <span class="pixel-body text-sm">{{ $t('rejoin.teamName') }}</span>
+        <input
+          v-model="name"
+          class="pixel-input w-full p-3"
+          :placeholder="$t('rejoin.teamNamePlaceholder')"
+          autocomplete="organization"
+          :maxlength="TEAM_NAME_MAX"
+          required
+        >
       </label>
       <label class="block space-y-2">
-        <span class="pixel-body text-sm">PIN</span>
+        <span class="pixel-body text-sm">{{ $t('rejoin.pin') }}</span>
         <input
           v-model="pin"
           type="password"
@@ -60,14 +129,32 @@ async function rejoin() {
           autocomplete="off"
           maxlength="4"
           class="pixel-input w-full p-3"
-        />
+          required
+        >
       </label>
-      <p v-if="error" class="text-sm text-[var(--pixel-score-minus)]">{{ error }}</p>
-      <PixelButton :disabled="loading || editionId == null" @click="rejoin">Continue</PixelButton>
-    </div>
+      <p
+        v-if="error"
+        role="alert"
+        class="text-sm text-[var(--pixel-score-minus)]"
+      >
+        {{ error }}
+      </p>
+      <PixelButton
+        type="submit"
+        :disabled="loading"
+        :aria-busy="loading"
+      >
+        {{ loading ? $t('rejoin.signingIn') : $t('rejoin.continue') }}
+      </PixelButton>
+    </form>
 
-    <NuxtLink :to="pathWithEdition('/join')" class="pixel-body text-sm underline block text-center">
-      New team
-    </NuxtLink>
+    <nav v-if="showForm" class="join-page-nav" :aria-label="$t('rejoin.navAria')">
+      <NuxtLink
+        :to="pathWithEdition('/join')"
+        class="pixel-body join-page-nav__primary underline"
+      >
+        {{ $t('rejoin.newTeam') }}
+      </NuxtLink>
+    </nav>
   </main>
 </template>

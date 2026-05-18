@@ -21,13 +21,13 @@ const {
   saveEditionSettings,
   saveCrewPassword,
   setStatus,
-  stations,
-  importStations,
-  downloadStations,
-  createStation,
-  updateStation,
+  tasks,
+  importTasks,
+  downloadTasks,
+  createTask,
+  updateTask,
   uploadMap,
-  exportStationQr,
+  exportTaskQr,
   logout,
   teams,
   setTeamPin,
@@ -94,9 +94,9 @@ async function onCreate(payload: { name: string; slug: string }) {
   showNewEdition.value = false
 }
 
-function onDownloadStations() {
+function onDownloadTasks() {
   const slug = selectedEdition.value?.slug
-  if (slug) downloadStations(slug)
+  if (slug) downloadTasks(slug)
 }
 
 const printReady = computed(() => stepDone('print'))
@@ -189,21 +189,21 @@ const contentReady = computed(
         </AdminAccordionSection>
 
         <AdminAccordionSection
-          title="Stations"
-          :done="stepDone('stations')"
-          :is-next="nextStepId === 'stations'"
-          :expanded="isStepExpanded('stations')"
-          @toggle="toggleStepExpanded('stations')"
+          title="Tasks"
+          :done="stepDone('tasks')"
+          :is-next="nextStepId === 'tasks'"
+          :expanded="isStepExpanded('tasks')"
+          @toggle="toggleStepExpanded('tasks')"
         >
-          <AdminStationsSection
+          <AdminTasksSection
             :edition-slug="selectedEdition!.slug"
-            :station-count="checklist!.stationCount"
+            :task-count="checklist!.taskCount"
             :field-count="checklist!.fieldCount"
-            :stations="stations"
-            @import="importStations"
-            @download="onDownloadStations"
-            @save-station="updateStation"
-            @create-station="createStation"
+            :tasks="tasks"
+            @import="importTasks"
+            @download="onDownloadTasks"
+            @save-task="updateTask"
+            @create-task="createTask"
           />
         </AdminAccordionSection>
 
@@ -268,7 +268,7 @@ const contentReady = computed(
             :join-url="joinUrl"
             :crew-login-url="crewLoginUrl"
             :ready="printReady"
-            @export-qr="exportStationQr"
+            @export-qr="exportTaskQr"
           />
         </AdminAccordionSection>
       </section>

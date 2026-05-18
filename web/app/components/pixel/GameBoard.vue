@@ -16,9 +16,11 @@ export type BoardTeam = {
 export type GameBoardFieldTooltip =
   | string
   | {
-      taskType: 'quiz' | 'performance'
+      activityType: 'quiz' | 'performance'
       text: string
     }
+
+const { t: tr } = useI18n()
 
 const props = withDefaults(
   defineProps<{
@@ -112,14 +114,14 @@ function fieldTooltipText(tooltip: GameBoardFieldTooltip): string {
 function fieldTooltipTaskType(
   tooltip: GameBoardFieldTooltip,
 ): 'quiz' | 'performance' | undefined {
-  return typeof tooltip === 'string' ? undefined : tooltip.taskType
+  return typeof tooltip === 'string' ? undefined : tooltip.activityType
 }
 
 function fieldTooltipProps(field: number) {
   const tip = fieldTooltip(field)
   return {
     text: tip ? fieldTooltipText(tip) : '',
-    taskType: tip ? fieldTooltipTaskType(tip) : undefined,
+    activityType: tip ? fieldTooltipTaskType(tip) : undefined,
   }
 }
 
@@ -337,7 +339,7 @@ defineExpose({ scrollToFocus })
               "
               :title="t.name"
             >
-              {{ t.id === myTeamId ? 'You' : t.name.slice(0, 6) }}
+              {{ t.id === myTeamId && !selectable ? tr('common.you') : t.name.slice(0, 6) }}
             </span>
           </div>
         </div>

@@ -1,15 +1,17 @@
 import { and, desc, eq, like } from 'drizzle-orm'
-import type { PendingApproval, PerformanceTaskPayload } from '#shared/types'
+import { resolveLocalized } from '#shared/localized'
+import { parseActivityPayload } from '#shared/quiz-payload'
+import type { PendingApproval } from '#shared/types'
 import { PERFORMANCE_APPROVAL_ACTIONS } from '#shared/types'
 import { getDb } from '../utils/db'
-import { crewRatings, stations, teams, turns } from '../database/schema'
-import { getEditionOrThrow } from './game'
+import { crewRatings, tasks, teams, turns } from '../database/schema'
+import { confirmTurn, getEditionOrThrow } from './game'
 
-function performanceSummary(taskPayloadJson: string | null): string {
-  if (!taskPayloadJson) return ''
+function performanceSummary(activityPayloadJson: string | null): string {
+  if (!activityPayloadJson) return ''
   try {
-    const payload = JSON.parse(taskPayloadJson) as PerformanceTaskPayload
-    if (payload.type === 'performance') return payload.text ?? ''
+    const payload = parseActivityPayload(JSON.parse(activityPayloadJson))
+    if (payload.type === 'performance') return resolveLocalized(payload.text, 'en')
   }
   catch {
     /* ignore */
@@ -24,17 +26,17 @@ function buildPerformanceApproval(row: {
   fieldNumber: number | null
   slug: string | null
   scannedAt: Date | null
-  taskPayloadJson: string | null
+  activityPayloadJson: string | null
 }): PendingApproval {
   return {
     turnId: row.turnId,
     teamId: row.teamId,
     teamName: row.teamName,
     fieldNumber: row.fieldNumber,
-    stationSlug: row.slug,
+    taskSlug: row.slug,
     waitingSince: row.scannedAt?.toISOString() ?? null,
     kind: 'performance',
-    summary: performanceSummary(row.taskPayloadJson),
+    summary: performanceSummary(row.activityPayloadJson),
     actions: PERFORMANCE_APPROVAL_ACTIONS,
   }
 }
@@ -82,27 +84,27 @@ export async function getCrewTeamDetail(editionId: number, teamId: number) {
   let currentTurn = null
   let pendingApproval: PendingApproval | null = null
   if (openTurn && ['awaiting_crew', 'scanned', 'rolled', 'completed'].includes(openTurn.state)) {
-    const station = openTurn.stationId
-      ? (await db.select().from(stations).where(eq(stations.id, openTurn.stationId)).limit(1))[0]
+    const task = openTurn.taskId
+      ? (await db.select().from(tasks).where(eq(tasks.id, openTurn.taskId)).limit(1))[0]
       : null
     currentTurn = {
       id: openTurn.id,
       state: openTurn.state,
       positionPending: openTurn.positionPending,
-      taskType: station?.taskType,
-      taskPayload: station ? JSON.parse(station.taskPayloadJson) : null,
-      stationName: station?.slug,
-      fieldNumber: station?.fieldNumber,
+      activityType: task?.activityType,
+      activityPayload: task ? parseActivityPayload(JSON.parse(task.activityPayloadJson)) : null,
+      taskSlug: task?.slug,
+      fieldNumber: task?.fieldNumber,
     }
     if (openTurn.state === 'awaiting_crew') {
       pendingApproval = buildPerformanceApproval({
         turnId: openTurn.id,
         teamId: team.id,
         teamName: team.name,
-        fieldNumber: station?.fieldNumber ?? null,
-        slug: station?.slug ?? null,
+        fieldNumber: task?.fieldNumber ?? null,
+        slug: task?.slug ?? null,
         scannedAt: openTurn.scannedAt,
-        taskPayloadJson: station?.taskPayloadJson ?? null,
+        activityPayloadJson: task?.activityPayloadJson ?? null,
       })
     }
   }
@@ -145,7 +147,8 @@ export async function ratePerformanceTurn(
     .set({ state: 'completed', completedAt: now, bonusPoints })
     .where(eq(turns.id, turnId))
 
-  return { ok: true, bonusPoints }
+  const { scoreDelta, breakdown, newScore } = await confirmTurn(teamId, turnId)
+  return { ok: true, bonusPoints, scoreDelta, breakdown, newScore }
 }
 
 export async function getPendingPerformances(editionId: number): Promise<PendingApproval[]> {
@@ -155,14 +158,14 @@ export async function getPendingPerformances(editionId: number): Promise<Pending
       turnId: turns.id,
       teamId: teams.id,
       teamName: teams.name,
-      fieldNumber: stations.fieldNumber,
-      slug: stations.slug,
+      fieldNumber: tasks.fieldNumber,
+      slug: tasks.slug,
       scannedAt: turns.scannedAt,
-      taskPayloadJson: stations.taskPayloadJson,
+      activityPayloadJson: tasks.activityPayloadJson,
     })
     .from(turns)
     .innerJoin(teams, eq(turns.teamId, teams.id))
-    .leftJoin(stations, eq(turns.stationId, stations.id))
+    .leftJoin(tasks, eq(turns.taskId, tasks.id))
     .where(and(eq(teams.editionId, editionId), eq(turns.state, 'awaiting_crew')))
     .orderBy(turns.scannedAt)
 
@@ -174,7 +177,7 @@ export async function getPendingPerformances(editionId: number): Promise<Pending
       fieldNumber: r.fieldNumber,
       slug: r.slug,
       scannedAt: r.scannedAt,
-      taskPayloadJson: r.taskPayloadJson,
+      activityPayloadJson: r.activityPayloadJson,
     }),
   )
 }

@@ -24,7 +24,7 @@ const kindLabel = computed(() => {
 const metaLine = computed(() => {
   const parts = [props.item.teamName]
   if (props.item.fieldNumber != null) parts.push(`Field ${props.item.fieldNumber}`)
-  if (props.item.stationSlug) parts.push(props.item.stationSlug)
+  if (props.item.taskSlug) parts.push(props.item.taskSlug)
   return parts.join(' · ')
 })
 

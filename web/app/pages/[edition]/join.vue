@@ -1,10 +1,31 @@
 <script setup lang="ts">
-const { editionId, editionError, editionPublic, pathWithEdition } = useEditionId()
+import {
+  canRegisterEdition,
+  editionStatusMessage,
+  trimTeamName,
+  validateTeamName,
+  TEAM_NAME_MAX,
+  TEAM_NAME_MIN,
+} from '~/utils/team-form'
+import { mapApiError } from '~/utils/api-errors'
+
+definePageMeta({ layout: 'player' })
+
+const { t } = useI18n()
+
+const {
+  editionId,
+  editionError,
+  editionPublic,
+  editionPublicPending,
+  editionSlugLookupSettled,
+  pathWithEdition,
+} = useEditionId()
 
 watch(
-  () => editionError.value,
-  (err) => {
-    if (err) navigateTo('/')
+  () => ({ err: editionError.value, settled: editionSlugLookupSettled.value }),
+  ({ err, settled }) => {
+    if (settled && err) navigateTo('/')
   },
   { immediate: true },
 )
@@ -14,46 +35,83 @@ const pin = useDigitPin()
 const pinConfirm = useDigitPin()
 const error = ref('')
 const loading = ref(false)
-const sessionMismatch = ref(false)
 
 const { api } = useGameApi()
 
 const { data: existingSession } = await useFetch('/api/me', { credentials: 'include' })
 
-if (existingSession.value?.team && editionId.value != null) {
-  if (existingSession.value.team.editionId === editionId.value) {
-    await navigateTo('/play')
-  }
-  else {
-    sessionMismatch.value = true
-  }
-}
+const { sessionMismatch, sessionGateReady } = useJoinSessionGate({
+  editionId,
+  editionSlugLookupSettled,
+  existingSession,
+})
 
 const rulesTo = computed(() => pathWithEdition('/rules'))
 const privacyTo = computed(() => pathWithEdition('/privacy'))
 
+const editionLoading = computed(
+  () => !editionSlugLookupSettled.value || editionPublicPending.value,
+)
+
+const canCreateTeam = computed(
+  () =>
+    sessionGateReady.value
+    && !sessionMismatch.value
+    && canRegisterEdition(editionPublic.value?.status),
+)
+
+const editionBlockedKey = computed(() =>
+  editionPublic.value ? editionStatusMessage(editionPublic.value.status) : null,
+)
+
+const editionBlockedMessage = computed(() => {
+  const key = editionBlockedKey.value
+  if (!key) return null
+  if (key === 'editionStatus.unknown') {
+    return t(key, { status: editionPublic.value?.status ?? '' })
+  }
+  return t(key)
+})
+
+const showPage = computed(
+  () => editionSlugLookupSettled.value && !editionError.value,
+)
+
 async function createTeam() {
-  if (editionId.value == null) return
+  if (editionId.value == null || !canCreateTeam.value) return
   error.value = ''
+  const nameErrorKey = validateTeamName(name.value)
+  if (nameErrorKey) {
+    error.value = t(nameErrorKey, { min: TEAM_NAME_MIN, max: TEAM_NAME_MAX })
+    return
+  }
   if (pin.value.length !== 4) {
-    error.value = 'PIN must be 4 digits'
+    error.value = t('join.errors.pinLength')
     return
   }
   if (pin.value !== pinConfirm.value) {
-    error.value = 'PINs do not match'
+    error.value = t('join.errors.pinMismatch')
     return
   }
   loading.value = true
   try {
     await api('/api/teams', {
       method: 'POST',
-      body: { editionId: editionId.value, name: name.value, pin: pin.value },
+      body: {
+        editionId: editionId.value,
+        name: trimTeamName(name.value),
+        pin: pin.value,
+      },
     })
     await navigateTo('/play')
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string }; statusMessage?: string }
-    error.value = err.data?.statusMessage ?? err.statusMessage ?? 'Could not create team'
+    error.value = mapApiError(
+      err.data?.statusMessage ?? err.statusMessage,
+      'join.errors.createFailed',
+      t,
+    )
   }
   finally {
     loading.value = false
@@ -62,68 +120,104 @@ async function createTeam() {
 </script>
 
 <template>
-  <main v-if="!editionError" class="p-4 max-w-md mx-auto space-y-4">
-    <h1 class="pixel-title text-center text-base">ZUGVÖGEL</h1>
-    <p class="pixel-body text-center text-sm opacity-80">Ready to play?</p>
+  <main v-if="showPage" class="join-page-main p-4 max-w-md mx-auto space-y-4">
+    <PixelJoinHero
+      variant="join"
+      :edition-name="editionPublic?.name ?? null"
+      :loading="editionLoading"
+    />
+
+    <p v-if="editionLoading" class="pixel-body text-center text-sm opacity-70">
+      {{ $t('common.loadingEvent') }}
+    </p>
 
     <p
-      v-if="sessionMismatch"
+      v-else-if="sessionMismatch"
       class="pixel-card p-4 pixel-body text-sm text-center text-[var(--pixel-score-minus)]"
     >
-      You are signed in to a different event. Use
-      <NuxtLink :to="pathWithEdition('/rejoin')" class="underline">Find your team</NuxtLink>
-      for this festival, or continue your current game on
-      <NuxtLink to="/play" class="underline">the board</NuxtLink>.
+      {{ $t('join.sessionMismatchBefore') }}
+      <NuxtLink :to="pathWithEdition('/rejoin')" class="underline">{{ $t('join.sessionMismatchRejoin') }}</NuxtLink>
+      {{ $t('join.sessionMismatchMiddle') }}
+      <NuxtLink to="/play" class="underline">{{ $t('join.sessionMismatchBoard') }}</NuxtLink>.
     </p>
 
     <p
-      v-else-if="editionPublic && editionPublic.status !== 'live'"
-      class="pixel-body text-center text-sm text-[var(--pixel-score-minus)]"
+      v-else-if="editionBlockedMessage"
+      class="pixel-card p-4 pixel-body text-sm text-center text-[var(--pixel-score-minus)]"
     >
-      The game has not started yet ({{ editionPublic.status }}).
+      {{ editionBlockedMessage }}
     </p>
 
-    <div v-if="!sessionMismatch" class="pixel-card p-4 space-y-4">
+    <form
+      v-else-if="canCreateTeam"
+      class="pixel-card p-4 space-y-4"
+      @submit.prevent="createTeam"
+    >
       <label class="block space-y-2">
-        <span class="pixel-body text-sm">Team name</span>
-        <input v-model="name" class="pixel-input w-full p-3" />
+        <span class="pixel-body text-sm">{{ $t('join.teamName') }}</span>
+        <input
+          v-model="name"
+          class="pixel-input w-full p-3"
+          :placeholder="$t('join.teamNamePlaceholder')"
+          autocomplete="organization"
+          :maxlength="TEAM_NAME_MAX"
+          required
+        >
       </label>
       <label class="block space-y-2">
-        <span class="pixel-body text-sm">4-digit PIN</span>
+        <span class="pixel-body text-sm">{{ $t('join.pin4') }}</span>
         <input
           v-model="pin"
           type="password"
           inputmode="numeric"
           pattern="[0-9]*"
-          autocomplete="off"
+          autocomplete="new-password"
           maxlength="4"
           class="pixel-input w-full p-3"
-        />
+          required
+        >
       </label>
       <label class="block space-y-2">
-        <span class="pixel-body text-sm">Confirm PIN</span>
+        <span class="pixel-body text-sm">{{ $t('join.confirmPin') }}</span>
         <input
           v-model="pinConfirm"
           type="password"
           inputmode="numeric"
           pattern="[0-9]*"
-          autocomplete="off"
+          autocomplete="new-password"
           maxlength="4"
           class="pixel-input w-full p-3"
-        />
+          required
+        >
       </label>
-      <p v-if="error" class="text-sm text-[var(--pixel-score-minus)]">{{ error }}</p>
-      <PixelButton :disabled="loading || editionId == null" @click="createTeam">Start game</PixelButton>
-    </div>
+      <p
+        v-if="error"
+        role="alert"
+        class="text-sm text-[var(--pixel-score-minus)]"
+      >
+        {{ error }}
+      </p>
+      <PixelButton
+        type="submit"
+        :disabled="loading"
+        :aria-busy="loading"
+      >
+        {{ loading ? $t('join.creatingTeam') : $t('join.startGame') }}
+      </PixelButton>
+    </form>
 
-    <NuxtLink
-      v-if="editionId != null && !sessionMismatch"
-      :to="pathWithEdition('/rejoin')"
-      class="pixel-body text-sm underline block text-center"
-    >
-      Find your team
-    </NuxtLink>
-    <NuxtLink :to="rulesTo" class="pixel-body text-sm underline block text-center">Rules</NuxtLink>
-    <NuxtLink :to="privacyTo" class="pixel-body text-sm underline block text-center">Privacy</NuxtLink>
+    <nav v-if="sessionGateReady && !sessionMismatch" class="join-page-nav" :aria-label="$t('join.navAria')">
+      <NuxtLink
+        v-if="editionId != null && canCreateTeam"
+        :to="pathWithEdition('/rejoin')"
+        class="pixel-body join-page-nav__primary underline"
+      >
+        {{ $t('join.findYourTeam') }}
+      </NuxtLink>
+      <div class="join-page-nav__secondary">
+        <NuxtLink :to="rulesTo" class="pixel-body underline">{{ $t('common.rules') }}</NuxtLink>
+        <NuxtLink :to="privacyTo" class="pixel-body underline">{{ $t('common.privacy') }}</NuxtLink>
+      </div>
+    </nav>
   </main>
 </template>

@@ -1,3 +1,5 @@
+import type { LocalizedString, LocalizedStringList } from './localized'
+
 export type EditionStatus = 'draft' | 'live' | 'paused' | 'ended'
 
 export type TurnState = 'rolled' | 'scanned' | 'awaiting_crew' | 'completed' | 'abandoned'
@@ -33,30 +35,40 @@ export function cloneEditionConfig(config: EditionConfig): EditionConfig {
   }
 }
 
-export interface QuizTaskPayload {
+export type QuizInputMode = 'freeText' | 'multipleChoice'
+
+export interface QuizActivityPayload {
   type: 'quiz'
-  question: string
-  answers: string[]
+  question: LocalizedString
+  inputMode?: QuizInputMode
+  choices?: LocalizedStringList
+  answers: LocalizedStringList
 }
 
-export interface PerformanceTaskPayload {
+/** Quiz payload exposed to teams (correct answers stripped). */
+export type TeamQuizActivityPayload = Pick<
+  QuizActivityPayload,
+  'type' | 'question' | 'inputMode' | 'choices'
+>
+
+export interface PerformanceActivityPayload {
   type: 'performance'
-  text: string
+  text: LocalizedString
 }
 
-export type StationTaskPayload = QuizTaskPayload | PerformanceTaskPayload
+export type ActivityPayload = QuizActivityPayload | PerformanceActivityPayload
 
-export interface AdminStation {
+export interface AdminTask {
   id: number
   fieldNumber: number
   slug: string
-  hintVague: string
-  hintLevel1: string
-  hintLevel2: string
+  hintVague: LocalizedString
+  hintLevel1: LocalizedString
+  hintLevel2: LocalizedString
   mapX: number
   mapY: number
-  taskType: 'quiz' | 'performance'
-  taskPayload: StationTaskPayload
+  activityType: 'quiz' | 'performance'
+  activityPayload: ActivityPayload
 }
 
 export type PendingApprovalKind = 'performance'
@@ -72,7 +84,7 @@ export interface PendingApproval {
   teamId: number
   teamName: string
   fieldNumber: number | null
-  stationSlug: string | null
+  taskSlug: string | null
   waitingSince: string | null
   kind: PendingApprovalKind
   summary: string

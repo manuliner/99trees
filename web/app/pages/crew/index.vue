@@ -103,7 +103,7 @@ async function logout() {
 
     <PixelButton variant="secondary" @click="logout">Log out</PixelButton>
 
-    <StationQrScanner
+    <TaskQrScanner
       v-if="showTeamScanner"
       mode="team"
       @scanned="onTeamQrScanned"

@@ -1,7 +1,7 @@
 import { requireTeam } from '../../../../utils/team-session'
 import { assertDevOnly } from '../../../../utils/dev-only'
-import { getEditionOrThrow, getOpenTurn, getStationForField } from '../../../../services/game'
-import { applyStationScan } from '../../../../services/turn-scan'
+import { getEditionOrThrow, getOpenTurn, getTaskForField } from '../../../../services/game'
+import { applyTaskScan } from '../../../../services/turn-scan'
 
 export default defineEventHandler(async (event) => {
   assertDevOnly()
@@ -13,16 +13,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const edition = await getEditionOrThrow(team.editionId)
-  const station = await getStationForField(edition.id, open.positionPending)
-  if (!station) {
-    throw createError({ statusCode: 400, statusMessage: 'No station for pending field' })
+  const task = await getTaskForField(edition.id, open.positionPending)
+  if (!task) {
+    throw createError({ statusCode: 400, statusMessage: 'No task for pending field' })
   }
 
-  return applyStationScan({
+  return applyTaskScan({
     teamId: team.id,
     editionId: team.editionId,
     turnId,
-    stationSlug: station.slug,
-    token: station.qrToken,
+    taskSlug: task.slug,
+    token: task.qrToken,
   })
 })

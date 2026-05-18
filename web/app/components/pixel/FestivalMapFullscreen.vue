@@ -11,6 +11,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [] }>()
 
+const { t } = useI18n()
+
 const mounted = ref(false)
 const closeBtnRef = ref<HTMLButtonElement | null>(null)
 const mapRef = ref<InstanceType<typeof FestivalMapInteractive> | null>(null)
@@ -67,19 +69,19 @@ function onZoomOut() {
         class="festival-map-fullscreen__header flex shrink-0 items-center gap-2 border-b-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-cream)] px-3 py-2"
       >
         <h2 id="festival-map-fullscreen-title" class="pixel-title min-w-0 flex-1 text-xs">
-          Festival map
+          {{ t('play.festivalMap') }}
         </h2>
         <button
           type="button"
           class="festival-map-fullscreen__tool pixel-body shrink-0 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-cream)] px-2 py-1 text-[10px] font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
           @click="onReset"
         >
-          Reset
+          {{ t('festivalMap.reset') }}
         </button>
         <button
           type="button"
           class="festival-map-fullscreen__tool pixel-body shrink-0 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-cream)] px-2 py-1 text-xs font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
-          aria-label="Zoom in"
+          :aria-label="t('festivalMap.zoomIn')"
           @click="onZoomIn"
         >
           +
@@ -87,7 +89,7 @@ function onZoomOut() {
         <button
           type="button"
           class="festival-map-fullscreen__tool pixel-body shrink-0 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-cream)] px-2 py-1 text-xs font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
-          aria-label="Zoom out"
+          :aria-label="t('festivalMap.zoomOut')"
           @click="onZoomOut"
         >
           −
@@ -98,7 +100,7 @@ function onZoomOut() {
           class="festival-map-fullscreen__tool pixel-body shrink-0 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-sunrise)] px-2 py-1 text-[10px] font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
           @click="emit('close')"
         >
-          Close
+          {{ t('festivalMap.close') }}
         </button>
       </header>
 
@@ -107,13 +109,12 @@ function onZoomOut() {
           ref="mapRef"
           :map-image-url="mapImageUrl"
           :pins="pins ?? []"
-          large-pin-touch
           auto-focus-target
         />
       </div>
 
       <p class="festival-map-fullscreen__hint pixel-body shrink-0 bg-[var(--pixel-cream)] py-1 text-center text-[10px] opacity-80">
-        Pinch to zoom · drag to pan · double-tap to zoom
+        {{ t('festivalMap.gestureHint') }}
       </p>
     </div>
   </Teleport>

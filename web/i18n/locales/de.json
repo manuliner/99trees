@@ -1,0 +1,225 @@
+{
+  "common": {
+    "loadingEvent": "Event wird geladen…",
+    "back": "Zurück",
+    "you": "Du",
+    "pts": "Pkt",
+    "continue": "Weiter",
+    "rules": "Regeln",
+    "privacy": "Datenschutz",
+    "teamQr": "Banden-QR",
+    "teamQrAlt": "Banden-QR",
+    "pointsPenalty": "−{n} Pkt"
+  },
+  "language": {
+    "switcherLabel": "Sprache",
+    "de": "DE",
+    "en": "EN"
+  },
+  "join": {
+    "teamName": "Bande",
+    "teamNamePlaceholder": "3–32 Zeichen",
+    "pin4": "4-stellige PIN",
+    "confirmPin": "PIN bestätigen",
+    "creatingTeam": "Bande wird erstellt…",
+    "startGame": "Spiel starten",
+    "findYourTeam": "Bande finden",
+    "sessionMismatchBefore": "Du bist bei einem anderen Event angemeldet. Nutze",
+    "sessionMismatchRejoin": "Bande finden",
+    "sessionMismatchMiddle": "für dieses Festival oder mach mit deinem aktuellen Spiel auf",
+    "sessionMismatchBoard": "dem Brett",
+    "navAria": "Links auf der Beitrittsseite",
+    "errors": {
+      "pinLength": "PIN muss 4 Ziffern haben",
+      "pinMismatch": "PINs stimmen nicht überein",
+      "createFailed": "Bande konnte nicht erstellt werden"
+    }
+  },
+  "rejoin": {
+    "teamName": "Bande",
+    "teamNamePlaceholder": "3–32 Zeichen",
+    "pin": "PIN",
+    "signingIn": "Anmeldung…",
+    "continue": "Weiter",
+    "newTeam": "Neue Bande",
+    "navAria": "Links auf der Wiederfinden-Seite",
+    "errors": {
+      "pinLength": "PIN muss 4 Ziffern haben",
+      "rejoinFailed": "Wiederanmeldung fehlgeschlagen"
+    }
+  },
+  "hero": {
+    "joinTagline": "Würfle, scanne die Stationen und bring deinen Schwarm ans Ziel.",
+    "rejoinTagline": "Mach da weiter, wo du aufgehört hast — gleiche Bande, gleiche Spur."
+  },
+  "teamName": {
+    "tooShort": "Bande muss mindestens {min} Zeichen haben",
+    "tooLong": "Bande darf höchstens {max} Zeichen haben"
+  },
+  "editionStatus": {
+    "draft": "Das Spiel hat noch nicht begonnen. Schau wieder vorbei, wenn das Festival startet.",
+    "paused": "Das Spiel ist pausiert. Neue Banden können gerade nicht beitreten.",
+    "ended": "Dieses Festivalspiel ist beendet. Neue Banden können nicht mehr beitreten.",
+    "unknown": "Anmeldung ist nicht offen ({status})."
+  },
+  "play": {
+    "score": "Punkte: {n}",
+    "menu": "Menü",
+    "step1": "Schritt 1 von 3 — Würfeln",
+    "step2": "Schritt 2 von 3 — QR-Code finden",
+    "step3": "Schritt 3 von 3 — Aufgabe erledigen",
+    "reachedGoal": "Du hast das Ziel erreicht!",
+    "gameStatus": "Spielstatus: {status}",
+    "findSpot": "Finde den nächsten QR Code",
+    "scanQr": "QR scannen",
+    "hintsSection": "Hinweise",
+    "hintN": "Hinweis {n}:",
+    "rollAgain": "Nochmal würfeln (Nullrunde)",
+    "quiz": "Quiz",
+    "submit": "Absenden",
+    "useCorrectAnswerDev": "Richtige Antwort (Dev)",
+    "performance": "Performance",
+    "showQrToCrew": "Zeig diesen QR der Crew",
+    "waitingForCrew": "Warte auf die Crew…",
+    "completePerformanceDev": "Performance abschließen (Dev)",
+    "festivalMap": "Festivalplan",
+    "gameRules": "Spielregeln",
+    "leaderboard": "Rangliste",
+    "yourTeamQr": "Dein Banden-QR",
+    "diceRoll": "Würfeln",
+    "diceLastRoll": "Letzter Wurf: {n}",
+    "revealAllTitle": "Alle Hinweise aufdecken",
+    "revealAllMessage": "Alle Hinweise jetzt aufdecken für −{cost} Punkte?",
+    "revealAllConfirm": "Alle aufdecken",
+    "zeroRoundTitle": "Nullrunde",
+    "zeroRoundMessage": "Nullrunde — kein Feldfortschritt und keine Punkte für diesen Versuch. Fortfahren?",
+    "simulateScanDev": "Scan simulieren (Dev)",
+    "turnScore": {
+      "title": "Zug abgeschlossen",
+      "gained": "Hinzugekommen",
+      "deducted": "Abgezogen",
+      "base": "Basis",
+      "time": "Zeitbonus",
+      "crewBonus": "Crew-Bonus",
+      "hintsDuringTurn": "Hinweise (bereits)",
+      "hintsAtConfirm": "Hinweise (Zug)",
+      "quizPenalty": "Falsche Antworten",
+      "newTotal": "Neuer Stand: {n} Punkte",
+      "continue": "Weiter",
+      "linePlus": "+{n}",
+      "lineMinus": "−{n}"
+    },
+    "errors": {
+      "rollFailed": "Würfeln fehlgeschlagen",
+      "hintFailed": "Hinweis fehlgeschlagen",
+      "scanFailed": "Scan fehlgeschlagen",
+      "simulateScanFailed": "Scan-Simulation fehlgeschlagen",
+      "completePerformanceFailed": "Performance konnte nicht abgeschlossen werden",
+      "answerFailed": "Antwort fehlgeschlagen",
+      "abandonFailed": "Abbrechen fehlgeschlagen"
+    }
+  },
+  "hints": {
+    "mapBelow": "Siehe Festivalplan unten.",
+    "mapUnavailable": "Karte nicht verfügbar — Festivalplan nicht hochgeladen.",
+    "revealNextAria": "Nächsten Hinweis aufdecken",
+    "revealHintsAria": "Hinweise aufdecken",
+    "revealNow": "Jetzt aufdecken",
+    "revealAll": "Alle Hinweise aufdecken"
+  },
+  "festivalMap": {
+    "expand": "Vollbild",
+    "notConfigured": "Festivalplan nicht konfiguriert",
+    "captionTarget": "Zielfeld auf dem Festivalplan",
+    "captionVisited": "Erledigte Aufgaben",
+    "captionDefault": "Festivalgelände",
+    "captionTapToExpand": "{caption} — tippen für Vollbild",
+    "ariaDefault": "Festivalplan",
+    "ariaWithVisited": "Festivalplan mit {visited} erledigten Aufgaben",
+    "ariaWithTarget": "Festivalplan mit {visited} erledigten Aufgaben und Suchziel",
+    "ariaTapToOpen": "Tippen, um den Festivalplan im Vollbild zu öffnen.",
+    "reset": "Zurücksetzen",
+    "close": "Schließen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "gestureHint": "Zum Zoomen kneifen · Ziehen zum Verschieben · Doppeltippen zum Zoomen"
+  },
+  "dice": {
+    "prompts": [
+      "Würfle!",
+      "Du bist dran — würfle!",
+      "Das Schicksal wartet — schüttle die Würfel",
+      "Tippe auf die Würfel und lass das Glück entscheiden",
+      "Bereit? Würfle für dein nächstes Feld",
+      "Das Brett ruft — würfle!",
+      "Lass die Würfel fliegen",
+      "Nur ein Wurf bis zum Abenteuer",
+      "Dreh die Pixel des Schicksals",
+      "Würfle und sieh, wo du landest",
+      "Schüttle die Würfel und starte deinen Zug",
+      "Lass die Würfel deinen Weg wählen",
+      "Zeit zum Würfeln — das Festival wartet",
+      "Würfle und jag der nächsten Station hinterher",
+      "Dein nächstes Feld ist nur einen Wurf entfernt",
+      "Jetzt würfeln — die Menge schaut zu",
+      "Würfel hoch! Sieh, wie weit du kommst",
+      "Nutze deine Chance — würfle!",
+      "Die Würfel sind gefallen… fast — würfle!",
+      "Das Glück ist mutig — würfle!"
+    ]
+  },
+  "rules": {
+    "title": "Spielregeln",
+    "p1": "Ein Handy pro Bande. Würfle, finde deinen Spot, scanne den QR, erledige die Aufgabe und halte deinen Zug fest.",
+    "p2": "Hinweise kosten Punkte. Warten schaltet günstigere Hinweise frei. Alle Hinweise aufdecken kostet 50 Punkte.",
+    "p3": "Wenn du den Spot nicht findest, nutze nach allen Hinweisen „Nochmal würfeln (Nullrunde)“ — kein Fortschritt, keine Punkte.",
+    "p4": "Die Highscore-Wertung zählt nur Banden, die das Zielfeld erreichen. Bei Gleichstand entscheidet die schnellste Ankunft."
+  },
+  "privacy": {
+    "title": "Datenschutz",
+    "body": "Wir speichern den Namen deiner Bande, Spielstand und Punkte für die Dauer der Festival-Edition. Daten werden nach dem Event gelöscht. Keine Marketing-E-Mails. Löschanfragen bitte an den Festival-Infostand."
+  },
+  "leaderboard": {
+    "draft": "Das Spiel startet bald — schau wieder vorbei, wenn es live ist.",
+    "paused": "Spiel pausiert — die Tabelle ist eingefroren.",
+    "officialRanking": "Offizielle Wertung",
+    "live": "Live",
+    "winner": "Gewinner: {name}",
+    "fallbackRanking": "Keine Bande hat das Ziel erreicht — Wertung nach höchstem Feld, dann Punkten.",
+    "progress": "Fortschritt",
+    "highscore": "Highscore",
+    "youMarker": "(du)",
+    "field": "Feld {n}",
+    "enRoute": "unterwegs"
+  },
+  "scanner": {
+    "cameraError": "Kamerazugriff verweigert oder nicht verfügbar",
+    "pointAtQr": "Richte die Kamera auf den QR-Code",
+    "scanTeamQr": "Banden-QR scannen",
+    "scanQr": "QR scannen",
+    "close": "Schließen",
+    "pointAtTeamQr": "Richte die Kamera auf den Banden-QR",
+    "pointAtTaskQr": "Richte die Kamera auf den QR-Code"
+  },
+  "errors": {
+    "unknown": "Etwas ist schiefgelaufen",
+    "invalidTeamOrPin": "Ungültige Bande oder PIN",
+    "gameNotLiveYet": "Das Spiel ist noch nicht live",
+    "gameNotLive": "Das Spiel ist nicht live",
+    "teamNameTaken": "Bande ist schon vergeben",
+    "finishOrAbandonTurn": "Schließe den aktuellen Zug ab oder brich ihn ab",
+    "scanNotAllowed": "Scan gerade nicht möglich",
+    "invalidQr": "Ungültiger QR-Code",
+    "wrongSpot": "Falscher Spot — du brauchst Feld {field}",
+    "noQuizTask": "Keine Quiz-Aufgabe aktiv",
+    "taskNotFound": "Aufgabe nicht gefunden",
+    "answerInvalid": "Antwort ist keine gültige Auswahl",
+    "noActiveSearchTurn": "Kein aktiver Suchzug",
+    "hintNotUnlocked": "Hinweis noch nicht freigeschaltet",
+    "cannotAbandon": "Dieser Zug kann nicht abgebrochen werden",
+    "waitForHints": "Warte auf alle Hinweise oder nutze „Alle aufdecken“",
+    "taskNotCompleted": "Aufgabe noch nicht erledigt",
+    "tooManyRequests": "Zu viele Anfragen",
+    "teamSessionRequired": "Banden-Session erforderlich"
+  }
+}

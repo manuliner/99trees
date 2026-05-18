@@ -28,6 +28,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{ expand: [] }>()
 
+const { t } = useI18n()
+
 const resolvedPins = computed((): FestivalMapPin[] => {
   if (props.pins.length > 0) return props.pins
   if (
@@ -51,15 +53,21 @@ const resolvedPins = computed((): FestivalMapPin[] => {
 const ariaLabel = computed(() => {
   const visited = resolvedPins.value.filter((p) => p.kind === 'visited').length
   const target = resolvedPins.value.some((p) => p.kind === 'target')
-  if (target) return `Festival map with ${visited} visited stations and search target`
-  if (visited > 0) return `Festival map with ${visited} visited stations`
-  return 'Festival map'
+  if (target) return t('festivalMap.ariaWithTarget', { visited })
+  if (visited > 0) return t('festivalMap.ariaWithVisited', { visited })
+  return t('festivalMap.ariaDefault')
 })
 
+const ariaLabelExpandable = computed(() =>
+  props.expandable && props.mapImageUrl
+    ? `${ariaLabel.value} ${t('festivalMap.ariaTapToOpen')}`
+    : ariaLabel.value,
+)
+
 const caption = computed(() => {
-  if (resolvedPins.value.some((p) => p.kind === 'target')) return 'Target field on the festival map'
-  if (resolvedPins.value.length) return 'Stations you have completed'
-  return 'Festival grounds'
+  if (resolvedPins.value.some((p) => p.kind === 'target')) return t('festivalMap.captionTarget')
+  if (resolvedPins.value.length) return t('festivalMap.captionVisited')
+  return t('festivalMap.captionDefault')
 })
 
 function onExpand() {
@@ -83,38 +91,37 @@ function onExpandKeydown(event: KeyboardEvent) {
       'cursor-pointer transition-[filter] hover:brightness-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pixel-sunrise)]': expandable && mapImageUrl,
     }"
     :role="expandable && mapImageUrl ? undefined : 'img'"
-    :aria-label="expandable && mapImageUrl ? `${ariaLabel}. Tap to open fullscreen map.` : ariaLabel"
+    :aria-label="ariaLabelExpandable"
     @click="onExpand"
     @keydown="expandable && mapImageUrl ? onExpandKeydown : undefined"
   >
-    <img
-      v-if="mapImageUrl"
-      :src="mapImageUrl"
-      alt=""
-      class="block h-auto w-full pointer-events-none"
-      style="image-rendering: pixelated"
-      draggable="false"
-    >
+    <div v-if="mapImageUrl" class="relative">
+      <img
+        :src="mapImageUrl"
+        alt=""
+        class="block h-auto w-full pointer-events-none"
+        style="image-rendering: pixelated"
+        draggable="false"
+      >
+      <PixelFestivalMapPins :pins="resolvedPins" />
+      <span
+        v-if="expandable"
+        class="absolute right-2 top-2 z-0 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-sunrise)] px-2 py-0.5 text-[10px] font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
+        aria-hidden="true"
+      >
+        {{ t('festivalMap.expand') }}
+      </span>
+    </div>
     <div
       v-else
       class="flex aspect-[16/10] items-center justify-center bg-[var(--pixel-forest-light)]"
     >
-      <p class="pixel-body px-2 text-center text-xs opacity-80">Festival map not configured</p>
+      <p class="pixel-body px-2 text-center text-xs opacity-80">{{ t('festivalMap.notConfigured') }}</p>
     </div>
 
-    <PixelFestivalMapPins :pins="resolvedPins" />
-
-    <span
-      v-if="expandable && mapImageUrl"
-      class="absolute right-2 top-2 z-20 border-4 border-[var(--pixel-forest-dark)] bg-[var(--pixel-sunrise)] px-2 py-0.5 text-[10px] font-bold shadow-[2px_2px_0_var(--pixel-forest-dark)]"
-      aria-hidden="true"
-    >
-      Expand
-    </span>
-
-    <p class="pixel-body py-1 text-center text-xs opacity-80">
+    <p class="festival-map__caption relative z-20 bg-[var(--pixel-cream)] py-1 text-center text-xs opacity-80 pixel-body">
       <template v-if="expandable && mapImageUrl">
-        {{ caption }} — tap to expand
+        {{ t('festivalMap.captionTapToExpand', { caption }) }}
       </template>
       <template v-else>
         {{ caption }}

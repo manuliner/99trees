@@ -23,8 +23,9 @@ bash .cursor/skills/release/scripts/release-test.sh my-custom-tag   # optional c
 - Runs a minimal quality gate (typecheck, plus tests if `pnpm test` exists) before tags
 - Increments build number in `.build-number`
 - Creates `test-{version}-{build}` tag (or custom) → push when ready
-- **99trees:** no `.github/workflows` yet — tags do not auto-deploy until CI is configured for your host/registry
+- Push triggers `build.yml` → `deploy.yml` (test instance on `pretix-server-01`)
 - Dirty git allowed; any branch
+- One-time host setup: [`docs/DEPLOYMENT.md`](../../../docs/DEPLOYMENT.md)
 
 ## Production release (bumps `web/package.json`)
 
@@ -38,6 +39,7 @@ bash .cursor/skills/release/scripts/release-prod.sh major
 - Bumps version in `web/package.json`
 - Converts `change_notes.md` → `docs/release-notes/RELEASE_NOTES_v*.md`
 - Resets `change_notes.md` template; commits; tags `v*.*.*`; pushes
+- Push triggers production build + deploy (GitHub `environment: production` if configured)
 
 **Requirements:** `master`/`main`, clean git, `change_notes.md` with real content (not template-only).
 

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { getDb } from '../../../utils/db'
-import { editions, stations } from '../../../database/schema'
+import { editions, tasks } from '../../../database/schema'
 import { requireAdmin } from '../../../utils/admin-session'
 import { assertEditionSlugAvailable } from '../../../utils/edition-slug'
 import { validateEditionSlug } from '#shared/edition-urls'
@@ -26,11 +26,11 @@ export default defineEventHandler(async (event) => {
 
   if (body.status === 'live') {
 
-    const stationRows = await db.select().from(stations).where(eq(stations.editionId, id))
+    const taskRows = await db.select().from(tasks).where(eq(tasks.editionId, id))
     const issues: string[] = []
-    if (stationRows.length === 0) issues.push('No stations imported')
-    if (stationRows.length !== edition.fieldCount) {
-      issues.push(`Station count ${stationRows.length} != field_count ${edition.fieldCount}`)
+    if (taskRows.length === 0) issues.push('No tasks imported')
+    if (taskRows.length !== edition.fieldCount) {
+      issues.push(`Task count ${taskRows.length} != field_count ${edition.fieldCount}`)
     }
     if (!edition.crewPasswordHash && !body.crewPassword) issues.push('Crew password not set')
     if (!edition.mapImagePath) issues.push('Festival map image not uploaded')
@@ -38,9 +38,9 @@ export default defineEventHandler(async (event) => {
     if (!slugToCheck || validateEditionSlug(slugToCheck)) {
       issues.push('Edition slug not set or invalid')
     }
-    const fields = new Set(stationRows.map((s) => s.fieldNumber))
+    const fields = new Set(taskRows.map((s) => s.fieldNumber))
     for (let i = 1; i <= edition.fieldCount; i++) {
-      if (!fields.has(i)) issues.push(`Missing station for field ${i}`)
+      if (!fields.has(i)) issues.push(`Missing task for field ${i}`)
     }
     if (issues.length > 0) {
       throw createError({

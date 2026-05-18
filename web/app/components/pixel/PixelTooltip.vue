@@ -27,6 +27,9 @@ const hasContent = computed(() =>
   Boolean(props.taskType || props.sections?.length || props.text.trim()),
 )
 
+/** Tips dialog: open on click only — hover would race with toggle-on-click on touch. */
+const openOnClickOnly = computed(() => props.hints && props.toggleOnClick)
+
 const VIEWPORT_PADDING = 8
 
 const triggerRef = ref<HTMLElement | null>(null)
@@ -80,8 +83,18 @@ function hide() {
   visible.value = false
 }
 
+function onHoverOpen() {
+  if (openOnClickOnly.value) return
+  show()
+}
+
 function onTriggerClick() {
   if (!props.toggleOnClick || !hasContent.value) return
+  if (openOnClickOnly.value) {
+    if (visible.value) hide()
+    else show()
+    return
+  }
   visible.value = !visible.value
   if (visible.value) {
     nextTick(() => {
@@ -140,9 +153,9 @@ defineExpose({ show, hide })
   <div
     ref="triggerRef"
     class="pixel-tooltip-trigger inline-flex"
-    @mouseenter="show"
+    @mouseenter="onHoverOpen"
     @mouseleave="onMouseLeave"
-    @focusin="show"
+    @focusin="onHoverOpen"
     @focusout="onFocusOut"
     @click="onTriggerClick"
   >

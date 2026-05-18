@@ -1,0 +1,9 @@
+{
+  "debug.javascript.terminalOptions": {
+    "resolveSourceMapLocations": [
+      "http://localhost:3000/**",
+      "!file:///**",
+      "!**/node_modules/**"
+    ]
+  }
+}

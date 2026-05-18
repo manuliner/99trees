@@ -7,10 +7,10 @@ import {
   getOpenTurn,
   rollDice,
   resolvePendingPosition,
-  getStationForField,
+  getTaskForField,
 } from '../../services/game'
 import { parseEditionConfig } from '../../utils/edition-config'
-import { logGameEvent } from '../../utils/logger'
+import { parseHintColumn } from '../../utils/admin-task'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     })
     .returning()
 
-  const station = await getStationForField(edition.id, pending)
+  const task = await getTaskForField(edition.id, pending)
 
   logGameEvent('turn.roll', { teamId: team.id, turnId: inserted[0]!.id, dice, pending })
 
@@ -52,8 +52,8 @@ export default defineEventHandler(async (event) => {
     turnId: inserted[0]!.id,
     dice,
     positionPending: pending,
-    station: station
-      ? { fieldNumber: station.fieldNumber, hintVague: station.hintVague }
+    task: task
+      ? { fieldNumber: task.fieldNumber, hintVague: parseHintColumn(task.hintVague) }
       : null,
   }
 })
