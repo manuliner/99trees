@@ -1,16 +1,6 @@
 {
   "name": "99trees",
   "private": true,
-  "pnpm": {
-    "onlyBuiltDependencies": ["better-sqlite3"],
-    "packageExtensions": {
-      "drizzle-kit@*": {
-        "dependencies": {
-          "better-sqlite3": "^12.6.2"
-        }
-      }
-    }
-  },
   "scripts": {
     "dev": "pnpm -C web dev",
     "build": "pnpm -C web build",

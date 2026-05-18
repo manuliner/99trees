@@ -1,13 +1,14 @@
 FROM node:22-alpine AS build
+RUN apk add --no-cache python3 make g++
 RUN corepack enable
 WORKDIR /app
 
 ARG APP_VERSION=0.0.0
 ARG BUILD_TIME=
 
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY web/package.json web/
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY web web
 
