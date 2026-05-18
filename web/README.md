@@ -5,7 +5,7 @@
 - **shared**: Pure types, Zod schemas, scoring, board layout, URL helpers
 - **app/pages**: Nuxt routes — join, play, crew, admin, deep links
 - **app/components/pixel**: Pixel UI — board, festival map, dice, dialogs, hints
-- **app/components/admin**: Organizer edition sections — stations, teams, map, QR
+- **app/components/admin**: Organizer edition sections — tasks, teams, map, QR
 - **app/composables**: API, edition routes, admin, play UX, festival map view
 - **app/layouts**: Nuxt layout shells — default, crew, admin
 - **app/plugins**: Client-only Nuxt plugins (PWA)
@@ -20,7 +20,7 @@
 - **server/api/admin/editions**: List and create editions
 - **server/api/admin/editions/[id]**: Single edition configure and operate
 - **server/api/admin/editions/[id]/qr**: Printable QR packs
-- **server/api/admin/editions/[id]/stations**: Station CRUD and import
+- **server/api/admin/editions/[id]/tasks**: Task CRUD and import
 - **server/api/admin/editions/[id]/teams**: Teams list for edition
 - **server/api/admin/teams/[id]**: Single-team admin overrides
 - **server/api/crew**: Crew session endpoints

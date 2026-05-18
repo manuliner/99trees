@@ -4,7 +4,7 @@ globs: web/**
 
 # Web app — Zugvögel
 
-- Player UI: German default + English (`@nuxtjs/i18n`, `web/i18n/locales/`). Admin/crew: English hardcoded.
+- Player UI: German default + English (`@nuxtjs/i18n`, `web/locales/`). Admin/crew: English hardcoded.
 - Game state lives on the server; client reflects `/api/me`.
 - Use `web/shared/` for scoring, Zod schemas, types — never import server code from `app/`.
 - Pixel components under `app/components/pixel/`; prefer existing tokens in `pixel-theme.css`.
