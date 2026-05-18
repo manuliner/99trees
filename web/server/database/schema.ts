@@ -53,6 +53,8 @@ export const teams = sqliteTable(
     positionConfirmed: integer('position_confirmed').notNull().default(0),
     scoreTotal: integer('score_total').notNull().default(0),
     completedFieldsJson: text('completed_fields_json').notNull().default('[]'),
+    /** Stations passed without a solved task (cumulative, hellblau on board). */
+    overflowFieldsJson: text('overflow_fields_json').notNull().default('[]'),
     sessionTokenHash: text('session_token_hash'),
     reachedGoalAt: integer('reached_goal_at', { mode: 'timestamp' }),
     teamSize: integer('team_size'),
@@ -70,6 +72,8 @@ export const turns = sqliteTable('turns', {
   diceValue: integer('dice_value'),
   positionFrom: integer('position_from').notNull(),
   positionPending: integer('position_pending').notNull(),
+  pathPlayedFieldsJson: text('path_played_fields_json').notNull().default('[]'),
+  pathOverflowFieldsJson: text('path_overflow_fields_json').notNull().default('[]'),
   hintMode: text('hint_mode'), // wait | reveal_all
   hintsUsedJson: text('hints_used_json').notNull().default('[]'),
   quizWrongAttempts: integer('quiz_wrong_attempts').notNull().default(0),

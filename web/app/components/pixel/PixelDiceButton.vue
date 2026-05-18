@@ -16,11 +16,14 @@ const props = withDefaults(
     disabled?: boolean
     loading?: boolean
     interactive?: boolean
+    /** Show at full opacity without disabled styling (e.g. roll overlay). */
+    presentational?: boolean
   }>(),
   {
     disabled: false,
     loading: false,
     interactive: true,
+    presentational: false,
   },
 )
 
@@ -80,12 +83,13 @@ function onClick() {
       :class="{
         'pixel-dice--interactive': isClickable,
         'pixel-dice--loading': loading,
+        'pixel-dice--presentational': presentational,
       }"
     >
       <button
         type="button"
         class="pixel-dice__cube"
-        :disabled="!isClickable"
+        :disabled="!presentational && !isClickable"
         :aria-label="tooltip"
         @click="onClick"
       >
@@ -243,6 +247,10 @@ function onClick() {
 
 .pixel-dice__cube:disabled {
   opacity: 0.6;
+}
+
+.pixel-dice--presentational .pixel-dice__cube {
+  opacity: 1;
 }
 
 .pixel-dice--loading .pixel-dice__cube {

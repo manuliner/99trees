@@ -8,6 +8,7 @@ import {
   parseCompletedFields,
   serializeCompletedFields,
 } from '../utils/team-session'
+import { resolvePendingPosition, splitMovePathByCompleted } from '#shared/game-board-layout'
 import { calculateTurnScoreBreakdown, type TurnScoreInput } from '#shared/scoring'
 import { teamQrPath } from '#shared/edition-urls'
 import { activityPayloadForTeam, parseActivityPayload } from '#shared/quiz-payload'
@@ -70,22 +71,45 @@ export function rollDice(config: EditionConfig): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-/** Advance `steps` fields forward, skipping already completed field numbers. */
-export function resolvePendingPosition(
+/** Zielfelder aus Nullrunden an derselben Standposition — kein erneutes Ansteuern. */
+export async function getExcludedPendingFromAbandons(
+  teamId: number,
+  positionFrom: number,
+): Promise<Set<number>> {
+  const db = getDb()
+  const rows = await db
+    .select({ positionPending: turns.positionPending })
+    .from(turns)
+    .where(
+      and(
+        eq(turns.teamId, teamId),
+        eq(turns.state, 'abandoned'),
+        eq(turns.positionFrom, positionFrom),
+      ),
+    )
+  return new Set(rows.map((r) => r.positionPending))
+}
+
+/** Würfelwert, dessen Zielfeld nicht in `excludedPending` liegt (Fallback: voller Bereich). */
+export function pickDiceForRoll(
+  config: EditionConfig,
   from: number,
-  steps: number,
   completed: number[],
   fieldCount: number,
+  excludedPending: ReadonlySet<number>,
 ): number {
-  const completedSet = new Set(completed)
-  let pos = from
-  let remaining = steps
-  while (remaining > 0 && pos < fieldCount) {
-    pos += 1
-    if (!completedSet.has(pos)) remaining -= 1
+  const min = config.diceMin
+  const max = config.diceMax
+  const candidates: number[] = []
+  for (let d = min; d <= max; d++) {
+    const pending = resolvePendingPosition(from, d, completed, fieldCount)
+    if (!excludedPending.has(pending)) candidates.push(d)
   }
-  return Math.min(pos, fieldCount)
+  const pool = candidates.length > 0 ? candidates : Array.from({ length: max - min + 1 }, (_, i) => min + i)
+  return pool[Math.floor(Math.random() * pool.length)]!
 }
+
+export { resolvePendingPosition } from '#shared/game-board-layout'
 
 export async function getTaskForField(editionId: number, fieldNumber: number) {
   const db = getDb()
@@ -133,6 +157,59 @@ export function parseHintsUsed(json: string): number[] {
   }
 }
 
+export function parsePathFieldsJson(json: string): number[] {
+  try {
+    const parsed = JSON.parse(json) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.map(Number).filter((n) => Number.isFinite(n))
+  }
+  catch {
+    return []
+  }
+}
+
+export function buildBoardHighlights(
+  completedFields: readonly number[],
+  overflowFieldsJson: string,
+) {
+  const completedSet = new Set(completedFields)
+  const overflowFields = parsePathFieldsJson(overflowFieldsJson).filter(
+    (field) => !completedSet.has(field),
+  )
+  return {
+    playedFields: [...completedFields],
+    overflowFields,
+  }
+}
+
+export async function appendTeamOverflowFields(
+  teamId: number,
+  newOverflow: readonly number[],
+  completedAtRoll: readonly number[],
+) {
+  const db = getDb()
+  const team = (await db.select().from(teams).where(eq(teams.id, teamId)).limit(1))[0]
+  if (!team) throw createError({ statusCode: 404, statusMessage: 'Team not found' })
+
+  const completedSet = new Set([
+    ...completedAtRoll,
+    ...parseCompletedFields(team.completedFieldsJson),
+  ])
+  const merged = [
+    ...new Set([
+      ...parsePathFieldsJson(team.overflowFieldsJson),
+      ...newOverflow.filter((field) => !completedSet.has(field)),
+    ]),
+  ].filter((field) => !completedSet.has(field))
+
+  await db
+    .update(teams)
+    .set({ overflowFieldsJson: JSON.stringify(merged) })
+    .where(eq(teams.id, teamId))
+
+  return buildBoardHighlights(parseCompletedFields(team.completedFieldsJson), JSON.stringify(merged))
+}
+
 export async function buildMePayload(teamId: number) {
   const db = getDb()
   const team = (await db.select().from(teams).where(eq(teams.id, teamId)).limit(1))[0]
@@ -140,6 +217,7 @@ export async function buildMePayload(teamId: number) {
 
   const edition = await getEditionOrThrow(team.editionId)
   const config = parseEditionConfig(edition.configJson)
+  const completedFields = parseCompletedFields(team.completedFieldsJson)
   const openTurn = await getOpenTurn(team.id)
 
   let turnPayload = null
@@ -154,11 +232,25 @@ export async function buildMePayload(teamId: number) {
     const rolledAt = openTurn.rolledAt?.getTime() ?? now
     const hintUnlockAt = config.hintTimerMinutes.map((m) => rolledAt + m * 60_000)
 
+    const playedFields = parsePathFieldsJson(openTurn.pathPlayedFieldsJson)
+    const overflowFields = parsePathFieldsJson(openTurn.pathOverflowFieldsJson)
+    const pathHighlights =
+      playedFields.length > 0 || overflowFields.length > 0
+        ? { playedFields, overflowFields }
+        : splitMovePathByCompleted(
+            openTurn.positionFrom,
+            openTurn.positionPending,
+            completedFields,
+          )
+
     turnPayload = {
       id: openTurn.id,
       state: openTurn.state,
       diceValue: openTurn.diceValue,
+      positionFrom: openTurn.positionFrom,
       positionPending: openTurn.positionPending,
+      playedFields: pathHighlights.playedFields,
+      overflowFields: pathHighlights.overflowFields,
       hintMode: openTurn.hintMode,
       hintsUsed,
       hintUnlockAt,
@@ -187,7 +279,6 @@ export async function buildMePayload(teamId: number) {
     }
   }
 
-  const completedFields = parseCompletedFields(team.completedFieldsJson)
   const mapPins: { fieldNumber: number; mapX: number; mapY: number; kind: 'visited' | 'target' }[] = []
 
   if (completedFields.length > 0) {
@@ -231,8 +322,14 @@ export async function buildMePayload(teamId: number) {
     }
   }
 
+  const boardHighlights = buildBoardHighlights(
+    completedFields,
+    team.overflowFieldsJson,
+  )
+
   return {
     devSimulation: isDevSimulationEnabled(),
+    boardHighlights,
     team: {
       id: team.id,
       name: team.name,
@@ -333,6 +430,10 @@ export async function confirmTurn(teamId: number, turnId: number) {
   const completed = parseCompletedFields(team.completedFieldsJson)
   if (!completed.includes(newPosition)) completed.push(newPosition)
 
+  const overflowAfterConfirm = parsePathFieldsJson(team.overflowFieldsJson).filter(
+    (field) => field !== newPosition,
+  )
+
   const newScore = team.scoreTotal + scoreDelta
   const reachedGoal = newPosition >= edition.fieldCount
   const reachedGoalAt = reachedGoal && !team.reachedGoalAt ? confirmedAt : team.reachedGoalAt
@@ -348,6 +449,7 @@ export async function confirmTurn(teamId: number, turnId: number) {
       positionConfirmed: newPosition,
       scoreTotal: newScore,
       completedFieldsJson: serializeCompletedFields(completed),
+      overflowFieldsJson: JSON.stringify(overflowAfterConfirm),
       reachedGoalAt,
     })
     .where(eq(teams.id, teamId))

@@ -9,6 +9,7 @@
     "preview": "pnpm -C web preview",
     "postinstall": "pnpm -C web postinstall",
     "typecheck": "pnpm -C web typecheck",
+    "test": "pnpm -C web test",
     "db:generate": "pnpm -C web db:generate",
     "db:migrate": "pnpm -C web db:migrate",
     "db:seed": "pnpm -C web db:seed",

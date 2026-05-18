@@ -31,6 +31,16 @@ export async function setTeamSession(event: H3Event, teamId: number) {
   })
 }
 
+export async function clearTeamSession(event: H3Event, teamId: number) {
+  const db = getDb()
+  await db
+    .update(teams)
+    .set({ sessionTokenHash: null })
+    .where(eq(teams.id, teamId))
+
+  deleteCookie(event, TEAM_COOKIE, { path: '/' })
+}
+
 export async function getTeamFromSession(event: H3Event) {
   const token = getCookie(event, TEAM_COOKIE)
   if (!token) return null

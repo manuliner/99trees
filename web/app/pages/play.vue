@@ -8,6 +8,13 @@ import { normalizeQuizInputMode } from '#shared/quiz-payload'
 import type { QuizInputMode } from '#shared/types'
 import { pickRollDicePrompt } from '~/utils/roll-dice-prompts'
 import { mapApiError } from '~/utils/api-errors'
+import { boardFieldsBetween } from '#shared/game-board-layout'
+import {
+  moveStepMs,
+  prefersReducedMotion,
+  ROLL_DICE_MS,
+  sleep,
+} from '~/utils/roll-sequence'
 
 /** Team session, board layout, dialogs, and QR — client-only to avoid SSR/HMR drift in dev. */
 definePageMeta({ ssr: false, layout: 'player' })
@@ -99,19 +106,6 @@ usePullToRefresh(async () => {
   await refreshLeaderboard()
 })
 
-usePullToRefreshDisabled(
-  computed(
-    () =>
-      showScanner.value
-      || showTeamQr.value
-      || showMenu.value
-      || showPwaInstall.value
-      || showLeaderboard.value
-      || showRules.value
-      || showFestivalMapFullscreen.value,
-  ),
-)
-
 const showDevSimulation = computed(
   () => import.meta.dev || me.value?.devSimulation === true,
 )
@@ -122,9 +116,61 @@ const scanToken = ref('')
 const quizAnswer = ref('')
 const actionError = ref('')
 
+type RollSequencePhase = 'idle' | 'dice' | 'move' | 'done'
+const rollSequence = ref<RollSequencePhase>('idle')
+const rollSnapshot = ref<{
+  dice: number
+  from: number
+  to: number
+  completed: number[]
+  playedFields?: number[]
+  overflowFields?: number[]
+} | null>(null)
+const moveTokenField = ref<number | null>(null)
+/** Move-path highlights until the turn advances. */
+const moveOverflowFields = ref<number[]>([])
+const moveSteppedFields = ref<number[]>([])
+/** Full board highlights from server after roll — applied when move animation finishes. */
+const pendingBoardHighlights = ref<{
+  playedFields: number[]
+  overflowFields: number[]
+} | null>(null)
+const showSeekingModal = ref(false)
+const gameBoardRef = ref<{ scrollToFocus: () => void } | null>(null)
+
+const rollAnimating = computed(
+  () => rollSequence.value === 'dice' || rollSequence.value === 'move',
+)
+
 const turn = computed(() => me.value?.openTurn)
 const team = computed(() => me.value?.team)
 const edition = computed(() => me.value?.edition)
+
+const {
+  celebrationOpen,
+  triggerDevPreview,
+  closeCelebration,
+} = useGoalCelebration({
+  teamId: computed(() => team.value?.id),
+  reachedGoal: computed(() => team.value?.reachedGoal),
+  turnScoreSummary,
+})
+
+usePullToRefreshDisabled(
+  computed(
+    () =>
+      showScanner.value
+      || showTeamQr.value
+      || showMenu.value
+      || showPwaInstall.value
+      || showLeaderboard.value
+      || showRules.value
+      || showFestivalMapFullscreen.value
+      || celebrationOpen.value
+      || showSeekingModal.value
+      || rollAnimating.value,
+  ),
+)
 
 const mapPins = computed((): FestivalMapPin[] => me.value?.mapPins ?? [])
 
@@ -183,7 +229,32 @@ const canReroll = computed(
     || turn.value?.state === 'awaiting_crew',
 )
 
-const diceInteractive = computed(() => canRollNext.value)
+const diceInteractive = computed(
+  () => canRollNext.value && rollSequence.value === 'idle' && !loading.value,
+)
+
+const diceLoadingBoard = computed(
+  () => loading.value || rollAnimating.value,
+)
+
+const boardPositionPending = computed(() => {
+  if (rollSnapshot.value && rollSequence.value !== 'idle') {
+    return rollSnapshot.value.to
+  }
+  return turn.value?.positionPending ?? null
+})
+
+const overlayDiceValue = computed(() => {
+  if (rollSequence.value === 'dice' && rollSnapshot.value) return rollSnapshot.value.dice
+  return null
+})
+
+const seekingDialogTitle = computed(() => {
+  const n = turn.value?.positionPending
+  const total = edition.value?.fieldCount
+  if (n == null || total == null) return t('play.findSpot')
+  return t('play.seekingTitle', { n, total })
+})
 
 const canScan = computed(() => turn.value?.state === 'rolled')
 
@@ -337,17 +408,194 @@ watch(
   },
 )
 
+const MOVE_PATH_HIGHLIGHT_STATES = ['rolled', 'scanned', 'awaiting_crew'] as const
+
+function isMovePathHighlightActive(): boolean {
+  const state = turn.value?.state
+  return state != null && (MOVE_PATH_HIGHLIGHT_STATES as readonly string[]).includes(state)
+}
+
+function applyBoardHighlights(played: number[], overflow: number[]) {
+  const playedSet = new Set(played)
+  moveSteppedFields.value = [...played]
+  moveOverflowFields.value = overflow.filter((field) => !playedSet.has(field))
+}
+
+function resetRollAnimation() {
+  rollSequence.value = 'idle'
+  rollSnapshot.value = null
+  moveTokenField.value = null
+}
+
+function resetRollVisualState() {
+  resetRollAnimation()
+}
+
+/** End of roll animation only — keep path colors until the next roll (step 1). */
+function resetRollSequenceOnly() {
+  resetRollAnimation()
+}
+
+function hydratePathHighlightsFromMe() {
+  if (rollAnimating.value || rollSnapshot.value) return
+
+  const board = me.value?.boardHighlights as {
+    playedFields: number[]
+    overflowFields: number[]
+  } | undefined
+  if (!board) return
+
+  applyBoardHighlights(
+    Array.isArray(board.playedFields) ? board.playedFields.map(Number) : [],
+    Array.isArray(board.overflowFields) ? board.overflowFields.map(Number) : [],
+  )
+}
+
+function syncMovePathHighlightsIfNeeded() {
+  if (rollAnimating.value || rollSnapshot.value) return
+  hydratePathHighlightsFromMe()
+}
+
+/** During move animation: color only the field the token just entered. */
+function pushMovePathHighlight(
+  field: number,
+  to: number,
+  completed: readonly number[],
+) {
+  if (field === to) return
+  const completedSet = new Set(completed)
+  if (completedSet.has(field)) {
+    if (!moveSteppedFields.value.includes(field)) {
+      moveSteppedFields.value = [...moveSteppedFields.value, field]
+    }
+    return
+  }
+  if (!moveOverflowFields.value.includes(field)) {
+    moveOverflowFields.value = [...moveOverflowFields.value, field]
+  }
+}
+
+function finishMoveAnimationHighlights() {
+  if (pendingBoardHighlights.value) {
+    applyBoardHighlights(
+      pendingBoardHighlights.value.playedFields,
+      pendingBoardHighlights.value.overflowFields,
+    )
+    pendingBoardHighlights.value = null
+  }
+}
+
+async function runRollSequence(
+  snapshot: {
+    dice: number
+    from: number
+    to: number
+    completed: number[]
+  },
+  highlightsBeforeRoll: { playedFields: number[]; overflowFields: number[] },
+) {
+  const path = boardFieldsBetween(snapshot.from, snapshot.to)
+
+  if (prefersReducedMotion()) {
+    for (const field of path) {
+      pushMovePathHighlight(field, snapshot.to, snapshot.completed)
+    }
+    finishMoveAnimationHighlights()
+    rollSequence.value = 'done'
+    showSeekingModal.value = true
+    return
+  }
+
+  rollSequence.value = 'dice'
+  await sleep(ROLL_DICE_MS)
+
+  if (path.length === 0) {
+    finishMoveAnimationHighlights()
+    rollSequence.value = 'done'
+    showSeekingModal.value = true
+    return
+  }
+
+  rollSequence.value = 'move'
+  applyBoardHighlights(
+    highlightsBeforeRoll.playedFields,
+    highlightsBeforeRoll.overflowFields,
+  )
+  const stepMs = moveStepMs(path.length)
+  for (const field of path) {
+    moveTokenField.value = field
+    pushMovePathHighlight(field, snapshot.to, snapshot.completed)
+    await sleep(stepMs)
+  }
+  moveTokenField.value = null
+  finishMoveAnimationHighlights()
+  rollSequence.value = 'done'
+  showSeekingModal.value = true
+  await nextTick()
+  gameBoardRef.value?.scrollToFocus()
+}
+
 async function roll() {
+  if (rollAnimating.value) return
   loading.value = true
   actionError.value = ''
+  const from = team.value?.positionConfirmed ?? 0
+  const completedAtRoll = [...(team.value?.completedFields ?? [])]
+  const highlightsBeforeRoll = {
+    playedFields: [...moveSteppedFields.value],
+    overflowFields: [...moveOverflowFields.value],
+  }
   try {
-    const res = await api<{ dice: number }>('/api/turns/roll', { method: 'POST', body: {} })
+    const res = await api<{
+      dice: number
+      positionPending: number
+      boardHighlights?: { playedFields: number[]; overflowFields: number[] }
+    }>(
+      '/api/turns/roll',
+      { method: 'POST', body: {} },
+    )
     const rolled = toDiceNumber(res.dice)
-    if (rolled != null) lastDiceValue.value = rolled
+    const to = Number(res.positionPending)
+    if (rolled == null || !Number.isFinite(to)) {
+      throw new Error('Invalid roll response')
+    }
+    lastDiceValue.value = rolled
+    rollSnapshot.value = {
+      dice: rolled,
+      from,
+      to,
+      completed: completedAtRoll,
+    }
+    pendingBoardHighlights.value = res.boardHighlights
+      ? {
+          playedFields: res.boardHighlights.playedFields.map(Number),
+          overflowFields: res.boardHighlights.overflowFields.map(Number),
+        }
+      : null
+    try {
+      await refresh()
+    }
+    catch {
+      resetRollVisualState()
+      pendingBoardHighlights.value = null
+      actionError.value = t('play.errors.rollFailed')
+      return
+    }
+    loading.value = false
+    if (rollSnapshot.value) {
+      await runRollSequence(rollSnapshot.value, highlightsBeforeRoll)
+    }
+    else {
+      finishMoveAnimationHighlights()
+    }
     await refresh()
+    hydratePathHighlightsFromMe()
     await refreshLeaderboard()
   }
   catch (e: unknown) {
+    resetRollVisualState()
+    pendingBoardHighlights.value = null
+    showSeekingModal.value = false
     const err = e as { data?: { statusMessage?: string } }
     actionError.value = mapApiError(err.data?.statusMessage, 'play.errors.rollFailed', t)
   }
@@ -376,6 +624,7 @@ async function useHint(level?: number, mode?: 'reveal_all') {
     })
     if (res.pointCostPreview) showScore(-res.pointCostPreview)
     await refresh()
+    syncMovePathHighlightsIfNeeded()
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }
@@ -396,6 +645,7 @@ async function scanTask() {
     })
     showScanner.value = false
     await refresh()
+    syncMovePathHighlightsIfNeeded()
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }
@@ -427,6 +677,18 @@ async function simulateScan() {
   finally {
     loading.value = false
   }
+}
+
+async function logoutDev() {
+  const slug = edition.value?.slug
+  showMenu.value = false
+  try {
+    await api('/api/teams/logout', { method: 'POST' })
+  }
+  catch {
+    // still leave play in dev if cookie clear failed
+  }
+  await navigateTo(slug ? joinPath(slug) : '/')
 }
 
 async function fillCorrectAnswer() {
@@ -519,6 +781,7 @@ async function submitAnswer() {
       scoreDelta?: number
       newScore?: number
       breakdown?: TurnScoreBreakdown
+      reachedGoal?: boolean
     }>(
       `/api/turns/${turn.value!.id}/answer`,
       { method: 'POST',
@@ -529,6 +792,7 @@ async function submitAnswer() {
       showTurnScoreSummary(res.breakdown, res.newScore, turn.value!.id)
     }
     await refresh()
+    syncMovePathHighlightsIfNeeded()
     await refreshLeaderboard()
   }
   catch (e: unknown) {
@@ -540,6 +804,49 @@ async function submitAnswer() {
   }
 }
 
+function syncMovePathFromOpenTurn() {
+  hydratePathHighlightsFromMe()
+}
+
+watch(
+  () => turn.value?.state,
+  (state) => {
+    if (state === 'rolled' && rollSequence.value === 'idle' && !rollSnapshot.value) {
+      syncMovePathFromOpenTurn()
+      showSeekingModal.value = true
+      rollSequence.value = 'done'
+    }
+    if (state !== 'rolled') {
+      showSeekingModal.value = false
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => [
+    me.value?.team?.id,
+    me.value?.boardHighlights,
+    me.value?.team?.completedFields,
+    rollAnimating.value,
+    rollSnapshot.value,
+  ] as const,
+  () => {
+    syncMovePathHighlightsIfNeeded()
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  () => turn.value,
+  async (t, prev) => {
+    if (!t && prev && !rollAnimating.value) {
+      resetRollSequenceOnly()
+      await refresh()
+    }
+  },
+)
+
 async function abandonTurn() {
   const ok = await pixelConfirm({
     title: t('play.zeroRoundTitle'),
@@ -548,6 +855,8 @@ async function abandonTurn() {
     confirmVariant: 'danger',
   })
   if (!ok) return
+  resetRollVisualState()
+  showSeekingModal.value = false
   const turnId = turn.value!.id
   summaryShownForTurnId.value = turnId
   loading.value = true
@@ -625,6 +934,7 @@ onUnmounted(() => {
         <PixelButton
           variant="highlight"
           class="!w-auto !min-h-0 !py-2 !px-3 !text-[10px]"
+          :disabled="rollAnimating"
           @click="showMenu = true"
         >
           {{ $t('play.menu') }}
@@ -647,21 +957,31 @@ onUnmounted(() => {
     <p v-if="playStepLabel" class="pixel-title text-center text-xs opacity-90">{{ playStepLabel }}</p>
 
     <ClientOnly>
-      <PixelGameBoard
-        v-if="edition"
-        :field-count="edition.fieldCount"
-        :position-confirmed="team?.positionConfirmed ?? 0"
-        :position-pending="turn?.positionPending"
-        :my-team-id="team?.id ?? null"
-        :teams="leaderboardTeams"
-        :show-dice="!team?.reachedGoal"
-        :dice-value="diceFace"
-        :dice-tooltip="diceTooltip"
-        :dice-interactive="diceInteractive"
-        :dice-loading="loading"
-        :roll-prompt="canRollNext ? rollPromptPhrase : null"
-        @dice-click="onDiceClick"
-      />
+      <div v-if="edition" class="relative">
+        <PixelGameBoard
+          ref="gameBoardRef"
+          :field-count="edition.fieldCount"
+          :position-confirmed="team?.positionConfirmed ?? 0"
+          :position-pending="boardPositionPending"
+          :move-token-field="moveTokenField"
+          :move-overflow-fields="moveOverflowFields"
+          :move-stepped-fields="moveSteppedFields"
+          :suppress-my-team-chip="rollSequence === 'move'"
+          :my-team-id="team?.id ?? null"
+          :teams="leaderboardTeams"
+          :show-dice="!team?.reachedGoal"
+          :dice-value="diceFace"
+          :dice-tooltip="diceTooltip"
+          :dice-interactive="diceInteractive"
+          :dice-loading="diceLoadingBoard"
+          :roll-prompt="canRollNext ? rollPromptPhrase : null"
+          @dice-click="onDiceClick"
+        />
+        <PixelRollDiceOverlay
+          :visible="rollSequence === 'dice'"
+          :value="overlayDiceValue"
+        />
+      </div>
       <template #fallback>
         <div class="pixel-card min-h-[12rem] p-3" aria-hidden="true" />
       </template>
@@ -678,50 +998,6 @@ onUnmounted(() => {
         <p class="text-center text-xs opacity-70">{{ $t('play.gameStatus', { status: edition?.status }) }}</p>
       </section>
 
-      <section v-else-if="turn && turn.state === 'rolled'" class="relative z-10 space-y-3">
-        <div class="pixel-card seeking-card p-4">
-          <div class="seeking-card__action space-y-4 text-center">
-            <p class="pixel-title text-xs">{{ $t('play.findSpot') }}</p>
-            <p class="pixel-body text-base seeking-card__hint-vague text-left">{{ taskHintVague }}</p>
-            <PixelButton :disabled="loading" @click="showScanner = true">{{ $t('play.scanQr') }}</PixelButton>
-          </div>
-
-          <div class="seeking-card__hints space-y-3">
-            <p class="pixel-title text-[10px] opacity-80">{{ $t('play.hintsSection') }}</p>
-            <p v-if="hintVisible(1)" class="pixel-body text-sm seeking-card__hint-line">
-              {{ taskHintLevel1 }}
-            </p>
-            <p v-if="hintVisible(2)" class="pixel-body text-sm seeking-card__hint-line">
-              {{ taskHintLevel2 }}
-            </p>
-            <p v-if="hintVisible(3)" class="pixel-body text-sm seeking-card__hint-line">
-              {{ hint3Text }}
-            </p>
-            <div v-if="showHintBar" class="seeking-card__hint-controls">
-              <PixelHintBar
-                embedded
-                :turn="turn"
-                :hint-costs="edition!.config.hintCosts"
-                :has-map-image="Boolean(edition?.mapImageUrl)"
-                :disabled="loading"
-                :now="now"
-                @show-now="(level: 1 | 2 | 3) => useHint(level)"
-                @show-all="useHint(undefined, 'reveal_all')"
-              />
-            </div>
-          </div>
-        </div>
-
-        <button
-          v-if="canReroll"
-          type="button"
-          class="seeking-card__roll-again"
-          :disabled="loading"
-          @click="abandonTurn"
-        >
-          {{ $t('play.rollAgain') }}
-        </button>
-      </section>
 
       <section v-else-if="turn && turn.state === 'scanned'" class="pixel-card space-y-4 p-4">
         <p class="pixel-title text-xs">{{ $t('play.quiz') }}</p>
@@ -837,6 +1113,72 @@ onUnmounted(() => {
         >
           {{ $t('common.installApp') }}
         </PixelButton>
+        <PixelButton
+          v-if="showDevSimulation"
+          variant="secondary"
+          @click="showMenu = false; triggerDevPreview()"
+        >
+          {{ $t('play.goalCelebration.previewDev') }}
+        </PixelButton>
+        <PixelButton
+          v-if="showDevSimulation"
+          variant="secondary"
+          @click="logoutDev()"
+        >
+          {{ $t('play.logoutDev') }}
+        </PixelButton>
+      </div>
+    </PixelDialog>
+
+    <PixelDialog
+      :open="showSeekingModal && turn?.state === 'rolled'"
+      :title="seekingDialogTitle"
+      :dismissible="false"
+      scrollable
+      panel-class="seeking-card !p-4"
+    >
+      <div v-if="turn?.state === 'rolled'" class="space-y-4">
+        <div class="seeking-card__action space-y-4 text-center">
+          <p class="pixel-body text-base seeking-card__hint-vague text-left">{{ taskHintVague }}</p>
+          <PixelButton :disabled="loading || rollAnimating" @click="showScanner = true">
+            {{ $t('play.scanQr') }}
+          </PixelButton>
+        </div>
+
+        <div class="seeking-card__hints space-y-3">
+          <p class="pixel-title text-[10px] opacity-80">{{ $t('play.hintsSection') }}</p>
+          <p v-if="hintVisible(1)" class="pixel-body text-sm seeking-card__hint-line">
+            {{ taskHintLevel1 }}
+          </p>
+          <p v-if="hintVisible(2)" class="pixel-body text-sm seeking-card__hint-line">
+            {{ taskHintLevel2 }}
+          </p>
+          <p v-if="hintVisible(3)" class="pixel-body text-sm seeking-card__hint-line">
+            {{ hint3Text }}
+          </p>
+          <div v-if="showHintBar && edition" class="seeking-card__hint-controls">
+            <PixelHintBar
+              embedded
+              :turn="turn"
+              :hint-costs="edition.config.hintCosts"
+              :has-map-image="Boolean(edition.mapImageUrl)"
+              :disabled="loading"
+              :now="now"
+              @show-now="(level: 1 | 2 | 3) => useHint(level)"
+              @show-all="useHint(undefined, 'reveal_all')"
+            />
+          </div>
+        </div>
+
+        <button
+          v-if="canReroll"
+          type="button"
+          class="seeking-card__roll-again w-full"
+          :disabled="loading"
+          @click="abandonTurn"
+        >
+          {{ $t('play.rollAgain') }}
+        </button>
       </div>
     </PixelDialog>
 
@@ -886,6 +1228,13 @@ onUnmounted(() => {
       :breakdown="turnScoreSummary?.breakdown ?? null"
       :new-score="turnScoreSummary?.newScore ?? null"
       @close="closeTurnScoreSummary"
+    />
+
+    <PixelGoalCelebration
+      :open="celebrationOpen"
+      :score-total="team?.scoreTotal ?? 0"
+      @close="closeCelebration"
+      @open-leaderboard="closeCelebration(); showLeaderboard = true"
     />
 
     <PixelDialog :open="showTeamQr" :title="$t('play.yourTeamQr')" @close="showTeamQr = false">

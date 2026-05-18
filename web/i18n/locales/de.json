@@ -83,6 +83,7 @@
     "reachedGoal": "Du hast das Ziel erreicht!",
     "gameStatus": "Spielstatus: {status}",
     "findSpot": "Finde den nächsten QR Code",
+    "seekingTitle": "Station suchen — Feld {n} von {total}",
     "scanQr": "QR scannen",
     "hintsSection": "Hinweise",
     "hintN": "Hinweis {n}:",
@@ -106,6 +107,15 @@
     "zeroRoundTitle": "Nullrunde",
     "zeroRoundMessage": "Nullrunde — kein Feldfortschritt und keine Punkte für diesen Versuch. Fortfahren?",
     "simulateScanDev": "Scan simulieren (Dev)",
+    "logoutDev": "Ausloggen (Dev)",
+    "goalCelebration": {
+      "title": "Vogelzug geschafft!",
+      "subtitle": "Super, ihr habt es geschafft!",
+      "score": "Euer Endstand: {n} Punkte",
+      "leaderboard": "Zum Highscore",
+      "dismiss": "Schließen",
+      "previewDev": "Ziel-Animation (Dev)"
+    },
     "turnScore": {
       "title": "Zug abgeschlossen",
       "gained": "Hinzugekommen",

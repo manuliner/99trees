@@ -76,6 +76,73 @@ export function computeGameBoardLayout(
   return { nodes, width, height, pathD }
 }
 
+/** Inclusive field numbers traveled when moving from `from` to `to` on the board. */
+export function boardFieldsBetween(from: number, to: number): number[] {
+  if (to <= from) return []
+  const path: number[] = []
+  for (let f = from + 1; f <= to; f++) path.push(f)
+  return path
+}
+
+/** Advance `steps` fields forward, skipping already completed field numbers. */
+export function resolvePendingPosition(
+  from: number,
+  steps: number,
+  completed: readonly number[],
+  fieldCount: number,
+): number {
+  const completedSet = new Set(completed)
+  let pos = from
+  let remaining = steps
+  while (remaining > 0 && pos < fieldCount) {
+    pos += 1
+    if (!completedSet.has(pos)) remaining -= 1
+  }
+  return Math.min(pos, fieldCount)
+}
+
+/** Fields where a dice step was consumed (same loop as resolvePendingPosition). */
+export function fieldsConsumingSteps(
+  from: number,
+  dice: number,
+  completed: readonly number[],
+  fieldCount: number,
+): number[] {
+  const completedSet = new Set(completed)
+  const stepped: number[] = []
+  let pos = from
+  let remaining = dice
+  while (remaining > 0 && pos < fieldCount) {
+    pos += 1
+    if (!completedSet.has(pos)) {
+      remaining -= 1
+      stepped.push(pos)
+    }
+  }
+  return stepped
+}
+
+/**
+ * Path highlight split for UI:
+ * - playedFields: stations with a solved task (completed), on the path
+ * - overflowFields: path cells only skipped (no solved task there yet), excludes target
+ */
+export function splitMovePathByCompleted(
+  from: number,
+  to: number,
+  completed: readonly number[],
+): { playedFields: number[]; overflowFields: number[] } {
+  const completedSet = new Set(completed)
+  const playedFields: number[] = []
+  const overflowFields: number[] = []
+  for (const field of boardFieldsBetween(from, to)) {
+    if (field === to) continue
+    if (completedSet.has(field)) playedFields.push(field)
+    else overflowFields.push(field)
+  }
+  return { playedFields, overflowFields }
+}
+
 /** Active field to keep centered in the viewport. */
 export function activeBoardField(
   positionConfirmed: number,

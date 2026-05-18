@@ -83,6 +83,7 @@
     "reachedGoal": "You reached the goal!",
     "gameStatus": "Game status: {status}",
     "findSpot": "Find the next QR Code",
+    "seekingTitle": "Find station — field {n} of {total}",
     "scanQr": "Scan QR",
     "hintsSection": "Hints",
     "hintN": "Hint {n}:",
@@ -106,6 +107,15 @@
     "zeroRoundTitle": "Zero round",
     "zeroRoundMessage": "Zero round — no field progress and no points for this attempt. Continue?",
     "simulateScanDev": "Simulate scan (dev)",
+    "logoutDev": "Log out (dev)",
+    "goalCelebration": {
+      "title": "Migration complete!",
+      "subtitle": "Amazing — you made it!",
+      "score": "Final score: {n} points",
+      "leaderboard": "View highscore",
+      "dismiss": "Close",
+      "previewDev": "Goal animation (dev)"
+    },
     "turnScore": {
       "title": "Turn complete",
       "gained": "Gained",

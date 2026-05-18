@@ -40,11 +40,23 @@ const props = withDefaults(
     configuredFields?: number[]
     fieldTooltips?: Record<number, GameBoardFieldTooltip>
     creatable?: boolean
+    /** Animated “you” marker field during roll move phase. */
+    moveTokenField?: number | null
+    /** Überlauf + Ziel — hellblau. */
+    moveOverflowFields?: number[]
+    /** Verbrauchte Würfelschritte — dunkelblau. */
+    moveSteppedFields?: number[]
+    /** Hide static team chip at confirmed position while move token is active. */
+    suppressMyTeamChip?: boolean
   }>(),
   {
     positionPending: null,
     myTeamId: null,
     teams: () => [],
+    moveTokenField: null,
+    moveOverflowFields: () => [],
+    moveSteppedFields: () => [],
+    suppressMyTeamChip: false,
     compact: false,
     showDice: false,
     diceValue: null,
@@ -78,9 +90,34 @@ const teamsByField = computed(() => {
   return map
 })
 
-const focusField = computed(() =>
-  activeBoardField(props.positionConfirmed, props.positionPending),
-)
+const moveOverflowSet = computed(() => new Set(props.moveOverflowFields))
+const moveSteppedSet = computed(() => new Set(props.moveSteppedFields))
+
+const focusField = computed(() => {
+  if (props.moveTokenField != null) return props.moveTokenField
+  return activeBoardField(props.positionConfirmed, props.positionPending)
+})
+
+function isMoveHighlighted(field: number): boolean {
+  return moveOverflowSet.value.has(field) || moveSteppedSet.value.has(field)
+}
+
+function playTileStateClass(field: number): string {
+  if (moveSteppedSet.value.has(field)) return 'game-board-node__tile--step-played'
+  if (moveOverflowSet.value.has(field)) return 'game-board-node__tile--step-active'
+  return `game-board-node__tile--${nodeState(field)}`
+}
+
+const moveTokenNode = computed(() => {
+  if (props.moveTokenField == null) return null
+  return layout.value.nodes.find((n) => n.field === props.moveTokenField) ?? null
+})
+
+function teamsOnField(field: number): BoardTeam[] {
+  const list = teamsByField.value.get(field) ?? []
+  if (!props.suppressMyTeamChip || props.myTeamId == null) return list
+  return list.filter((t) => t.id !== props.myTeamId)
+}
 
 function isPlayField(field: number): boolean {
   return field > 0 && field < props.fieldCount
@@ -227,6 +264,13 @@ watch(focusField, () => {
   if (!props.selectable) nextTick(scrollToFocus)
 })
 
+watch(
+  () => props.moveTokenField,
+  () => {
+    if (!props.selectable && props.moveTokenField != null) nextTick(scrollToFocus)
+  },
+)
+
 defineExpose({ scrollToFocus })
 </script>
 
@@ -303,12 +347,17 @@ defineExpose({ scrollToFocus })
                 compact ? 'game-board-node__tile--compact' : 'game-board-node__tile--play',
                 selectable
                   ? `game-board-node__tile--${adminNodeState(node.field)}`
-                  : `game-board-node__tile--${nodeState(node.field)}`,
+                  : playTileStateClass(node.field),
                 {
                   'game-board-node__tile--focus':
-                    !selectable && node.field === focusField && nodeState(node.field) !== 'pending',
+                    !selectable
+                    && !isMoveHighlighted(node.field)
+                    && node.field === focusField
+                    && nodeState(node.field) !== 'pending',
                   'game-board-node__tile--pending-blink':
-                    !selectable && nodeState(node.field) === 'pending',
+                    !selectable
+                    && !isMoveHighlighted(node.field)
+                    && nodeState(node.field) === 'pending',
                   'game-board-node__tile--selectable': isFieldInteractive(node.field),
                   'game-board-node__tile--creatable': isFieldCreatable(node.field),
                 },
@@ -325,11 +374,11 @@ defineExpose({ scrollToFocus })
           </PixelTooltip>
 
           <div
-            v-if="teamsByField.get(node.field)?.length"
+            v-if="teamsOnField(node.field).length"
             class="mt-0.5 flex max-w-[72px] flex-wrap justify-center gap-0.5"
           >
             <span
-              v-for="t in teamsByField.get(node.field)"
+              v-for="t in teamsOnField(node.field)"
               :key="t.id"
               class="game-board-team-chip truncate px-1 text-[8px] leading-tight"
               :class="
@@ -342,6 +391,20 @@ defineExpose({ scrollToFocus })
               {{ t.id === myTeamId && !selectable ? tr('common.you') : t.name.slice(0, 6) }}
             </span>
           </div>
+        </div>
+
+        <div
+          v-if="moveTokenNode && !selectable"
+          class="game-board-move-token pointer-events-none absolute z-10"
+          :style="{
+            left: `${moveTokenNode.x}px`,
+            top: `${moveTokenNode.y}px`,
+            transform: 'translate(-50%, calc(-50% + 22px))',
+          }"
+        >
+          <span class="game-board-team-chip game-board-team--you px-1 text-[8px] font-bold leading-tight">
+            {{ tr('common.you') }}
+          </span>
         </div>
         </div>
       </div>
@@ -402,6 +465,7 @@ defineExpose({ scrollToFocus })
 }
 
 .game-board-canvas {
+  position: relative;
   background: var(--pixel-cream);
   outline: 2px solid var(--pixel-forest-dark);
   outline-offset: -2px;
@@ -521,6 +585,24 @@ button.game-board-node__tile:disabled {
 .game-board-node__tile--completed {
   background: var(--pixel-board-done);
   color: var(--pixel-board-done-text);
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.25),
+    var(--pixel-shadow);
+}
+
+/* Überlaufen: nur übersprungen */
+.game-board-node__tile--step-active {
+  background: var(--pixel-board-overflow);
+  color: var(--pixel-board-overflow-text);
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.55),
+    var(--pixel-shadow);
+}
+
+/* Gespielt: Aufgabe an dieser Station gelöst */
+.game-board-node__tile--step-played {
+  background: var(--pixel-board-played-path);
+  color: var(--pixel-board-played-path-text);
   box-shadow:
     inset 2px 2px 0 rgb(255 255 255 / 0.25),
     var(--pixel-shadow);

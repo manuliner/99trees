@@ -64,7 +64,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@vueuse/core'],
+      include: ['@vueuse/core', '@zxing/browser'],
     },
     server: {
       fs: { allow: [rootDir, workspaceRoot] },

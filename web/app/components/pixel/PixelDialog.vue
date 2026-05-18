@@ -1,10 +1,15 @@
 <script setup lang="ts">
-const props = defineProps<{
-  open: boolean
-  title?: string
-  scrollable?: boolean
-  panelClass?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    open: boolean
+    title?: string
+    scrollable?: boolean
+    panelClass?: string
+    /** When false, backdrop click does not close the dialog. */
+    dismissible?: boolean
+  }>(),
+  { dismissible: true },
+)
 const emit = defineEmits<{ close: [] }>()
 
 /** Teleport overlays are client-only; avoids SSR/client teleport hydration drift. */
@@ -21,7 +26,11 @@ onMounted(() => {
       role="dialog"
       aria-modal="true"
     >
-      <div class="absolute inset-0 bg-black/50" aria-hidden="true" @click="emit('close')" />
+      <div
+        class="absolute inset-0 bg-black/50"
+        aria-hidden="true"
+        @click="props.dismissible ? emit('close') : undefined"
+      />
       <div :class="['pixel-card relative w-full max-w-md p-4 space-y-4 z-10', props.panelClass]">
         <h2 v-if="title" class="pixel-title text-xs">{{ title }}</h2>
         <div :class="scrollable ? 'max-h-[min(85vh,32rem)] overflow-y-auto space-y-4' : 'contents'">

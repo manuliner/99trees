@@ -17,8 +17,16 @@
   --pixel-board-goal: #b388ff;
   --pixel-board-done: #5b9bd5;
   --pixel-board-done-text: #f4f1de;
-  --pixel-board-future: #e4e9f7;
-  --pixel-board-future-text: #4a5568;
+  /* Move-path highlights (persist until next roll) */
+  --pixel-board-played-path: #5b9bd5;
+  --pixel-board-played-path-text: #f4f1de;
+  --pixel-board-overflow: #b8e4fc;
+  --pixel-board-overflow-text: #1a1c2c;
+  /* Legacy alias */
+  --pixel-board-step: var(--pixel-board-overflow);
+  --pixel-board-step-text: var(--pixel-board-overflow-text);
+  --pixel-board-future: #fff3b8;
+  --pixel-board-future-text: #1a1c2c;
   --pixel-board-focus: #9c7cff;
   --pixel-board-configured: #6abf69;
   --pixel-board-configured-text: #1a1c2c;

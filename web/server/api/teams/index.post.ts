@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
       positionConfirmed: 0,
       scoreTotal: 0,
       completedFieldsJson: '[]',
+      overflowFieldsJson: '[]',
       teamSize: body.size ?? null,
       createdAt: now,
     })

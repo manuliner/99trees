@@ -51,6 +51,6 @@ export default defineEventHandler(async (event) => {
     .set({ state: 'completed', completedAt: new Date() })
     .where(eq(turns.id, turnId))
 
-  const { scoreDelta, newScore, breakdown } = await confirmTurn(team.id, turnId)
-  return { correct: true, scoreDelta, newScore, breakdown }
+  const { scoreDelta, newScore, breakdown, reachedGoal } = await confirmTurn(team.id, turnId)
+  return { correct: true, scoreDelta, newScore, breakdown, reachedGoal }
 })
