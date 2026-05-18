@@ -51,7 +51,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
-          version: latest
+          version: 10.33.2
 
       - name: Get package version and commit hash
         id: base-info
