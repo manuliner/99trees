@@ -9,7 +9,19 @@
     "privacy": "Privacy",
     "teamQr": "Team QR",
     "teamQrAlt": "Team QR",
-    "pointsPenalty": "−{n} pts"
+    "pointsPenalty": "−{n} pts",
+    "installApp": "Install app"
+  },
+  "pwa": {
+    "title": "Install Zugvögel",
+    "body": "Add to your home screen for faster access at the festival.",
+    "install": "Install",
+    "notNow": "Not now",
+    "iosTitle": "Add to Home Screen",
+    "iosStep1": "Tap Share (bottom of the screen)",
+    "iosStep2": "Choose “Add to Home Screen”",
+    "androidHint": "Open the browser menu and choose “Install app” or “Add to home screen”.",
+    "alreadyInstalled": "You're already using the installed app."
   },
   "language": {
     "switcherLabel": "Language",

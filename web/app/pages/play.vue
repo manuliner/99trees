@@ -22,7 +22,9 @@ const { confirm: pixelConfirm } = usePixelConfirm()
 const showScanner = ref(false)
 const showTeamQr = ref(false)
 const showMenu = ref(false)
+const showPwaInstall = ref(false)
 const showLeaderboard = ref(false)
+const { maybeAutoShow: maybeShowPwaInstall } = usePwaInstall('player')
 const showRules = ref(false)
 const showFestivalMapFullscreen = ref(false)
 const mapSectionRef = ref<HTMLElement | null>(null)
@@ -41,6 +43,17 @@ watchEffect(() => {
     navigateTo(slug ? joinPath(slug) : '/')
   }
 })
+
+watch(
+  () => me.value?.team?.id,
+  (id) => {
+    if (id == null) return
+    maybeShowPwaInstall(() => {
+      showPwaInstall.value = true
+    })
+  },
+  { immediate: true },
+)
 
 type LeaderboardData = {
   teams: { id: number; name: string; position: number }[]
@@ -92,6 +105,7 @@ usePullToRefreshDisabled(
       showScanner.value
       || showTeamQr.value
       || showMenu.value
+      || showPwaInstall.value
       || showLeaderboard.value
       || showRules.value
       || showFestivalMapFullscreen.value,
@@ -434,6 +448,10 @@ async function fillCorrectAnswer() {
 }
 
 function showTurnScoreSummary(breakdown: TurnScoreBreakdown, newScore: number, turnId?: number) {
+  if (breakdown.total === 0) {
+    if (turnId != null) summaryShownForTurnId.value = turnId
+    return
+  }
   turnScoreSummary.value = { breakdown, newScore }
   if (turnId != null) summaryShownForTurnId.value = turnId
 }
@@ -442,10 +460,14 @@ async function fetchTurnScoreSummary(turnId: number): Promise<boolean> {
   if (summaryShownForTurnId.value === turnId) return true
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await api<{ breakdown: TurnScoreBreakdown; newScore: number }>(
+      const res = await api<{ breakdown: TurnScoreBreakdown; newScore: number; scoreDelta?: number }>(
         `/api/turns/${turnId}/score-summary`,
       )
       if (res.breakdown != null && res.newScore != null) {
+        if (res.scoreDelta === 0) {
+          summaryShownForTurnId.value = turnId
+          return false
+        }
         showTurnScoreSummary(res.breakdown, res.newScore, turnId)
         return true
       }
@@ -526,10 +548,12 @@ async function abandonTurn() {
     confirmVariant: 'danger',
   })
   if (!ok) return
+  const turnId = turn.value!.id
+  summaryShownForTurnId.value = turnId
   loading.value = true
   actionError.value = ''
   try {
-    await api(`/api/turns/${turn.value!.id}/abandon`, { method: 'POST' })
+    await api(`/api/turns/${turnId}/abandon`, { method: 'POST' })
     await refresh()
     await refreshLeaderboard()
   }
@@ -807,8 +831,20 @@ onUnmounted(() => {
         >
           {{ $t('common.teamQr') }}
         </PixelButton>
+        <PixelButton
+          variant="secondary"
+          @click="showMenu = false; showPwaInstall = true"
+        >
+          {{ $t('common.installApp') }}
+        </PixelButton>
       </div>
     </PixelDialog>
+
+    <PwaInstallDialog
+      :open="showPwaInstall"
+      role="player"
+      @close="showPwaInstall = false"
+    />
 
     <PixelDialog :open="showRules" :title="$t('play.gameRules')" scrollable @close="showRules = false">
       <GameRulesContent />

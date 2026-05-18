@@ -65,10 +65,15 @@ async function onResolveApproval(
 }
 
 const showNewEdition = ref(false)
+const showPwaInstall = ref(false)
+const { maybeAutoShow: maybeShowPwaInstall } = usePwaInstall('admin')
 
 onMounted(async () => {
   try {
     await loadEditions()
+    maybeShowPwaInstall(() => {
+      showPwaInstall.value = true
+    })
   }
   catch (e) {
     if ((e as { statusCode?: number }).statusCode === 401) {
@@ -124,9 +129,18 @@ const contentReady = computed(
       @create="onCreate"
     >
       <template #actions>
-        <button type="button" class="admin-body text-xs underline opacity-80" @click="logout">
-          Sign out
-        </button>
+        <div class="flex flex-col items-end gap-1 shrink-0">
+          <button
+            type="button"
+            class="admin-body text-xs underline opacity-80"
+            @click="showPwaInstall = true"
+          >
+            Install app
+          </button>
+          <button type="button" class="admin-body text-xs underline opacity-80" @click="logout">
+            Sign out
+          </button>
+        </div>
       </template>
       <template #game-control>
         <AdminEditionControl
@@ -278,5 +292,11 @@ const contentReady = computed(
     <p v-else-if="!editions.length && !showNewEdition" class="pixel-card p-4 admin-body text-sm text-center">
       No editions yet. Tap + to create a draft.
     </p>
+
+    <PwaInstallDialog
+      :open="showPwaInstall"
+      role="admin"
+      @close="showPwaInstall = false"
+    />
   </main>
 </template>

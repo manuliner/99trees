@@ -4,7 +4,6 @@
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
-      <PwaInstallHint />
       <PixelConfirmHost />
     </div>
   </UApp>

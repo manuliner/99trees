@@ -9,7 +9,19 @@
     "privacy": "Datenschutz",
     "teamQr": "Banden-QR",
     "teamQrAlt": "Banden-QR",
-    "pointsPenalty": "−{n} Pkt"
+    "pointsPenalty": "−{n} Pkt",
+    "installApp": "App installieren"
+  },
+  "pwa": {
+    "title": "Zugvögel installieren",
+    "body": "Lege die App auf den Home-Bildschirm — schneller Zugriff auf dem Festival.",
+    "install": "Installieren",
+    "notNow": "Später",
+    "iosTitle": "Zum Home-Bildschirm",
+    "iosStep1": "Tippe auf Teilen (Symbol unten)",
+    "iosStep2": "Wähle „Zum Home-Bildschirm“",
+    "androidHint": "Öffne das Browser-Menü und wähle „App installieren“ oder „Zum Startbildschirm“.",
+    "alreadyInstalled": "Du nutzt die installierte App bereits."
   },
   "language": {
     "switcherLabel": "Sprache",

@@ -260,6 +260,7 @@ export async function buildMePayload(teamId: number) {
 
 function buildTurnScoreInput(
   turn: {
+    state?: string
     hintMode: string | null
     hintsUsedJson: string
     quizWrongAttempts: number
@@ -279,6 +280,7 @@ function buildTurnScoreInput(
     scannedAtMs: turn.scannedAt?.getTime() ?? null,
     confirmedAtMs: confirmedAtMs,
     hintsAlreadyDeducted: turn.hintPointsDeducted ?? 0,
+    abandoned: turn.state === 'abandoned',
   }
 }
 

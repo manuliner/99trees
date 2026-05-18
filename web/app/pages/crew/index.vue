@@ -11,7 +11,10 @@ const { api } = useGameApi()
 const search = ref('')
 const results = ref<{ id: number; name: string }[]>([])
 const showTeamScanner = ref(false)
+const showCrewMenu = ref(false)
+const showPwaInstall = ref(false)
 const scanError = ref('')
+const { maybeAutoShow: maybeShowPwaInstall } = usePwaInstall('crew')
 
 const {
   pending,
@@ -22,7 +25,14 @@ const {
 
 usePullToRefresh(loadPending)
 
-usePullToRefreshDisabled(computed(() => showTeamScanner.value))
+usePullToRefreshDisabled(computed(() => showTeamScanner.value || showCrewMenu.value || showPwaInstall.value))
+
+watch(editionId, (id) => {
+  if (id == null) return
+  maybeShowPwaInstall(() => {
+    showPwaInstall.value = true
+  })
+}, { immediate: true })
 
 watch(search, async (q) => {
   if (editionId.value == null) return
@@ -73,7 +83,10 @@ async function logout() {
     <NuxtLink to="/" class="pixel-body text-sm underline">Festival overview</NuxtLink>
   </main>
   <main v-else-if="editionId != null" class="p-4 max-w-md mx-auto space-y-4">
-    <h1 class="pixel-title text-center text-base">Crew</h1>
+    <div class="flex items-center justify-between gap-2">
+      <h1 class="pixel-title text-base">Crew</h1>
+      <PixelButton variant="secondary" @click="showCrewMenu = true">Menu</PixelButton>
+    </div>
 
     <PixelButton variant="secondary" @click="showTeamScanner = true">Scan Team QR</PixelButton>
     <p v-if="scanError" class="text-sm text-[var(--pixel-score-minus)] text-center">{{ scanError }}</p>
@@ -101,7 +114,25 @@ async function logout() {
       </NuxtLink>
     </div>
 
-    <PixelButton variant="secondary" @click="logout">Log out</PixelButton>
+    <PixelDialog :open="showCrewMenu" title="Menu" @close="showCrewMenu = false">
+      <div class="space-y-2">
+        <PixelButton
+          variant="secondary"
+          @click="showCrewMenu = false; showPwaInstall = true"
+        >
+          Install app
+        </PixelButton>
+        <PixelButton variant="secondary" @click="showCrewMenu = false; logout()">
+          Log out
+        </PixelButton>
+      </div>
+    </PixelDialog>
+
+    <PwaInstallDialog
+      :open="showPwaInstall"
+      role="crew"
+      @close="showPwaInstall = false"
+    />
 
     <TaskQrScanner
       v-if="showTeamScanner"

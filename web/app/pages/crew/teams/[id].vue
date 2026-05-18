@@ -27,6 +27,19 @@ usePullToRefresh(async () => {
 })
 
 const resolvingTurnId = ref<number | null>(null)
+const showPwaInstall = ref(false)
+const { maybeAutoShow: maybeShowPwaInstall } = usePwaInstall('crew')
+
+watch(
+  () => data.value?.team?.id,
+  (id) => {
+    if (id == null) return
+    maybeShowPwaInstall(() => {
+      showPwaInstall.value = true
+    })
+  },
+  { immediate: true },
+)
 
 watch(error, (e) => {
   if (e?.statusCode === 401) {
@@ -76,7 +89,10 @@ async function resetPin() {
 
 <template>
   <main class="p-4 max-w-md mx-auto space-y-4">
-    <NuxtLink :to="pathWithEdition('/crew')" class="pixel-body text-sm underline">← Crew</NuxtLink>
+    <div class="flex items-start justify-between gap-2">
+      <NuxtLink :to="pathWithEdition('/crew')" class="pixel-body text-sm underline">← Crew</NuxtLink>
+      <PixelButton variant="secondary" @click="showPwaInstall = true">Install app</PixelButton>
+    </div>
     <h1 class="pixel-title text-base">{{ data?.team.name }}</h1>
     <p class="pixel-body text-sm">Field {{ data?.team.positionConfirmed }}</p>
 
@@ -89,5 +105,11 @@ async function resetPin() {
 
     <PixelButton variant="secondary" @click="resetPin">Reset PIN</PixelButton>
     <p v-if="tempPin" class="pixel-body text-sm text-center">Temporary PIN: <strong>{{ tempPin }}</strong></p>
+
+    <PwaInstallDialog
+      :open="showPwaInstall"
+      role="crew"
+      @close="showPwaInstall = false"
+    />
   </main>
 </template>
