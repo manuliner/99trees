@@ -98,7 +98,9 @@ usePullToRefreshDisabled(
   ),
 )
 
-const isDev = import.meta.dev
+const showDevSimulation = computed(
+  () => import.meta.dev || me.value?.devSimulation === true,
+)
 
 const loading = ref(false)
 const scanSlug = ref('')
@@ -721,7 +723,7 @@ onUnmounted(() => {
           class="pixel-input w-full p-3"
         >
         <PixelButton
-          v-if="isDev"
+          v-if="showDevSimulation"
           variant="secondary"
           :disabled="loading"
           @click="fillCorrectAnswer"
@@ -755,7 +757,7 @@ onUnmounted(() => {
           {{ $t('play.rollAgain') }}
         </PixelButton>
         <PixelButton
-          v-if="isDev"
+          v-if="showDevSimulation"
           variant="secondary"
           :disabled="loading"
           @click="completePerformanceDev"
@@ -833,7 +835,7 @@ onUnmounted(() => {
         @close="showScanner = false"
       />
       <PixelButton
-        v-if="isDev && canScan"
+        v-if="showDevSimulation && canScan"
         variant="secondary"
         class="w-full"
         :disabled="loading"

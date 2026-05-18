@@ -13,6 +13,7 @@ import { teamQrPath } from '#shared/edition-urls'
 import { activityPayloadForTeam, parseActivityPayload } from '#shared/quiz-payload'
 import type { EditionConfig, TurnState } from '#shared/types'
 import { assertEditionLive } from '../utils/edition-live'
+import { isDevSimulationEnabled } from '../utils/dev-only'
 
 export async function getEditionOrThrow(editionId: number) {
   const db = getDb()
@@ -231,6 +232,7 @@ export async function buildMePayload(teamId: number) {
   }
 
   return {
+    devSimulation: isDevSimulationEnabled(),
     team: {
       id: team.id,
       name: team.name,
