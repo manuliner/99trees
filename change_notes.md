@@ -5,15 +5,15 @@
 
 ## 🎉 What's New
 
-- PWA install dialog for player, crew, and admin (auto-prompt once per role; manual “Install app” on staff screens)
+<!-- Add new features here -->
 
 ## 🐛 Bug Fixes
 
-- Skip turn score summary dialog when a turn scores 0 points (abandon / no-op confirm)
+<!-- Add bug fixes here -->
 
 ## 🔧 Improvements
 
-- PWA install replaces inline hint component; localized install copy (DE/EN)
+<!-- Add improvements here -->
 
 ## 📚 Documentation
 
