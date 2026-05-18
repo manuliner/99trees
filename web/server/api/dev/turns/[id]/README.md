@@ -1,8 +1,7 @@
-# Dev turns API
+# Dev turn API
 
-**Purpose:** Development-only shortcuts for testing turn flows without physical QR scans.
+**Purpose:** Dev/test-only shortcuts to simulate scans, reveal quiz answers, and skip crew rating.
 
-- **simulate-scan.post.ts** — force scan transition for a turn
-- **complete-performance.post.ts** — skip crew wait and complete performance turn
-
-**Depends on:** `server/utils/dev-only`
+- **simulate-scan.post.ts** — Auto-scans correct task QR for pending field (dev gate).
+- **quiz-answer.get.ts** — Returns first correct quiz answer for active scanned turn.
+- **complete-performance.post.ts** — Auto-rates awaiting_crew performance as ok.

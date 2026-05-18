@@ -1,17 +1,21 @@
 # App composables
 
-**Purpose:** Vue composables for API access, edition routing, admin UI, staff approvals, and play UX helpers.
+**Purpose:** Vue composables for API access, edition routing, admin orchestration, crew approvals, and play UX.
 
-- **useGameApi.ts** — `$fetch` wrapper with `credentials: 'include'`
-- **useEditionId.ts** — resolves edition id from route slug
-- **useLegacyEditionRedirect.ts** — redirects old non-slug URLs to `/[edition]/…`
-- **useAdminEdition.ts** — admin edition detail fetch and mutations
-- **useStaffApprovals.ts** — crew pending performance list polling
-- **useTurnHints.ts** — hint timer state for active turn
-- **useScoreFeedback.ts** — point delta toasts after confirm
-- **useDigitPin.ts** — PIN input UX for join/rejoin
-- **usePixelConfirm.ts** — promise-based confirm dialogs
-- **usePullToRefresh.ts** — pull-to-refresh gesture handler
-- **useFestivalMapView.ts** — pan/zoom transform state for interactive festival map
+- **useGameApi** — `api(path, options?)` wraps `$fetch` with `credentials: 'include'`
+- **useEditionId** — edition id/slug from `/:edition` route or crew session; `pathWithEdition`, public edition fetch
+- **useAdminEdition** — admin editions list, selected edition CRUD, tasks/teams/map, approvals, setup steps
+- **usePullToRefreshProvider** / **usePullToRefresh** / **usePullToRefreshDisabled** — gesture refresh via injected handlers
+- **useTurnHints** — hint unlock timers, costs, and visible hint text for active turn
+- **useFestivalMapView** — pan/zoom transform state for interactive festival map
+- **useStaffApprovals** — poll and rate pending crew approvals (`asAdmin` for backoffice)
+- **useJoinSessionGate** — redirect existing team session to `/play` or flag cross-edition mismatch
+- **useLocalizedContent** — resolve bilingual task fields for active player locale
+- **useGoalCelebration** — first goal reached modal with sessionStorage dedupe
+- **usePwaInstall** — beforeinstallprompt capture and role-scoped auto-show
+- **useLegacyEditionRedirect** — `?edition=id` → `/:slug/…` for legacy URLs
+- **useScoreFeedback**, **usePixelConfirm**, **useDigitPin** — score flash, confirm dialog, PIN input UX
 
-**Depends on:** `#shared` types only (never `web/server`)
+**Used by:** `play.vue`, `[edition]/*`, `admin/index.vue`, `crew/*`, pixel map/pull-to-refresh, `PwaInstallDialog`
+
+**Depends on:** `#shared` types/schemas; `useGameApi` for authenticated API calls only

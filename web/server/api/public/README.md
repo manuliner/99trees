@@ -1,5 +1,5 @@
-# Public assets API
+# Public API
 
-**Purpose:** Unauthenticated endpoints for printable/shareable team assets.
+**Purpose:** Unauthenticated helpers for deep links and shareable team QR resolution.
 
-- **team-qr.get.ts** — render team rejoin QR image by token
+- **team-qr.get.ts** — Resolves team slug+token to edition id and slug.

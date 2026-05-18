@@ -1,10 +1,6 @@
-# Database layer
+# Server database
 
-**Purpose:** Drizzle ORM schema and SQLite migrations for editions, stations, teams, turns, and crew ratings.
+**Purpose:** Drizzle SQLite schema and versioned SQL migrations for editions, tasks, teams, turns, and staff tables.
 
-- **schema.ts** — tables: `editions`, `stations`, `teams`, `turns`, `crew_ratings` with relations and unique constraints
-- **migrations/** — generated SQL migration chain applied on Nitro boot
-
-**Depends on:** drizzle-orm sqlite column types only
-
-**Used by:** `server/services`, `server/utils/db`, admin import handlers
+- **schema.ts** — Tables: editions, tasks, teams, turns, admin_users, crew_ratings with relations and uniqueness constraints.
+- **migrations/** — Drizzle migration chain (stations→tasks rename, i18n content, path highlights, overflow fields).

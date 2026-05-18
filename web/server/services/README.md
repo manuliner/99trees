@@ -1,26 +1,8 @@
 # Server services
 
-**Purpose:** Domain orchestration for game turns, crew ratings, admin teams, and QR scan handling — called from thin `server/api` handlers.
+**Purpose:** Domain orchestration for editions, turns, crew workflows, and admin team views — shared by Nitro handlers and plugins.
 
-**game.ts** — edition/team lookups, `getOpenTurn`, dice roll, position resolution, turn lifecycle (hint/scan/answer/confirm/abandon), `buildMePayload`
-
-**crew.ts** — crew login verification, pending performance queue, team search/resolve, rating and PIN reset
-
-**turn-scan.ts** — validates station QR token against turn state and advances scan phase
-
-**admin-teams.ts** — admin listing and PIN updates for teams
-
-**Depends on:** `server/database/schema`, `server/utils/*-session`, `#shared/scoring`, `#shared/types`
-
-**Used by:** `server/api/turns`, `server/api/crew`, `server/api/teams`, `server/api/admin`
-
-## Change X → file
-
-| Change | File |
-|--------|------|
-| Roll / skip completed fields | `game.ts` → `resolvePendingPosition` |
-| Hint timers / costs | `game.ts`, `utils/edition-config.ts` |
-| Scan validation | `turn-scan.ts`, `api/turns/[id]/scan.post.ts` |
-| Confirm + score | `game.ts`, `#shared/scoring` |
-| Crew rating + bonus | `crew.ts` |
-| Schema columns | `database/schema.ts` → `pnpm db:generate` |
+- **game.ts** — Edition lookup, dice roll helpers, `/api/me` payload, hint deductions, board highlights, turn confirm and score summary.
+- **crew.ts** — Crew team search, QR resolve, team detail, performance rating with auto-confirm, pending queue, PIN reset.
+- **admin-teams.ts** — Admin edition team list with open-turn state and progress counts.
+- **turn-scan.ts** — Validates task QR scan and advances turn to scanned or awaiting_crew.

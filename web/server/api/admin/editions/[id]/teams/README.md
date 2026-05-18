@@ -1,5 +1,5 @@
 # Admin edition teams API
 
-**Purpose:** Admin view of teams registered in an edition.
+**Purpose:** Organizer view of all teams in an edition with scores and open-turn status.
 
-- **index.get.ts** — teams with scores, positions, PIN reset flags
+- **index.get.ts** — Returns admin team list via `listAdminTeams`.

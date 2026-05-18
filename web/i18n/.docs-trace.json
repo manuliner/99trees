@@ -1,0 +1,8 @@
+{
+  "commit": "5ba77ed6be91f9345af763f9754a16d32549555f",
+  "createdAt": "2026-05-18T21:12:30Z",
+  "updatedAt": "2026-05-18T21:12:30Z",
+  "files": [
+    "web/i18n/i18n.config.ts"
+  ]
+}

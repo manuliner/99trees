@@ -1,7 +1,7 @@
 {
-  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-18T21:11:36Z",
   "files": [
     "web/server/utils/admin-session.ts",
     "web/server/utils/admin-task-import.ts",
@@ -13,6 +13,7 @@
     "web/server/utils/edition-live.ts",
     "web/server/utils/edition-slug.ts",
     "web/server/utils/logger.ts",
+    "web/server/utils/migrate-task-i18n.ts",
     "web/server/utils/parse-body.ts",
     "web/server/utils/resolve-sqlite-path.ts",
     "web/server/utils/staff-session.ts",

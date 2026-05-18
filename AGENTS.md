@@ -31,7 +31,7 @@ Never commit `.env` or expose secrets in `web/app/`.
 ```
 web/
   app/           # Nuxt pages, pixel UI, composables
-  locales/       # Player UI strings (de default, en) — @nuxtjs/i18n
+  i18n/locales/  # Player UI strings (de default, en) — @nuxtjs/i18n
   server/api/    # Nitro REST — thin handlers
   server/services/  # game.ts, crew.ts — domain orchestration
   server/database/  # Drizzle schema + migrations
@@ -49,7 +49,7 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 - **API client:** `useGameApi()` → `$fetch` with `credentials: 'include'`.
 - **State:** Server owns turns/positions/points; UI polls/refreshes `GET /api/me`.
 - **Scoring:** Change `web/shared/scoring.ts` only — handlers call `calculateTurnScore`.
-- **UI language:** Player flows (join, rejoin, play, rules, privacy) — **DE default / EN** via `@nuxtjs/i18n` (`web/locales/`, `layouts/player.vue` switcher). Admin and crew stay English. **Task content** (quiz, hints, performance text) is **bilingual edition data** (`de`/`en` per field in import/DB); player UI resolves by active locale. Product spec in `docs/SCOPE.md` is German.
+- **UI language:** Player flows (join, rejoin, play, rules, privacy) — **DE default / EN** via `@nuxtjs/i18n` (`web/i18n/locales/`, `layouts/player.vue` switcher). Admin and crew stay English. **Task content** (quiz, hints, performance text) is **bilingual edition data** (`de`/`en` per field in import/DB); player UI resolves by active locale. Product spec in `docs/SCOPE.md` is German.
 - **Styling:** Pixel tokens in `app/assets/css/pixel-theme.css`; components in `app/components/pixel/`.
 
 ## Invariants

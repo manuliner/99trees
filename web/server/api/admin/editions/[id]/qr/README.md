@@ -1,5 +1,5 @@
-# Admin QR export API
+# Admin edition QR API
 
-**Purpose:** Generate printable QR packs for tasks and teams.
+**Purpose:** Printable HTML export of join QR and per-task field QR codes for an edition.
 
-- **export.get.ts** — ZIP or PDF export of task/team QR codes for field setup
+- **export.get.ts** — Builds downloadable HTML with join URL and task QR images via external QR API.

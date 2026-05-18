@@ -1,5 +1,5 @@
 # Server middleware
 
-**Purpose:** Global request middleware for the Nitro API.
+**Purpose:** Global Nitro middleware for API rate limiting by IP and route prefix.
 
-- **rate-limit.ts** — basic rate limiting on sensitive routes
+- **rate-limit.ts** — Token-bucket limits on rejoin, roll, turn mutations, and leaderboard requests.

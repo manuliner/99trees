@@ -1,11 +1,13 @@
 {
-  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "commit": "5ba77ed6be91f9345af763f9754a16d32549555f",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-18T21:12:30Z",
   "files": [
     "web/shared/admin-task-import.ts",
     "web/shared/edition-urls.ts",
     "web/shared/game-board-layout.ts",
+    "web/shared/localized.ts",
+    "web/shared/quiz-payload.ts",
     "web/shared/schemas.ts",
     "web/shared/scoring.ts",
     "web/shared/task-slug.ts",

@@ -1,5 +1,5 @@
 # Edition by slug API
 
-**Purpose:** Lookup edition public payload by URL slug (`/[edition]/join`).
+**Purpose:** Canonical public edition lookup for slug-based player URLs.
 
-- **public.get.ts** — same public fields as id route, keyed by slug
+- **public.get.ts** — Resolves slug to public edition payload.

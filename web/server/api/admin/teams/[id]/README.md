@@ -1,5 +1,6 @@
-# Admin team by ID API
+# Admin team API
 
-**Purpose:** Organizer overrides on a single team.
+**Purpose:** Organizer overrides for a single team PIN.
 
-- **pin.patch.ts** — set new team PIN from admin console
+- **pin.patch.ts** — Sets team PIN hash directly (admin auth).
+- **reset-pin.post.ts** — Generates random temp PIN via crew service helper.

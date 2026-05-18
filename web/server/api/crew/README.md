@@ -1,9 +1,9 @@
 # Crew API
 
-**Purpose:** Festival staff (crew) session — performance ratings and team support.
+**Purpose:** Festival crew session — login, logout, session probe, and performance approval queue.
 
-- **login.post.ts** — edition crew password → `crew_session` cookie
-- **logout.post.ts** — clear crew session
-- **session.get.ts** — current crew edition context
-- **pending.get.ts** — teams awaiting performance approval
-- **rate.post.ts** — submit crew rating / complete performance turn
+- **login.post.ts** — Edition crew password login and session cookie.
+- **logout.post.ts** — Clears crew session cookie.
+- **session.get.ts** — Returns bound edition id and slug for active crew session.
+- **pending.get.ts** — Staff-scoped list of turns awaiting performance rating.
+- **rate.post.ts** — Rates performance turn (crew or admin) and logs event.

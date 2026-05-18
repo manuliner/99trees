@@ -1,9 +1,12 @@
 {
-  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-18T21:11:38Z",
   "files": [
+    "web/app/utils/api-errors.ts",
     "web/app/utils/format-wait-time.ts",
-    "web/app/utils/roll-dice-prompts.ts"
+    "web/app/utils/roll-dice-prompts.ts",
+    "web/app/utils/roll-sequence.ts",
+    "web/app/utils/team-form.ts"
   ]
 }

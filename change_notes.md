@@ -17,7 +17,7 @@
 
 ## 📚 Documentation
 
-<!-- Add documentation changes here -->
+- Regenerated module READMEs and traces (`docs-update`) for tasks/i18n/goal-celebration changes; refreshed `.vibe/docs` concept docs (`docs-concepts`); expanded `web/README.md` module index.
 
 ## ⚠️ Breaking Changes
 

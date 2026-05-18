@@ -1,6 +1,6 @@
 # Admin editions API
 
-**Purpose:** List and create festival editions.
+**Purpose:** List and create festival editions for organizers.
 
-- **index.get.ts** — all editions for admin dashboard
-- **index.post.ts** — create edition with slug, field count, config defaults
+- **index.get.ts** — All editions with team counts, config, and map URL.
+- **index.post.ts** — Creates draft edition with slug and default config.

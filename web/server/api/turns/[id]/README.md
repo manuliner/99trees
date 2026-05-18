@@ -1,9 +1,10 @@
-# Turn by ID API
+# Turn API
 
-**Purpose:** Mutations on an open turn (`rolled` → `scanned` → `completed` / crew / abandon).
+**Purpose:** Mutations on the team's open turn — scan, hints, quiz, confirm, abandon, score recap.
 
-- **hint.post.ts** — activate wait or reveal-all hint mode
-- **scan.post.ts** — validate station QR and attach station
-- **answer.post.ts** — submit quiz answer attempts
-- **confirm.post.ts** — finalize score and advance team position
-- **abandon.post.ts** — zero-round abandon from `rolled`
+- **scan.post.ts** — Validates task QR and advances turn state.
+- **hint.post.ts** — Reveals timed hints or reveal-all with point deductions.
+- **answer.post.ts** — Submits quiz answer; auto-confirms on success.
+- **confirm.post.ts** — Confirms completed turn and updates team position/score.
+- **abandon.post.ts** — Zero-round abandon with hint penalty settlement.
+- **score-summary.get.ts** — Breakdown for a confirmed turn.

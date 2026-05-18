@@ -1,9 +1,8 @@
 {
-  "commit": "6b419744d7e4c24c02b478955d0b70df9a002286",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T10:37:34Z",
+  "updatedAt": "2026-05-18T21:11:36Z",
   "files": [
-    "web/server/api/admin/editions/[id].patch.ts",
     "web/server/api/admin/editions/index.get.ts",
     "web/server/api/admin/editions/index.post.ts"
   ]

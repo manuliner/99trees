@@ -1,7 +1,7 @@
-# Nitro plugins
+# Server plugins
 
-**Purpose:** Server startup hooks — migrations, performance timeouts, env validation.
+**Purpose:** Nitro boot hooks — schema migrate, performance auto-complete, production env checks, startup banner.
 
-- **00-database-migration.ts** — runs Drizzle migrations on boot
-- **01-performance-timeout.ts** — polls and auto-completes overdue performance turns
-- **02-env-validation.plugin.ts** — fails fast when required runtime env vars missing in production
+- **00-database-migration.ts** — Runs Drizzle migrations on boot and backfills task content to localized JSON.
+- **01-performance-timeout.ts** — Minute poll auto-completes awaiting_crew turns past `performanceTimeoutMinutes`.
+- **02-env-validation.plugin.ts** — Validates production secrets and prints version/env startup banner.

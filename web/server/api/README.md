@@ -1,31 +1,7 @@
-# REST API (Nitro)
+# Server API
 
-**Purpose:** HTTP handlers under `/api/*` — auth gates, Zod parse, status codes; delegate to `server/services`.
+**Purpose:** Nitro REST entry points — thin handlers delegating to services and utils; root-level player and ops routes.
 
-- **health.get.ts** — liveness probe
-- **leaderboard.get.ts** — public highscore by confirmed position
-- **me.get.ts** — team session payload (open turn, edition, board state)
-- **teams/** — create team, rejoin, PIN change
-- **turns/** — roll, hint, scan, answer, confirm, abandon
-- **editions/** — public edition metadata by id or slug
-- **crew/** — staff login, pending performances, rate, team tools
-- **admin/** — bootstrap, editions CRUD, stations import, QR export
-- **public/** — team QR image generation
-- **uploads/** — serve edition map images
-- **dev/** — dev-only turn simulation helpers
-
-## Change X → file
-
-| Change | Start at |
-|--------|----------|
-| New route | `api/<area>/<name>.<method>.ts` |
-| Roll / scan / confirm | `turns/`, `services/game.ts` |
-| Crew rate / PIN | `crew/`, `services/crew.ts` |
-| Admin import / checklist | `admin/editions/[id]/` |
-| Team session | `utils/team-session.ts` |
-
-## Route tree (overview)
-
-`health`, `me`, `leaderboard`, `editions/*`, `teams/*`, `turns/*`, `crew/*`, `admin/*`, `public/team-qr`, `uploads/editions/*`, `dev/turns/*` — see per-subfolder READMEs.
-
-**Depends on:** `server/services`, `server/utils/*-session`, `#shared/schemas`
+- **me.get.ts** — Authenticated team snapshot via `buildMePayload`.
+- **health.get.ts** — Liveness JSON with version, build time, and environment.
+- **leaderboard.get.ts** — Edition ranking with official vs in-progress rules when ended.

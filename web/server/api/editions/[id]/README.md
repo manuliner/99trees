@@ -1,6 +1,6 @@
-# Edition by ID API
+# Edition API
 
-**Purpose:** Public and slug helpers for a single edition.
+**Purpose:** Public payload and legacy slug lookup for a single edition by numeric id.
 
-- **public.get.ts** — edition status, field count, config subset for join/play
-- **slug.get.ts** — resolve canonical slug for edition id
+- **public.get.ts** — Public edition fields (status, field count, schedule).
+- **slug.get.ts** — Legacy helper returning slug for id-based redirects.

@@ -1,0 +1,11 @@
+{
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
+  "createdAt": "2026-05-18T21:11:36Z",
+  "updatedAt": "2026-05-18T21:11:36Z",
+  "files": [
+    "web/server/api/admin/editions/[id]/tasks/index.get.ts",
+    "web/server/api/admin/editions/[id]/tasks/index.post.ts",
+    "web/server/api/admin/editions/[id]/tasks/import.post.ts",
+    "web/server/api/admin/editions/[id]/tasks/[taskId].patch.ts"
+  ]
+}

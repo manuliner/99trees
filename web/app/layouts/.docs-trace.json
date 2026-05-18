@@ -1,10 +1,11 @@
 {
-  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T11:31:07Z",
-  "updatedAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-18T21:11:38Z",
   "files": [
     "web/app/layouts/admin.vue",
     "web/app/layouts/crew.vue",
-    "web/app/layouts/default.vue"
+    "web/app/layouts/default.vue",
+    "web/app/layouts/player.vue"
   ]
 }

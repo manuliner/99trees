@@ -2,36 +2,50 @@
 
 **Purpose:** One-line map of documented modules under `web/`. Load full READMEs only for directories relevant to the current task.
 
-- **shared**: Pure types, Zod schemas, scoring, board layout, URL helpers
-- **app/pages**: Nuxt routes — join, play, crew, admin, deep links
-- **app/components/pixel**: Pixel UI — board, festival map, dice, dialogs, hints
+- **shared**: Pure types, Zod schemas, scoring, localized content, URL helpers
+- **i18n**: Player UI string catalogs (DE/EN) and i18n config
+- **app**: Nuxt application shell and global UI theme defaults
+- **app/components**: Cross-cutting Vue components (QR scanner, leaderboard, PWA, rules)
 - **app/components/admin**: Organizer edition sections — tasks, teams, map, QR
+- **app/components/pixel**: Retro pixel design system for play, crew, and admin
+- **app/components/pixel/goal-celebration**: Goal-reached rain animation variants
+- **app/components/player**: Player-facing bilingual chrome (language switcher)
+- **app/components/staff**: Crew approval card and list
 - **app/composables**: API, edition routes, admin, play UX, festival map view
-- **app/layouts**: Nuxt layout shells — default, crew, admin
+- **app/config**: Client-side feature toggles (goal celebration style)
+- **app/layouts**: Nuxt layout shells — default, player, crew, admin
+- **app/pages**: Routes — festival picker, play, crew, admin, QR deep links, legacy redirects
+- **app/pages/[edition]**: Canonical player routes under `/:edition/…` with i18n
+- **app/pages/[edition]/crew**: Edition-scoped crew PIN login
+- **app/pages/admin**: Organizer auth and edition backoffice
+- **app/pages/crew**: Crew login, approval queue, team lookup
+- **app/pages/crew/teams**: Single-team crew detail view
+- **app/pages/s**: Task QR deep-link → play
+- **app/pages/t**: Team QR deep-link → crew login
 - **app/plugins**: Client-only Nuxt plugins (PWA)
-- **app/utils**: Small formatting helpers for UI
-- **server/services**: Game, crew, scan, admin-teams domain logic
-- **server/utils**: DB, sessions, edition config, parsing, paths
-- **server/database**: Drizzle schema and migrations
+- **app/utils**: Formatting, forms, dice animation, API error copy
+- **server/services**: Domain orchestration for editions, turns, crew, admin teams
+- **server/utils**: DB, sessions, edition config, task import, paths, guards
+- **server/database**: Drizzle schema and versioned SQL migrations
 - **server/plugins**: Boot migrations, performance timeout, env validation
-- **server/middleware**: API rate limiting
-- **server/api**: Nitro REST handlers (thin — delegate to services)
-- **server/api/admin**: Organizer backoffice
+- **server/middleware**: API rate limiting by IP and route prefix
+- **server/api**: Nitro REST handlers — me, health, leaderboard
+- **server/api/admin**: Organizer authentication and bootstrap
 - **server/api/admin/editions**: List and create editions
-- **server/api/admin/editions/[id]**: Single edition configure and operate
-- **server/api/admin/editions/[id]/qr**: Printable QR packs
-- **server/api/admin/editions/[id]/tasks**: Task CRUD and import
-- **server/api/admin/editions/[id]/teams**: Teams list for edition
-- **server/api/admin/teams/[id]**: Single-team admin overrides
-- **server/api/crew**: Crew session endpoints
-- **server/api/crew/teams**: Crew team search and detail
-- **server/api/crew/teams/[id]**: Crew single-team operations
-- **server/api/dev/turns/[id]**: Dev turn shortcuts
-- **server/api/editions**: Public edition metadata
-- **server/api/editions/[id]**: Single edition public payload
-- **server/api/editions/by-slug/[slug]**: Edition lookup by URL slug
-- **server/api/public**: Unauthenticated shareable assets
-- **server/api/teams**: Team register, rejoin, PIN
-- **server/api/turns**: Turn lifecycle for teams
-- **server/api/turns/[id]**: Open turn mutations
-- **server/api/uploads/editions**: Uploaded map images from disk
+- **server/api/admin/editions/[id]**: Single edition configure, checklist, map upload
+- **server/api/admin/editions/[id]/qr**: Printable join and task QR HTML export
+- **server/api/admin/editions/[id]/tasks**: Task CRUD and bulk import
+- **server/api/admin/editions/[id]/teams**: Edition team list with open-turn status
+- **server/api/admin/teams/[id]**: Admin PIN set and temp reset
+- **server/api/crew**: Crew session, pending queue, performance rating
+- **server/api/crew/teams**: Crew team search and QR resolve
+- **server/api/crew/teams/[id]**: Crew team detail and PIN reset
+- **server/api/dev/turns/[id]**: Dev-only scan, quiz, and performance shortcuts
+- **server/api/editions**: Public list of live editions
+- **server/api/editions/[id]**: Public edition payload and legacy slug lookup
+- **server/api/editions/by-slug/[slug]**: Canonical slug-based edition lookup
+- **server/api/public**: Unauthenticated team QR deep-link resolver
+- **server/api/teams**: Register, rejoin, PIN change, dev logout
+- **server/api/turns**: Dice roll to start a turn
+- **server/api/turns/[id]**: Scan, hints, quiz, confirm, abandon, score recap
+- **server/api/uploads/editions**: Serves uploaded edition map images

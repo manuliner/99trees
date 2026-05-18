@@ -1,5 +1,5 @@
 # Editions API
 
-**Purpose:** Public edition metadata without team session.
+**Purpose:** Public metadata for live editions (join picker, routing).
 
-- **public.get.ts** — list or resolve live editions for landing/join flows
+- **public.get.ts** — Lists id, slug, and name for editions with status live.

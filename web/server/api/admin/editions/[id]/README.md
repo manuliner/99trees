@@ -1,10 +1,7 @@
-# Admin edition by ID API
+# Admin edition API
 
-**Purpose:** Configure and operate a single edition.
+**Purpose:** Configure a single edition — status, slug, crew password, go-live checks, map upload.
 
-- **[id].patch.ts** — update name, status, config, crew password, dates
-- **checklist.get.ts** — pre-go-live readiness checklist
-- **map.post.ts** — upload festival map image
-- **tasks/** — list, create, patch, import tasks
-- **teams/** — list teams for edition
-- **qr/** — export task/team QR sheets
+- **[id].patch.ts** — Updates edition fields; validates tasks, map, slug, and crew before going live.
+- **checklist.get.ts** — Pre-live readiness report (tasks, fields, crew password, map, slug).
+- **map.post.ts** — Multipart festival map upload beside SQLite data dir.

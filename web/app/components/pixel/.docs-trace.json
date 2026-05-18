@@ -1,7 +1,7 @@
 {
-  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T11:31:07Z",
-  "updatedAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-18T21:11:38Z",
   "files": [
     "web/app/components/pixel/FestivalMap.vue",
     "web/app/components/pixel/FestivalMapFullscreen.vue",
@@ -16,11 +16,15 @@
     "web/app/components/pixel/PixelConfirmHost.vue",
     "web/app/components/pixel/PixelDiceButton.vue",
     "web/app/components/pixel/PixelDialog.vue",
+    "web/app/components/pixel/PixelGoalCelebration.vue",
     "web/app/components/pixel/PixelHintIcon.vue",
     "web/app/components/pixel/PixelIconButton.vue",
+    "web/app/components/pixel/PixelJoinHero.vue",
     "web/app/components/pixel/PixelPullToRefresh.vue",
     "web/app/components/pixel/PixelPullToRefreshClient.client.vue",
+    "web/app/components/pixel/PixelRollDiceOverlay.vue",
     "web/app/components/pixel/PixelTooltip.vue",
-    "web/app/components/pixel/ScoreFlash.vue"
+    "web/app/components/pixel/ScoreFlash.vue",
+    "web/app/components/pixel/TurnScoreSummaryDialog.vue"
   ]
 }

@@ -1,16 +1,20 @@
 {
-  "commit": "74e8d16a293765cc79efd4b774613138a3240b83",
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-17T11:31:07Z",
+  "updatedAt": "2026-05-18T21:11:38Z",
   "files": [
     "web/app/composables/useAdminEdition.ts",
     "web/app/composables/useDigitPin.ts",
     "web/app/composables/useEditionId.ts",
     "web/app/composables/useFestivalMapView.ts",
     "web/app/composables/useGameApi.ts",
+    "web/app/composables/useGoalCelebration.ts",
+    "web/app/composables/useJoinSessionGate.ts",
     "web/app/composables/useLegacyEditionRedirect.ts",
+    "web/app/composables/useLocalizedContent.ts",
     "web/app/composables/usePixelConfirm.ts",
     "web/app/composables/usePullToRefresh.ts",
+    "web/app/composables/usePwaInstall.ts",
     "web/app/composables/useScoreFeedback.ts",
     "web/app/composables/useStaffApprovals.ts",
     "web/app/composables/useTurnHints.ts"

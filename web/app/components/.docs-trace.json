@@ -1,0 +1,13 @@
+{
+  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
+  "createdAt": "2026-05-18T21:11:38Z",
+  "updatedAt": "2026-05-18T21:11:38Z",
+  "files": [
+    "web/app/components/AppVersionFooter.vue",
+    "web/app/components/EditionMissing.vue",
+    "web/app/components/GameRulesContent.vue",
+    "web/app/components/LeaderboardPanel.vue",
+    "web/app/components/PwaInstallDialog.vue",
+    "web/app/components/TaskQrScanner.vue"
+  ]
+}

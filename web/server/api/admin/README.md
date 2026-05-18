@@ -1,9 +1,7 @@
 # Admin API
 
-**Purpose:** Organizer backoffice — bootstrap, login, edition and station management.
+**Purpose:** Organizer authentication and one-shot bootstrap for the admin backoffice.
 
-- **init.post.ts** — one-shot admin account creation via env secret
-- **login.post.ts** — admin session cookie
-- **logout.post.ts** — clear admin session
-- **editions/** — CRUD, checklist, map upload, station import, QR export
-- **teams/** — per-team admin actions (PIN)
+- **login.post.ts** — Email/password login and admin session cookie.
+- **logout.post.ts** — Clears admin session after auth check.
+- **init.post.ts** — One-shot first admin user when init secret matches.

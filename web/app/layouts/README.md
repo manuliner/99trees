@@ -1,9 +1,8 @@
 # App layouts
 
-**Purpose:** Nuxt layout shells — shared chrome, nav, and role-specific wrappers.
+**Purpose:** Nuxt layout shells wrapping pages with pull-to-refresh and role-specific chrome.
 
-- **default.vue** — team/public pages (play, join, leaderboard)
-- **crew.vue** — crew session pages (`/[edition]/crew/*`)
-- **admin.vue** — admin backoffice (`/admin/*`)
-
-**Depends on:** composables for edition context; no direct server imports.
+- **player.vue** — player layout: language switcher, content slot, version footer
+- **default.vue** — minimal pull-to-refresh + footer (legacy non-player routes)
+- **crew.vue** — crew staff layout with pull-to-refresh and footer
+- **admin.vue** — organizer layout with system font overrides on admin body
