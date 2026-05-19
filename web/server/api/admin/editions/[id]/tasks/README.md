@@ -1,8 +1,7 @@
-# Admin edition tasks API
+# Admin tasks API
 
-**Purpose:** CRUD and bulk import of edition tasks (quiz/performance) with localized hints and activity payloads.
+**Purpose:** Task CRUD, import, and delete for an edition board.
 
-- **index.get.ts** — Lists tasks ordered by field number as admin DTOs.
-- **index.post.ts** — Creates one task with generated slug, QR token, and optional field-count bump.
-- **import.post.ts** — Bulk YAML-shaped import with optional overwrite and field-count sync.
-- **[taskId].patch.ts** — Updates task hints, map coords, slug, and activity content.
+- **index.get.ts** / **index.post.ts** — list and create task
+- **[taskId].patch.ts** / **[taskId].delete.ts** — update or remove task
+- **import.post.ts** — bulk YAML-shaped JSON import

@@ -1,16 +1,24 @@
 {
-  "commit": "5ba77ed6be91f9345af763f9754a16d32549555f",
+  "commit": "d0c3f97beb02e2cdf78cfa73dddfcd93452421dd",
   "createdAt": "2026-05-17T10:37:34Z",
-  "updatedAt": "2026-05-18T21:12:30Z",
+  "updatedAt": "2026-05-19T20:05:00Z",
   "files": [
+    "web/shared/activity-board-letter.ts",
     "web/shared/admin-task-import.ts",
+    "web/shared/auth.d.ts",
+    "web/shared/board-overflow.ts",
+    "web/shared/edition-board-checklist.ts",
     "web/shared/edition-urls.ts",
     "web/shared/game-board-layout.ts",
     "web/shared/localized.ts",
+    "web/shared/media-limits.ts",
+    "web/shared/media-transcode-passes.ts",
+    "web/shared/pixel-palettes.ts",
     "web/shared/quiz-payload.ts",
     "web/shared/schemas.ts",
     "web/shared/scoring.ts",
     "web/shared/task-slug.ts",
+    "web/shared/team-avatars.ts",
     "web/shared/types.ts"
   ]
 }

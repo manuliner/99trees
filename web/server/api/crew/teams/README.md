@@ -1,6 +1,6 @@
 # Crew teams API
 
-**Purpose:** Crew lookup helpers for teams in the logged-in edition.
+**Purpose:** Crew lookup and team QR resolution within an edition.
 
-- **search.get.ts** — Name prefix search (min 2 chars) for crew UI.
-- **resolve.get.ts** — Resolves team QR slug+token to team id and name.
+- **search.get.ts** — filter teams by name fragment
+- **resolve.get.ts** — resolve team slug + QR token to team id

@@ -1,8 +1,12 @@
 # Server services
 
-**Purpose:** Domain orchestration for editions, turns, crew workflows, and admin team views — shared by Nitro handlers and plugins.
+**Purpose:** Domain orchestration — turns, coop depots, media submissions, crew queue, onboarding, admin lists.
 
-- **game.ts** — Edition lookup, dice roll helpers, `/api/me` payload, hint deductions, board highlights, turn confirm and score summary.
-- **crew.ts** — Crew team search, QR resolve, team detail, performance rating with auto-confirm, pending queue, PIN reset.
-- **admin-teams.ts** — Admin edition team list with open-turn state and progress counts.
-- **turn-scan.ts** — Validates task QR scan and advances turn to scanned or awaiting_crew.
+- **game.ts** — roll/create turn, overflow fields, `buildMePayload`, confirm, performance continue
+- **coop.ts** — depot lifecycle, partner complete, team-QR bonus link, pending coop items
+- **media-submission.ts** — store/retrieve turn photo/video files for crew review
+- **turn-scan.ts** — QR scan branches for quiz, performance, coop initiator/partner, media
+- **crew.ts** — search, rate performance/media, pending approvals, PIN reset
+- **team-onboarding.ts** — avatar/motto patch and completion gate
+- **team-directory.ts** — edition team list for onboarding picker
+- **admin-teams.ts** — admin team list with open-turn summary

@@ -1,5 +1,5 @@
-# Crew team detail
+# Crew team pages
 
-**Purpose:** Single-team crew view for ratings and team context.
+**Purpose:** Single-team crew detail.
 
-- **[id].vue** — team detail, open turn actions, pull-to-refresh sync
+- **[id].vue** — team stats, PIN reset, submission review links

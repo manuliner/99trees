@@ -1,51 +1,57 @@
 # Module Index
 
-**Purpose:** One-line map of documented modules under `web/`. Load full READMEs only for directories relevant to the current task.
+**Purpose:** One-line map of documented modules. Load full READMEs only for directories relevant to the current task.
 
-- **shared**: Pure types, Zod schemas, scoring, localized content, URL helpers
-- **i18n**: Player UI string catalogs (DE/EN) and i18n config
-- **app**: Nuxt application shell and global UI theme defaults
-- **app/components**: Cross-cutting Vue components (QR scanner, leaderboard, PWA, rules)
-- **app/components/admin**: Organizer edition sections — tasks, teams, map, QR
-- **app/components/pixel**: Retro pixel design system for play, crew, and admin
-- **app/components/pixel/goal-celebration**: Goal-reached rain animation variants
-- **app/components/player**: Player-facing bilingual chrome (language switcher)
-- **app/components/staff**: Crew approval card and list
-- **app/composables**: API, edition routes, admin, play UX, festival map view
-- **app/config**: Client-side feature toggles (goal celebration style)
-- **app/layouts**: Nuxt layout shells — default, player, crew, admin
-- **app/pages**: Routes — festival picker, play, crew, admin, QR deep links, legacy redirects
-- **app/pages/[edition]**: Canonical player routes under `/:edition/…` with i18n
-- **app/pages/[edition]/crew**: Edition-scoped crew PIN login
-- **app/pages/admin**: Organizer auth and edition backoffice
-- **app/pages/crew**: Crew login, approval queue, team lookup
-- **app/pages/crew/teams**: Single-team crew detail view
-- **app/pages/s**: Task QR deep-link → play
-- **app/pages/t**: Team QR deep-link → crew login
-- **app/plugins**: Client-only Nuxt plugins (PWA)
-- **app/utils**: Formatting, forms, dice animation, API error copy
-- **server/services**: Domain orchestration for editions, turns, crew, admin teams
-- **server/utils**: DB, sessions, edition config, task import, paths, guards
-- **server/database**: Drizzle schema and versioned SQL migrations
-- **server/plugins**: Boot migrations, performance timeout, env validation
-- **server/middleware**: API rate limiting by IP and route prefix
-- **server/api**: Nitro REST handlers — me, health, leaderboard
-- **server/api/admin**: Organizer authentication and bootstrap
-- **server/api/admin/editions**: List and create editions
-- **server/api/admin/editions/[id]**: Single edition configure, checklist, map upload
-- **server/api/admin/editions/[id]/qr**: Printable join and task QR HTML export
-- **server/api/admin/editions/[id]/tasks**: Task CRUD and bulk import
-- **server/api/admin/editions/[id]/teams**: Edition team list with open-turn status
-- **server/api/admin/teams/[id]**: Admin PIN set and temp reset
-- **server/api/crew**: Crew session, pending queue, performance rating
-- **server/api/crew/teams**: Crew team search and QR resolve
-- **server/api/crew/teams/[id]**: Crew team detail and PIN reset
-- **server/api/dev/turns/[id]**: Dev-only scan, quiz, and performance shortcuts
-- **server/api/editions**: Public list of live editions
-- **server/api/editions/[id]**: Public edition payload and legacy slug lookup
-- **server/api/editions/by-slug/[slug]**: Canonical slug-based edition lookup
-- **server/api/public**: Unauthenticated team QR deep-link resolver
-- **server/api/teams**: Register, rejoin, PIN change, dev logout
-- **server/api/turns**: Dice roll to start a turn
-- **server/api/turns/[id]**: Scan, hints, quiz, confirm, abandon, score recap
-- **server/api/uploads/editions**: Serves uploaded edition map images
+- **app**: Player, crew, and admin UI shell — Vue pages, pixel components, composables, i18n layouts.
+- **app/components**: Cross-route Vue components — scanner, leaderboard, legal, media upload, PWA.
+- **app/components/admin**: Organizer edition backoffice sections and modals.
+- **app/components/pixel**: Retro game UI for play, join, and crew — board, map, dice, dialogs, onboarding.
+- **app/components/pixel/goal-celebration**: Full-screen rain animation when a team first reaches the goal field.
+- **app/components/player**: Player-facing chrome for bilingual UI (DE default, EN).
+- **app/components/staff**: Crew approval UI for performance and media turns.
+- **app/composables**: Shared Vue logic — API client, edition routing, play UX, admin, onboarding gates.
+- **app/config**: Client-side feature toggles not tied to a single component.
+- **app/layouts**: Nuxt layout shells per audience.
+- **app/pages**: Top-level routes and legacy redirects to `/:edition/…`.
+- **app/pages/[edition]**: Canonical player URLs under `/:edition/*` with i18n and theme.
+- **app/pages/[edition]/crew**: Crew PIN login scoped to `/:edition/crew/login`.
+- **app/pages/admin**: Organizer authentication and edition backoffice.
+- **app/pages/crew**: Crew login and approval queue (legacy paths; edition-scoped under `[edition]/crew`).
+- **app/pages/crew/teams**: Single-team crew detail.
+- **app/pages/s**: Printable task QR entry points redirect into the active game.
+- **app/pages/t**: Team rejoin QR resolves edition and sends crew to login with prefilled token.
+- **app/plugins**: Nuxt client plugins registered at app startup.
+- **app/utils**: Client-only helpers — errors, dice animation, forms, media prep.
+- **app/utils/media**: Browser-side validation and ffmpeg.wasm transcode before turn submission.
+- **i18n**: `@nuxtjs/i18n` config and player UI string catalogs (DE default, EN); admin/crew stay English hardcoded.
+- **server/api**: Top-level Nitro handlers not scoped to a subfolder.
+- **server/api/admin**: Organizer bootstrap and session.
+- **server/api/admin/editions**: List and create festival editions.
+- **server/api/admin/editions/[id]**: Configure one edition — status, config, map, join branding, board fields.
+- **server/api/admin/editions/[id]/fields**: Grow or shrink edition field count and shift task field numbers accordingly.
+- **server/api/admin/editions/[id]/qr**: Printable HTML packs for join and task QR codes.
+- **server/api/admin/editions/[id]/tasks**: Task CRUD, import, and delete for an edition board.
+- **server/api/admin/editions/[id]/teams**: Organizer view of all teams in an edition with scores and open-turn status.
+- **server/api/admin/teams/[id]**: Organizer overrides for a single team PIN.
+- **server/api/coop**: Cross-team coop bonus linking outside an active turn scan.
+- **server/api/crew**: Crew authentication, approval queue, and performance/media rating.
+- **server/api/crew/submissions/[id]**: Stream stored media files for crew review UI.
+- **server/api/crew/teams**: Crew lookup and team QR resolution within an edition.
+- **server/api/crew/teams/[id]**: Single-team crew view and operator actions.
+- **server/api/dev/turns**: Dev/test shortcuts when `dev-only` guard passes.
+- **server/api/dev/turns/[id]**: Simulate scan, quiz answer, and performance complete in test environments.
+- **server/api/editions**: Public metadata for live editions (join picker, routing).
+- **server/api/editions/[id]**: Public payload and legacy slug lookup for a single edition by numeric id.
+- **server/api/editions/by-slug/[slug]**: Canonical public edition lookup for slug-based player URLs.
+- **server/api/public**: Unauthenticated helpers for deep links and shareable team QR resolution.
+- **server/api/teams**: Registration, session, onboarding, and public directory.
+- **server/api/turns**: Start a turn — dice roll with path, overflow tracking, and dev target field.
+- **server/api/turns/[id]**: Mutations on the team's open turn — scan, hints, quiz, media, coop, confirm, abandon.
+- **server/api/turns/[id]/coop**: Complete coop station legs and defer partner bonus wait.
+- **server/api/uploads/editions**: Serve uploaded edition assets from disk.
+- **server/database**: Drizzle schema and versioned SQLite migrations applied on Nitro boot.
+- **server/middleware**: Nitro route middleware for API protection and abuse limits.
+- **server/plugins**: Nitro lifecycle hooks — migrations, timeouts, env validation.
+- **server/services**: Domain orchestration — turns, coop depots, media submissions, crew queue, onboarding, admin lists.
+- **server/utils**: DB access, sessions, edition/task admin helpers, security and path resolution.
+- **shared**: Pure TypeScript for app and server — types, Zod, scoring, board layout, media/coop payloads; no DB.

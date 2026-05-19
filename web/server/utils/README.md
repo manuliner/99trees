@@ -1,10 +1,11 @@
-# Server utils
+# Server utilities
 
-**Purpose:** Shared server helpers — database access, sessions, edition config, task import/serialization, paths, and guards.
+**Purpose:** DB access, sessions, edition/task admin helpers, security and path resolution.
 
-- **db.ts** — Lazy Drizzle SQLite singleton from runtime config path.
-- **resolve-sqlite-path.ts** — Resolves DB file, web root, and repo-relative paths.
-- **team-session.ts**, **crew-session.ts**, **admin-session.ts**, **staff-session.ts** — httpOnly session cookies for teams, crew, admin, and staff scope.
-- **edition-config.ts**, **edition-live.ts**, **edition-slug.ts** — Edition config parse, live guard, and slug uniqueness.
-- **admin-task.ts**, **admin-task-import.ts**, **migrate-task-i18n.ts** — Task DTO mapping, bulk import planning, and i18n content migration.
-- **parse-body.ts**, **dev-only.ts**, **logger.ts** — Zod body parse, dev gate, and structured game event logs.
+- **db.ts** — Drizzle client singleton
+- **team-session.ts** / **crew-session.ts** / **admin-session.ts** / **staff-session.ts** — httpOnly cookies
+- **edition-config.ts** / **edition-live.ts** — parse config JSON, live-edition guard
+- **admin-task.ts** / **admin-task-import.ts** — CRUD and YAML-shaped import
+- **admin-board-edit.ts** / **admin-task-field-shift.ts** — add/remove fields, renumber tasks
+- **client-ip.ts** / **runtime-env.ts** / **dev-only.ts** — rate limit IP, env label, dev gates
+- **html-escape.ts** — safe strings for QR HTML export

@@ -1,15 +1,11 @@
-# Pixel UI components
+# Pixel UI
 
-**Purpose:** Retro pixel design system for play, crew, and admin; tokens in `pixel-theme.css`.
+**Purpose:** Retro game UI for play, join, and crew — board, map, dice, dialogs, onboarding.
 
-- **GameBoard.vue** — serpentine field board with team markers and tooltips
-- **FestivalMap.vue**, **FestivalMapPins.vue**, **FestivalMapInteractive.vue**, **FestivalMapFullscreen.vue** — map preview, pins, pan/zoom, fullscreen
-- **HintBar.vue**, **PixelHintIcon.vue**, **PixelTooltip.vue** — timed turn hints and tips dialog
-- **PixelButton.vue**, **PixelIconButton.vue**, **PixelDiceButton.vue** — actions and roll-dice control
-- **PixelDialog.vue**, **PixelConfirmDialog.vue**, **PixelConfirmHost.vue** — modals and `usePixelConfirm` host
-- **PixelRollDiceOverlay.vue** — full-screen dice value during roll animation
-- **PixelJoinHero.vue** — branded header on join/rejoin pages
-- **ScoreFlash.vue**, **PixelBadgeDigit.vue**, **PixelCard.vue** — score delta flash, digit badge, card shell
-- **TurnScoreSummaryDialog.vue** — post-turn score breakdown dialog
-- **PixelGoalCelebration.vue** — goal-reached rain + leaderboard CTA (see `goal-celebration/`)
-- **PixelPullToRefresh.vue**, **PixelPullToRefreshClient.client.vue** — pull-to-refresh chrome and provider mount
+- **GameBoard.vue** — serpentine path, overflow tiles, move highlights
+- **FestivalMap*.vue** — inline and fullscreen map with pins
+- **PixelRollDiceOverlay.vue** / **PixelDiceButton.vue** — dice UX
+- **HintBar.vue** / **PixelTooltip.vue** — hints and timers
+- **TeamAvatarPicker.vue** / **TeamDirectoryPicker.vue** / **TeamAvatarBadge.vue** — onboarding
+- **PixelJoinHero.vue** — edition landing hero with logo and description
+- **TurnScoreSummaryDialog.vue** / **PixelGoalCelebration.vue** — turn end and goal FX

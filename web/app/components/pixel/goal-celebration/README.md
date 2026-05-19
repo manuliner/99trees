@@ -1,6 +1,6 @@
-# Goal celebration rain
+# Goal celebration
 
-**Purpose:** Animated fullscreen rain behind `PixelGoalCelebration`; style chosen in `app/config/goal-celebration.ts`.
+**Purpose:** Full-screen rain animation when a team first reaches the goal field.
 
-- **GoalCelebrationRainClassic.vue** — Solitaire-style bouncing playing cards on green felt
-- **GoalCelebrationRainWanderkarten.vue** — Zugvögel trail-card sprites with wander theme
+- **GoalCelebrationRainClassic.vue** — classic pixel rain variant
+- **GoalCelebrationRainWanderkarten.vue** — alternate wanderkarten styling

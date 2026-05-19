@@ -5,35 +5,37 @@ flowchart TB
   subgraph client [Browser]
     Pages[app/pages]
     Pixel[pixel components]
-    AdminUI[admin components]
-    I18n[i18n locales]
+    MediaUI[media utils]
+    I18n[i18n]
     Pixel --> Pages
-    AdminUI --> Pages
+    MediaUI --> Pages
     I18n --> Pages
   end
-  Pages --> Comp[app/composables]
-  Comp -->|credentials include| API[Nitro /api/*]
-  API --> Svc[server/services]
+  Pages --> Comp[composables]
+  Comp --> API[Nitro /api]
+  API --> Svc[services]
   Svc --> DB[(SQLite)]
-  Svc --> Shared[web/shared]
+  Svc --> Disk[uploads disk]
+  Svc --> Shared[shared]
   API --> Shared
   Pages --> Shared
-  Pixel --> Comp
 ```
 
 ## Module edges
 
-`pages → composables → api → services → database`; `pages → pixel | admin | player`; `layouts → pages`; `i18n → player layout`; all use `shared`. `api → utils`; `plugins → database`. Services never import api; shared imports nothing from app/server.
+`pages → composables → api → services → database | disk`; `pages → pixel | admin | staff`; `shared` imported by app and server only. `coop` and `media-submission` services called from turn scan and dedicated API routes.
 
 ## Roles and routes
 
 | Role | Key routes | Session |
 |------|------------|---------|
-| Team | `/[edition]/join`, `/play`, `/s/[slug]`, `/t/[slug]` | team cookie |
-| Crew | `/[edition]/crew/*` | crew cookie |
+| Team | `/:edition/play`, onboarding, join | team cookie |
+| Crew | `/:edition/crew/*` | crew cookie + edition token |
 | Admin | `/admin/*` | admin cookie |
-| Public | `/leaderboard`, `/`, `/privacy` | — |
+| Public | leaderboard, legal, `/` | — |
 
-## Admin task pipeline
+## Pipelines
 
-`admin UI → api/admin/editions/[id]/tasks → utils/admin-task* → database/tasks`; import shape validated in `#shared/schemas` and `#shared/admin-task-import`.
+- **Tasks:** admin UI → `api/admin/…/tasks` → `utils/admin-task*` → `tasks` table.
+- **Media:** `MediaTaskUpload` → `turns/…/submission` → disk → crew `submissions/…/content`.
+- **Coop:** scan → `coop.ts` depot → partner scan → optional `coop/link` bonus.

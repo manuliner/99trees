@@ -1,6 +1,5 @@
-# App root
+# Nuxt application
 
-**Purpose:** Nuxt application shell and global UI theme defaults.
+**Purpose:** Player, crew, and admin UI shell — Vue pages, pixel components, composables, i18n layouts.
 
-- **app.vue** — `UApp` wrapper, pixel background, `NuxtLayout` / `NuxtPage`, global `PixelConfirmHost`
-- **app.config.ts** — Nuxt UI color tokens (`primary: amber`, `neutral: slate`)
+- **app.vue** — root shell, edition theme CSS vars, PWA and confirm hosts

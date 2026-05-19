@@ -1,5 +1,5 @@
 # Turns API
 
-**Purpose:** Start a new turn — dice roll with path highlights and hint preview.
+**Purpose:** Start a turn — dice roll with path, overflow tracking, and dev target field.
 
-- **roll.post.ts** — Creates rolled turn, skips completed fields, tracks overflow on board.
+- **roll.post.ts** — creates rolled turn; skips completed fields; optional dev `targetField`

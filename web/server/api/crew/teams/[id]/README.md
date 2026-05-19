@@ -1,6 +1,6 @@
-# Crew team API
+# Crew team detail API
 
-**Purpose:** Crew detail and support actions for one team in the bound edition.
+**Purpose:** Single-team crew view and operator actions.
 
-- **[id].get.ts** — Team detail with current turn and pending performance approval (staff auth).
-- **reset-pin.post.ts** — Issues new temp PIN for team in crew edition.
+- **[id].get.ts** — team detail, scores, open turn summary
+- **reset-pin.post.ts** — issue temporary PIN for field support

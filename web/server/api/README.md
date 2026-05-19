@@ -1,7 +1,7 @@
-# Server API
+# HTTP API (root)
 
-**Purpose:** Nitro REST entry points — thin handlers delegating to services and utils; root-level player and ops routes.
+**Purpose:** Top-level Nitro handlers not scoped to a subfolder.
 
-- **me.get.ts** — Authenticated team snapshot via `buildMePayload`.
-- **health.get.ts** — Liveness JSON with version, build time, and environment.
-- **leaderboard.get.ts** — Edition ranking with official vs in-progress rules when ended.
+- **me.get.ts** — authenticated team state via `buildMePayload`
+- **health.get.ts** — liveness, version, environment label
+- **leaderboard.get.ts** — confirmed positions and scores per edition

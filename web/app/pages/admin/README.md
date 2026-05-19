@@ -1,7 +1,6 @@
 # Admin pages
 
-**Purpose:** Organizer authentication and edition backoffice (English UI).
+**Purpose:** Organizer authentication and edition backoffice.
 
-- **login.vue** — admin password login
-- **init.vue** — one-shot bootstrap with `NUXT_ADMIN_INIT_SECRET`
-- **index.vue** — edition setup wizard (`useAdminEdition`, admin components)
+- **init.vue** / **login.vue** — bootstrap and sign-in
+- **index.vue** — edition list and per-edition admin workspace

@@ -2,7 +2,7 @@
 
 ## Introduction and goals
 
-Festival field-game PWA: teams roll dice, scan task QR codes, complete quiz/performance activities, earn points. Crew rates performances; admin configures editions; public leaderboard uses confirmed positions only.
+Festival field-game PWA: teams roll dice, scan task QR codes, complete quiz, performance, coop, or media activities, earn points. Crew rates performances and media; admin configures editions; leaderboard uses confirmed positions only.
 
 ## Context and scope
 
@@ -13,30 +13,27 @@ Festival field-game PWA: teams roll dice, scan task QR codes, complete quiz/perf
 
 | Layer | Responsibility |
 |-------|----------------|
-| `web/app/pages` | Routes — play, join, crew, admin; reflect `/api/me` |
-| `web/app/components/pixel` | Board, festival map, dice, hints, dialogs, goal celebration |
-| `web/app/components/admin` | Edition setup — tasks, teams, map, QR print pack |
-| `web/app/composables` | API client, edition slug, localized task content, play/admin UX |
-| `web/app/layouts` | Shells — player (i18n), default, crew, admin |
-| `web/i18n` | Player UI strings; task content is bilingual edition data |
-| `web/server/api` | Thin HTTP — Zod, auth, delegate |
-| `web/server/services` | Turn lifecycle, crew queue, scoring orchestration |
-| `web/server/database` | Drizzle schema + migrations (tasks, teams, turns) |
-| `web/shared` | Types, schemas, scoring, localized helpers, board layout |
+| `web/app/pages` | Routes — play, join, onboarding, crew, admin; reflect `/api/me` |
+| `web/app/components/pixel` | Board, map, dice, hints, avatars, goal celebration |
+| `web/app/components/admin` | Edition setup — tasks, fields, teams, map, QR, join hero |
+| `web/app/composables` | API client, edition theme, onboarding gate, localized content |
+| `web/server/api` | Thin HTTP — Zod, CSRF on mutations, delegate to services |
+| `web/server/services` | Turns, coop depots, media files, crew queue, onboarding |
+| `web/server/database` | Drizzle schema — coop_depots, turn_submissions, overflow |
+| `web/shared` | Types, schemas, scoring, palettes, media limits, board layout |
 
 ## Runtime view
 
-**Play:** roll → pending field → hints (optional, point cost) → scan task QR → quiz/performance → crew rate if needed → confirm → score applied, field completed. UI shows serpentine `GameBoard`, optional festival map (preview + fullscreen pan/zoom), goal celebration on first finish.
+**Play:** roll → pending field (overflow tracked) → hints → scan → activity branch (quiz / performance / coop / media) → crew rate if needed → confirm → score and field complete. **Coop:** initiator opens depot; partner joins same field; team-QR link pays bonus. **Onboarding:** avatar/motto before first roll.
 
-**Turn states:** `rolled` → `scanned` → (`awaiting_crew`) → `completed` → confirm → idle; `abandon` from `rolled` (zero delta). Open turn blocks new rolls.
+**Turn states:** `rolled` → `scanned` → (`awaiting_crew` | `awaiting_coop`) → `completed`; background variants `*_bg`; abandon from `rolled` restores overflow snapshot.
 
 ## Crosscutting
 
-- **Sessions:** Separate cookies per role; rejoin invalidates prior team token.
-- **Edition config:** `configJson` — dice, hints, performance timeout; map image via uploads API.
-- **Plugins:** migrations on boot; performance timeout poll; env validation.
-- **Scoring:** `#shared/scoring` only; hints may deduct on claim.
-- **Localization:** Player chrome via `@nuxtjs/i18n`; task hints/quiz text via `useLocalizedContent` and `LocalizedString` fields.
+- **Sessions:** team, crew (per-edition token), admin — separate cookies; rejoin invalidates team token.
+- **Edition config:** dice, hints, performance timeout, coop bonus, color palette; join logo via uploads API.
+- **Security:** CSRF origin middleware, rate limits, production CSP headers.
+- **Scoring:** `#shared/scoring` only; media and performance share crew approval actions.
 
 ## Decisions
 

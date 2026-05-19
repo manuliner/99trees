@@ -1,9 +1,9 @@
-# App utils
+# App utilities
 
-**Purpose:** Small pure helpers for player UI formatting, forms, dice animation, and API error copy.
+**Purpose:** Client-only helpers — errors, dice animation, forms, media prep.
 
-- **format-wait-time.ts** — human-readable wait since ISO timestamp for crew approvals
-- **roll-dice-prompts.ts** — random roll prompt line from i18n message list
-- **roll-sequence.ts** — dice/move animation timings, reduced-motion check, board step path
-- **api-errors.ts** — map English API `statusMessage` to i18n keys (incl. wrong-field pattern)
-- **team-form.ts** — team name trim/validate and edition registration status messages
+- **api-errors.ts** — map API status codes to i18n keys
+- **roll-sequence.ts** / **roll-dice-prompts.ts** — dice roll animation timing
+- **team-form.ts** — join/rejoin form normalization
+- **format-wait-time.ts** — hint timer display
+- **media/** — validate, transcode, and package uploads before POST

@@ -1,6 +1,7 @@
-# Server database
+# Database
 
-**Purpose:** Drizzle SQLite schema and versioned SQL migrations for editions, tasks, teams, turns, and staff tables.
+**Purpose:** Drizzle schema and versioned SQLite migrations applied on Nitro boot.
 
-- **schema.ts** — Tables: editions, tasks, teams, turns, admin_users, crew_ratings with relations and uniqueness constraints.
-- **migrations/** — Drizzle migration chain (stations→tasks rename, i18n content, path highlights, overflow fields).
+- **schema.ts** — editions (join hero), tasks, teams (overflow, onboarding), turns, coop_depots, turn_submissions
+- **migrations/** — `0009` join hero through `0014` crew session token
+- **uploads/** — edition maps and submission media (gitignored blobs, `.gitkeep` only in repo)

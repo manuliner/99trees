@@ -1,10 +1,10 @@
-# Shared components
+# App components
 
-**Purpose:** Cross-cutting Vue components used by player, crew, and admin flows (not pixel design-system primitives).
+**Purpose:** Cross-route Vue components — scanner, leaderboard, legal, media upload, PWA.
 
-- **TaskQrScanner.vue** — camera QR reader for task `/s/` and team `/t/` URLs (`@zxing/browser` fallback)
-- **LeaderboardPanel.vue** — progress vs highscore tabs polling `/api/leaderboard`
-- **EditionMissing.vue** — static fallback when no edition is selected
-- **GameRulesContent.vue** — i18n rules paragraphs (`rules.p1`–`p4`)
-- **PwaInstallDialog.vue** — add-to-home-screen sheet (player copy via i18n)
-- **AppVersionFooter.vue** — `appVersion` from runtime config in layout footers
+- **TaskQrScanner.vue** — camera QR scan with BarcodeDetector / ZXing fallback
+- **LeaderboardPanel.vue** — edition highscore with avatars
+- **MediaTaskUpload.vue** — pick, transcode, and submit media tasks
+- **LegalImpressumContent.vue** / **LegalPrivacyContent.vue** — shared legal copy
+- **MadeByCredit.vue** / **AppVersionFooter.vue** — footer chrome
+- **PwaInstallDialog.vue** — install prompt for PWA

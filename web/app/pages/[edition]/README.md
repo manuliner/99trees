@@ -1,9 +1,7 @@
-# Edition-scoped player pages
+# Edition-scoped pages
 
-**Purpose:** Canonical player routes under `/:edition/…` with i18n UI and `useEditionId`.
+**Purpose:** Canonical player URLs under `/:edition/*` with i18n and theme.
 
-- **join.vue** — team registration, session gate, PIN/name validation
-- **rejoin.vue** — return with team name + PIN on new device
-- **rules.vue** — game rules overlay content via `GameRulesContent`
-- **privacy.vue** — privacy copy for the edition
-- **leaderboard.vue** — full-page `LeaderboardPanel` for the edition
+- **index.vue** — edition landing (join CTA, hero)
+- **join.vue** / **rejoin.vue** / **onboarding.vue** — team entry and profile setup
+- **rules.vue** / **privacy.vue** / **impressum.vue** / **leaderboard.vue** — edition chrome

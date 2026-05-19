@@ -29,6 +29,8 @@
 
 - `AGENTS.md`: coop/media/onboarding pointers, overflow and crew-session gotchas, `COOP_V2` doc index.
 - Product spec updates in `docs/SCOPE.md`; coop operator notes in `docs/COOP_V2.md`.
+- Regenerated `web/**/README.md` module docs and `web/README.md` index (`docs-update`) for coop, media, onboarding, and new API routes.
+- Refreshed `.vibe/docs` architecture, requirements, design, play-flow, and dependency graph (`docs-concepts`).
 
 ## ⚠️ Breaking Changes
 

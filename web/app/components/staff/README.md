@@ -1,6 +1,6 @@
-# Staff approval components
+# Staff (crew) components
 
-**Purpose:** Crew and admin UI for pending performance (and related) approvals.
+**Purpose:** Crew approval UI for performance and media turns.
 
-- **StaffApprovalCard.vue** — single pending item with wait time and rate actions
-- **StaffApprovalList.vue** — titled list emitting resolve events to parent
+- **StaffApprovalCard.vue** — rate ok/bonus with media preview link
+- **StaffApprovalList.vue** — pending queue list

@@ -1,5 +1,5 @@
-# Uploads editions API
+# Edition uploads API
 
-**Purpose:** Serves uploaded edition map images from disk beside the SQLite database.
+**Purpose:** Serve uploaded edition assets from disk.
 
-- **[filename].get.ts** — Streams png/jpg/webp with cache headers; rejects path traversal.
+- **[filename].get.ts** — map images and join logos by stored filename

@@ -1,15 +1,13 @@
 # Shared domain layer
 
-**Purpose:** Pure TypeScript shared by Nuxt app and Nitro server — types, Zod schemas, scoring, localized content, URL helpers; no DB imports.
+**Purpose:** Pure TypeScript for app and server — types, Zod, scoring, board layout, media/coop payloads; no DB.
 
-- **types.ts** — edition config, turn states, task payloads, admin/staff DTO shapes
-- **schemas.ts** — Zod request/response contracts for API handlers and admin task import
-- **localized.ts** — `LocalizedString`/`LocalizedStringList`, normalize and resolve by `AppLocale`
-- **scoring.ts** — `calculateTurnScore`, `timeBonusFromScan`, `hintPenalty` (base 100 + bonuses − penalties)
-- **quiz-payload.ts** — team-safe quiz stripping, answer normalization, locale-aware grading
-- **edition-urls.ts** — edition slug parsing, reserved slugs, team/task QR path builders
-- **task-slug.ts** — slugify from activity text, uniqueness within edition import
-- **game-board-layout.ts** — `computeGameBoardLayout`, orthogonal serpentine path for board UI
-- **admin-task-import.ts** — map admin tasks ↔ YAML-shaped import document
-
-**Depends on:** nothing in `web/server` or Vue
+- **types.ts** — editions, turns (`awaiting_coop`, media), coop depots, onboarding DTOs
+- **schemas.ts** — team onboarding, coop link, admin task activity (`quiz|performance|coop|media`)
+- **scoring.ts** — turn score, hint penalty, coop link bonus from edition config
+- **quiz-payload.ts** — parse/build activity payloads; team-safe stripping and grading
+- **board-overflow.ts** — restore overflow snapshot on zero-round abandon
+- **pixel-palettes.ts** — edition color palette ids and CSS var names
+- **media-limits.ts** / **media-transcode-passes.ts** — upload caps and ffmpeg arg presets
+- **team-avatars.ts** — bird/meme avatar ids and image paths
+- **edition-board-checklist.ts** / **activity-board-letter.ts** — admin checklist and board letters

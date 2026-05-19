@@ -1,7 +1,9 @@
 # Admin edition API
 
-**Purpose:** Configure a single edition — status, slug, crew password, go-live checks, map upload.
+**Purpose:** Configure one edition — status, config, map, join branding, board fields.
 
-- **[id].patch.ts** — Updates edition fields; validates tasks, map, slug, and crew before going live.
-- **checklist.get.ts** — Pre-live readiness report (tasks, fields, crew password, map, slug).
-- **map.post.ts** — Multipart festival map upload beside SQLite data dir.
+- **[id].patch.ts** — update name, status, config, join description, palette
+- **checklist.get.ts** — board/task readiness checklist
+- **map.post.ts** — upload festival map image
+- **join-logo.post.ts** — upload join hero logo
+- **fields/add.post.ts** / **fields/remove.post.ts** — grow/shrink field count with task shift

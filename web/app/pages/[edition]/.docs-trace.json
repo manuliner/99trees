@@ -1,10 +1,13 @@
 {
-  "commit": "eb31389718aa287472d8168eda0134e7edb75cc0",
+  "commit": "d0c3f97beb02e2cdf78cfa73dddfcd93452421dd",
   "createdAt": "2026-05-18T21:11:38Z",
-  "updatedAt": "2026-05-18T21:11:38Z",
+  "updatedAt": "2026-05-19T20:05:00Z",
   "files": [
+    "web/app/pages/[edition]/impressum.vue",
+    "web/app/pages/[edition]/index.vue",
     "web/app/pages/[edition]/join.vue",
     "web/app/pages/[edition]/leaderboard.vue",
+    "web/app/pages/[edition]/onboarding.vue",
     "web/app/pages/[edition]/privacy.vue",
     "web/app/pages/[edition]/rejoin.vue",
     "web/app/pages/[edition]/rules.vue"
