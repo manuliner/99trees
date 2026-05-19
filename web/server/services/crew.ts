@@ -1,21 +1,25 @@
-import { and, desc, eq, like } from 'drizzle-orm'
+import { and, eq, inArray, like } from 'drizzle-orm'
 import { resolveLocalized } from '#shared/localized'
 import { parseActivityPayload } from '#shared/quiz-payload'
-import type { PendingApproval } from '#shared/types'
-import { PERFORMANCE_APPROVAL_ACTIONS } from '#shared/types'
+import type { MediaKind, PendingApproval } from '#shared/types'
+import { MEDIA_APPROVAL_ACTIONS, PERFORMANCE_APPROVAL_ACTIONS } from '#shared/types'
 import { getDb } from '../utils/db'
 import { crewRatings, tasks, teams, turns } from '../database/schema'
-import { confirmTurn, getEditionOrThrow } from './game'
+import { confirmTurn, getActivePlayTurn, getEditionOrThrow, getPendingCrewTurns } from './game'
+import { getSubmissionByTurnId } from './media-submission'
 
-function performanceSummary(activityPayloadJson: string | null): string {
+function activitySummary(activityPayloadJson: string | null, activityType: string | null): string {
   if (!activityPayloadJson) return ''
   try {
     const payload = parseActivityPayload(JSON.parse(activityPayloadJson))
-    if (payload.type === 'performance') return resolveLocalized(payload.text, 'en')
+    if (payload.type === 'performance' || payload.type === 'media') {
+      return resolveLocalized(payload.text, 'en')
+    }
   }
   catch {
     /* ignore */
   }
+  if (activityType === 'media') return 'Media submission'
   return ''
 }
 
@@ -27,6 +31,7 @@ function buildPerformanceApproval(row: {
   slug: string | null
   scannedAt: Date | null
   activityPayloadJson: string | null
+  activityType: string | null
 }): PendingApproval {
   return {
     turnId: row.turnId,
@@ -36,9 +41,51 @@ function buildPerformanceApproval(row: {
     taskSlug: row.slug,
     waitingSince: row.scannedAt?.toISOString() ?? null,
     kind: 'performance',
-    summary: performanceSummary(row.activityPayloadJson),
+    summary: activitySummary(row.activityPayloadJson, row.activityType),
     actions: PERFORMANCE_APPROVAL_ACTIONS,
   }
+}
+
+async function buildMediaApproval(row: {
+  turnId: number
+  teamId: number
+  teamName: string
+  fieldNumber: number | null
+  slug: string | null
+  scannedAt: Date | null
+  activityPayloadJson: string | null
+  activityType: string | null
+  editionId: number
+}): Promise<PendingApproval> {
+  const submission = await getSubmissionByTurnId(row.turnId)
+  return {
+    turnId: row.turnId,
+    teamId: row.teamId,
+    teamName: row.teamName,
+    fieldNumber: row.fieldNumber,
+    taskSlug: row.slug,
+    waitingSince: row.scannedAt?.toISOString() ?? null,
+    kind: 'media',
+    summary: activitySummary(row.activityPayloadJson, row.activityType),
+    actions: MEDIA_APPROVAL_ACTIONS,
+    previewUrl: submission ? `/api/crew/submissions/${submission.id}/content` : null,
+    mediaKind: (submission?.kind as MediaKind | undefined) ?? null,
+  }
+}
+
+async function buildCrewApproval(row: {
+  turnId: number
+  teamId: number
+  teamName: string
+  fieldNumber: number | null
+  slug: string | null
+  scannedAt: Date | null
+  activityPayloadJson: string | null
+  activityType: string | null
+  editionId: number
+}): Promise<PendingApproval> {
+  if (row.activityType === 'media') return buildMediaApproval(row)
+  return buildPerformanceApproval(row)
 }
 
 export async function searchTeams(editionId: number, q: string) {
@@ -72,47 +119,54 @@ export async function getCrewTeamDetail(editionId: number, teamId: number) {
   )[0]
   if (!team) throw createError({ statusCode: 404, statusMessage: 'Team not found' })
 
-  const openTurn = (
-    await db
-      .select()
-      .from(turns)
-      .where(eq(turns.teamId, teamId))
-      .orderBy(desc(turns.id))
-      .limit(1)
-  )[0]
+  const activePlayTurn = await getActivePlayTurn(teamId)
+  const pendingCrewRows = await getPendingCrewTurns(teamId)
+  const displayTurn = activePlayTurn ?? pendingCrewRows[pendingCrewRows.length - 1] ?? null
 
   let currentTurn = null
-  let pendingApproval: PendingApproval | null = null
-  if (openTurn && ['awaiting_crew', 'scanned', 'rolled', 'completed'].includes(openTurn.state)) {
-    const task = openTurn.taskId
-      ? (await db.select().from(tasks).where(eq(tasks.id, openTurn.taskId)).limit(1))[0]
+  const pendingApprovals: PendingApproval[] = []
+  if (
+    displayTurn
+    && ['awaiting_crew', 'awaiting_crew_bg', 'scanned', 'rolled', 'completed'].includes(displayTurn.state)
+  ) {
+    const task = displayTurn.taskId
+      ? (await db.select().from(tasks).where(eq(tasks.id, displayTurn.taskId)).limit(1))[0]
       : null
     currentTurn = {
-      id: openTurn.id,
-      state: openTurn.state,
-      positionPending: openTurn.positionPending,
+      id: displayTurn.id,
+      state: displayTurn.state,
+      positionPending: displayTurn.positionPending,
       activityType: task?.activityType,
       activityPayload: task ? parseActivityPayload(JSON.parse(task.activityPayloadJson)) : null,
       taskSlug: task?.slug,
       fieldNumber: task?.fieldNumber,
     }
-    if (openTurn.state === 'awaiting_crew') {
-      pendingApproval = buildPerformanceApproval({
-        turnId: openTurn.id,
+  }
+
+  for (const pendingCrewTurn of pendingCrewRows) {
+    const task = pendingCrewTurn.taskId
+      ? (await db.select().from(tasks).where(eq(tasks.id, pendingCrewTurn.taskId)).limit(1))[0]
+      : null
+    pendingApprovals.push(
+      await buildCrewApproval({
+        turnId: pendingCrewTurn.id,
         teamId: team.id,
         teamName: team.name,
         fieldNumber: task?.fieldNumber ?? null,
         slug: task?.slug ?? null,
-        scannedAt: openTurn.scannedAt,
+        scannedAt: pendingCrewTurn.scannedAt,
         activityPayloadJson: task?.activityPayloadJson ?? null,
-      })
-    }
+        activityType: task?.activityType ?? null,
+        editionId: team.editionId,
+      }),
+    )
   }
 
   return {
     team: { id: team.id, name: team.name, positionConfirmed: team.positionConfirmed },
     currentTurn,
-    pendingApproval,
+    pendingApproval: pendingApprovals[0] ?? null,
+    pendingApprovals,
   }
 }
 
@@ -129,7 +183,7 @@ export async function ratePerformanceTurn(
   if (!turn || turn.teamId !== teamId) {
     throw createError({ statusCode: 404, statusMessage: 'Turn not found' })
   }
-  if (turn.state !== 'awaiting_crew') {
+  if (turn.state !== 'awaiting_crew' && turn.state !== 'awaiting_crew_bg') {
     throw createError({ statusCode: 400, statusMessage: 'Team is not awaiting crew rating' })
   }
 
@@ -162,24 +216,26 @@ export async function getPendingPerformances(editionId: number): Promise<Pending
       slug: tasks.slug,
       scannedAt: turns.scannedAt,
       activityPayloadJson: tasks.activityPayloadJson,
+      activityType: tasks.activityType,
+      editionId: teams.editionId,
     })
     .from(turns)
     .innerJoin(teams, eq(turns.teamId, teams.id))
     .leftJoin(tasks, eq(turns.taskId, tasks.id))
-    .where(and(eq(teams.editionId, editionId), eq(turns.state, 'awaiting_crew')))
+    .where(
+      and(
+        eq(teams.editionId, editionId),
+        inArray(turns.state, ['awaiting_crew', 'awaiting_crew_bg']),
+        inArray(tasks.activityType, ['performance', 'media']),
+      ),
+    )
     .orderBy(turns.scannedAt)
 
-  return rows.map((r) =>
-    buildPerformanceApproval({
-      turnId: r.turnId,
-      teamId: r.teamId,
-      teamName: r.teamName,
-      fieldNumber: r.fieldNumber,
-      slug: r.slug,
-      scannedAt: r.scannedAt,
-      activityPayloadJson: r.activityPayloadJson,
-    }),
-  )
+  const approvals: PendingApproval[] = []
+  for (const r of rows) {
+    approvals.push(await buildCrewApproval(r))
+  }
+  return approvals
 }
 
 export async function resetTeamPin(editionId: number, teamId: number) {

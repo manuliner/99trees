@@ -86,7 +86,7 @@ const insertTask = client.prepare(
 for (const s of items) {
   const token = randomBytes(8).toString('hex')
   const activityRaw = s.activity ?? s.task
-  const activity = buildActivityPayload(activityRaw)
+  const activity = buildActivityPayload(activityRaw, s)
   const hints = resolveHintLevels(s)
 
   insertTask.run(
@@ -105,7 +105,9 @@ for (const s of items) {
   const answers =
     activity.type === 'quiz'
       ? `${activity.answers.de.join(', ')} / ${activity.answers.en.join(', ')}`
-      : '(performance — crew rates)'
+      : activity.type === 'media'
+        ? `(media — ${(activity.allowedKinds ?? ['photo']).join(', ')})`
+        : '(performance — crew rates)'
   const taskUrl = `/s/${encodeURIComponent(s.slug)}?t=${token}`
   console.log(`Task ${s.field}: ${taskUrl}  (${answers})`)
 }
@@ -114,4 +116,4 @@ client.close()
 console.log('\nSeed complete.')
 console.log(`Edition id: ${editionId} (live, ${fieldCount} fields)`)
 console.log('Crew password: crew1234')
-console.log('Join: http://localhost:3000/zv26/join')
+console.log('Join: http://localhost:3000/zv26')

@@ -3,7 +3,7 @@ import { hintSchema } from '#shared/schemas'
 import { getDb } from '../../../utils/db'
 import { turns } from '../../../database/schema'
 import { requireTeam } from '../../../utils/team-session'
-import { deductHintCost, getEditionOrThrow, getOpenTurn } from '../../../services/game'
+import { deductHintCost, getEditionOrThrow, getActivePlayTurn } from '../../../services/game'
 import { parseEditionConfig } from '../../../utils/edition-config'
 import { assertEditionLive } from '../../../utils/edition-live'
 
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
   const body = hintSchema.parse(await readBody(event))
-  const open = await getOpenTurn(team.id)
+  const open = await getActivePlayTurn(team.id)
   if (!open || open.id !== turnId || open.state !== 'rolled') {
     throw createError({ statusCode: 400, statusMessage: 'No active search turn' })
   }

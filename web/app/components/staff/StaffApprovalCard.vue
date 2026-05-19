@@ -18,6 +18,7 @@ const emit = defineEmits<{
 
 const kindLabel = computed(() => {
   if (props.item.kind === 'performance') return 'Performance'
+  if (props.item.kind === 'media') return 'Media'
   return props.item.kind
 })
 
@@ -50,6 +51,27 @@ const waitLabel = computed(() => formatWaitTime(props.item.waitingSince))
     <p v-if="item.summary" class="text-sm line-clamp-3 opacity-90" :class="bodyClass">
       {{ item.summary }}
     </p>
+
+    <div v-if="item.kind === 'media' && item.previewUrl" class="space-y-2">
+      <img
+        v-if="item.mediaKind === 'photo'"
+        :src="item.previewUrl"
+        alt=""
+        class="w-full max-h-48 object-contain border-4 border-[var(--pixel-forest-dark)]"
+      >
+      <video
+        v-else-if="item.mediaKind === 'video'"
+        :src="item.previewUrl"
+        controls
+        class="w-full max-h-48 border-4 border-[var(--pixel-forest-dark)]"
+      />
+      <audio
+        v-else-if="item.mediaKind === 'audio'"
+        :src="item.previewUrl"
+        controls
+        class="w-full"
+      />
+    </div>
 
     <div v-if="!readOnly && item.actions.length" class="space-y-2">
       <PixelButton

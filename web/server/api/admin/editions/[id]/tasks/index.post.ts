@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { randomBytes } from 'node:crypto'
 import { adminTaskCreateSchema } from '#shared/schemas'
 import { resolveTaskSlug } from '#shared/task-slug'
@@ -11,6 +11,7 @@ import {
   serializeHint,
   taskRowToAdminTask,
 } from '../../../../../utils/admin-task'
+import { insertSlotAtField, isFieldOccupied } from '../../../../../utils/admin-task-field-shift'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -23,15 +24,8 @@ export default defineEventHandler(async (event) => {
   )[0]
   if (!edition) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })
 
-  const fieldTaken = (
-    await db
-      .select({ id: tasks.id })
-      .from(tasks)
-      .where(and(eq(tasks.editionId, editionId), eq(tasks.fieldNumber, body.field)))
-      .limit(1)
-  )[0]
-  if (fieldTaken) {
-    throw createError({ statusCode: 409, statusMessage: 'Task already exists for this field' })
+  if (await isFieldOccupied(db, editionId, body.field)) {
+    await insertSlotAtField(db, edition, body.field)
   }
 
   const existingSlugs = await db
@@ -59,7 +53,10 @@ export default defineEventHandler(async (event) => {
     })
     .returning()
 
-  if (body.field > edition.fieldCount) {
+  const refreshed = (
+    await db.select().from(editions).where(eq(editions.id, editionId)).limit(1)
+  )[0]!
+  if (body.field > refreshed.fieldCount) {
     await db
       .update(editions)
       .set({ fieldCount: body.field })

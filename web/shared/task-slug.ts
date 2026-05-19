@@ -16,10 +16,19 @@ export function slugifyTaskText(text: string): string {
 }
 
 export function taskSlugBaseFromActivity(field: number, activity: TaskActivity | ActivityPayload): string {
-  const source =
-    activity.type === 'quiz'
-      ? localizedStringPrimaryText(activity.question ?? { de: '', en: '' }).trim()
-      : localizedStringPrimaryText(activity.text ?? { de: '', en: '' }).trim()
+  let source = ''
+  if (activity.type === 'quiz') {
+    source = localizedStringPrimaryText(activity.question ?? { de: '', en: '' }).trim()
+  }
+  else if (activity.type === 'coop') {
+    source = localizedStringPrimaryText(activity.instructions ?? { de: '', en: '' }).trim()
+  }
+  else if (activity.type === 'media') {
+    source = localizedStringPrimaryText(activity.text ?? { de: '', en: '' }).trim()
+  }
+  else {
+    source = localizedStringPrimaryText(activity.text ?? { de: '', en: '' }).trim()
+  }
   return slugifyTaskText(source) || `field-${field}`
 }
 
@@ -50,13 +59,20 @@ export function resolveTaskSlug(
 }
 
 export function adminTaskHoverText(task: AdminTask): string {
-  return task.activityPayload.type === 'quiz'
-    ? localizedStringPrimaryText(task.activityPayload.question)
-    : localizedStringPrimaryText(task.activityPayload.text)
+  if (task.activityPayload.type === 'quiz') {
+    return localizedStringPrimaryText(task.activityPayload.question)
+  }
+  if (task.activityPayload.type === 'coop') {
+    return localizedStringPrimaryText(task.activityPayload.instructions)
+  }
+  if (task.activityPayload.type === 'media') {
+    return localizedStringPrimaryText(task.activityPayload.text)
+  }
+  return localizedStringPrimaryText(task.activityPayload.text)
 }
 
 export type AdminTaskFieldTooltip = {
-  activityType: 'quiz' | 'performance'
+  activityType: 'quiz' | 'performance' | 'coop' | 'media'
   text: string
 }
 

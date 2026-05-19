@@ -7,10 +7,21 @@
     "continue": "Weiter",
     "rules": "Regeln",
     "privacy": "Datenschutz",
+    "impressum": "Impressum",
+    "crewLogin": "Crew-Login",
     "teamQr": "Banden-QR",
     "teamQrAlt": "Banden-QR",
     "pointsPenalty": "−{n} Pkt",
     "installApp": "App installieren"
+  },
+  "footer": {
+    "aria": "Seitenfuß",
+    "legalAria": "Rechtliches"
+  },
+  "credit": {
+    "aria": "Credits",
+    "madeBy": "made by ma:nü",
+    "madeWith": "made with ❤️ in 🇪🇺"
   },
   "pwa": {
     "title": "Zugvögel installieren",
@@ -29,6 +40,7 @@
     "en": "EN"
   },
   "join": {
+    "createTeamHeading": "Bande erstellen",
     "teamName": "Bande",
     "teamNamePlaceholder": "3–32 Zeichen",
     "pin4": "4-stellige PIN",
@@ -36,6 +48,8 @@
     "creatingTeam": "Bande wird erstellt…",
     "startGame": "Spiel starten",
     "findYourTeam": "Bande finden",
+    "rejoinPromptBefore": "Hast du schon eine Bande? Logge dich ",
+    "rejoinPromptLink": "hier ein",
     "sessionMismatchBefore": "Du bist bei einem anderen Event angemeldet. Nutze",
     "sessionMismatchRejoin": "Bande finden",
     "sessionMismatchMiddle": "für dieses Festival oder mach mit deinem aktuellen Spiel auf",
@@ -48,12 +62,21 @@
     }
   },
   "rejoin": {
+    "signInHeading": "Bande anmelden",
     "teamName": "Bande",
     "teamNamePlaceholder": "3–32 Zeichen",
+    "teamSearchPlaceholder": "Bande suchen…",
+    "teamSearchLoading": "Banden werden geladen…",
+    "teamSearchEmpty": "Keine passende Bande gefunden.",
+    "teamSearchListAria": "Verfügbare Banden",
+    "teamSearchLoadFailed": "Banden konnten nicht geladen werden.",
+    "teamMottoMissing": "Noch kein Motto",
     "pin": "PIN",
     "signingIn": "Anmeldung…",
     "continue": "Weiter",
     "newTeam": "Neue Bande",
+    "newTeamPromptBefore": "Noch keine Bande? Erstelle sie ",
+    "newTeamPromptLink": "hier",
     "navAria": "Links auf der Wiederfinden-Seite",
     "errors": {
       "pinLength": "PIN muss 4 Ziffern haben",
@@ -64,9 +87,39 @@
     "joinTagline": "Würfle, scanne die Stationen und bring deinen Schwarm ans Ziel.",
     "rejoinTagline": "Mach da weiter, wo du aufgehört hast — gleiche Bande, gleiche Spur."
   },
+  "landing": {
+    "createTeam": "Bande gründen",
+    "signIn": "Bande einloggen",
+    "navAria": "Spiel starten"
+  },
   "teamName": {
     "tooShort": "Bande muss mindestens {min} Zeichen haben",
     "tooLong": "Bande darf höchstens {max} Zeichen haben"
+  },
+  "onboarding": {
+    "title": "Bande startklar machen",
+    "stepAvatar": "Wählt eure Spielfigur",
+    "stepProfile": "Motto festlegen und Regeln lesen",
+    "motto": "Banden-Motto",
+    "mottoPlaceholder": "z. B. Immer gegen den Wind",
+    "rulesConfirm": "Wir haben die Spielregeln gelesen und verstanden.",
+    "startGame": "Aufs Brett",
+    "saving": "Wird gespeichert…",
+    "avatarGroupAria": "Spielfigur wählen",
+    "avatars": {
+      "stork": "Storch",
+      "goose": "Gans",
+      "crane": "Kranich",
+      "swallow": "Schwalbe",
+      "owl": "Eule",
+      "eagle": "Adler"
+    },
+    "errors": {
+      "avatarRequired": "Bitte wählt eine Spielfigur.",
+      "mottoTooShort": "Motto braucht mindestens 3 Zeichen.",
+      "rulesRequired": "Bitte bestätigt die Spielregeln.",
+      "saveFailed": "Speichern fehlgeschlagen"
+    }
   },
   "editionStatus": {
     "draft": "Das Spiel hat noch nicht begonnen. Schau wieder vorbei, wenn das Festival startet.",
@@ -83,9 +136,10 @@
     "reachedGoal": "Du hast das Ziel erreicht!",
     "gameStatus": "Spielstatus: {status}",
     "findSpot": "Finde den nächsten QR Code",
-    "seekingTitle": "Station suchen — Feld {n} von {total}",
+    "seekingTitle": "Suche QR Code für Feld {n}",
     "scanQr": "QR scannen",
-    "hintsSection": "Hinweise",
+    "hintLabel": "Hinweis:",
+    "hintsSection": "Weitere Hinweise",
     "hintN": "Hinweis {n}:",
     "rollAgain": "Nochmal würfeln (Nullrunde)",
     "quiz": "Quiz",
@@ -94,7 +148,51 @@
     "performance": "Performance",
     "showQrToCrew": "Zeig diesen QR der Crew",
     "waitingForCrew": "Warte auf die Crew…",
+    "continuePlayingWaitCrew": "Weiter spielen und auf Crew warten",
+    "pendingCrewBanner": "Feld {n} wartet auf Crew-Bewertung",
+    "pendingCrewBannerMultiple": "Felder {fields} warten auf Crew-Bewertung",
+    "showTeamQr": "Team-QR anzeigen",
+    "performanceApproved": "Eure Performance auf Feld {n} wurde als erledigt markiert.",
     "completePerformanceDev": "Performance abschließen (Dev)",
+    "media": {
+      "title": "Medien-Upload",
+      "hintKinds": "Wähle {kinds} von deinem Gerät (keine Kamera-Aufnahme).",
+      "hintTrimVideo": "Lange Videos werden auf die ersten {seconds} Sekunden gekürzt.",
+      "chooseFile": "Datei wählen",
+      "chooseDifferent": "Andere Datei",
+      "upload": "Hochladen",
+      "retry": "Erneut hochladen",
+      "validating": "Datei wird geprüft…",
+      "preparing": "Datei wird vorbereitet…",
+      "compressing": "Video wird verkleinert…",
+      "uploading": "Upload läuft…",
+      "waitingForCrew": "Upload fertig — die Crew prüft eure Einreichung.",
+      "errors": {
+        "unsupportedType": "Dateityp nicht erlaubt.",
+        "kindNotAllowed": "Dieser Medientyp ist für die Aufgabe nicht erlaubt.",
+        "tooLarge": "Datei ist zu groß.",
+        "sourceTooLarge": "Datei ist zu groß — bitte ein kürzeres oder kleineres Video wählen.",
+        "sourceTooLargeForBrowser": "Diese Datei ist zu groß für die Verarbeitung im Handy-Browser. Bitte ein kürzeres Video (z. B. unter 60 Sekunden) oder kleinere Datei wählen.",
+        "transcodeFailed": "Video konnte nicht verkleinert werden — bitte eine kleinere Datei wählen.",
+        "transcodeUnavailable": "Video-Verkleinerung ist hier nicht verfügbar — bitte eine kleinere Datei wählen.",
+        "tooLong": "Aufnahme ist zu lang.",
+        "durationUnknown": "Dauer konnte nicht ermittelt werden.",
+        "uploadFailed": "Upload fehlgeschlagen.",
+        "unknown": "Datei konnte nicht verarbeitet werden."
+      }
+    },
+    "coop": "Co-op Depot",
+    "coopInitiatorTitle": "Co-op — Depot eröffnen",
+    "coopPartnerTitle": "Co-op — Partner-Aufgabe",
+    "coopDone": "Erledigt",
+    "coopWaitingPartner": "Euer Depot auf Feld {n} wartet auf eine Partner-Bande.",
+    "coopScanPartnerQr": "Scannt den QR der Partner-Bande für +{bonus} Bonus-Punkte.",
+    "coopScanTeamQrBonus": "Partner-QR scannen",
+    "continuePlayingWaitCoop": "Weiter spielen und auf Bonus warten",
+    "pendingCoopDepotBanner": "Feld {n}: Co-op-Depot wartet auf Partner",
+    "pendingCoopDepotBannerMultiple": "Co-op-Depots offen: Felder {fields}",
+    "pendingCoopBonusBanner": "Feld {n}: Scannt {team} für Co-op-Bonus (+{bonus})",
+    "pendingCoopBonusBannerNoTeam": "Feld {n}: Scannt die Partner-Bande für Co-op-Bonus (+{bonus})",
     "festivalMap": "Festivalplan",
     "gameRules": "Spielregeln",
     "leaderboard": "Rangliste",
@@ -106,6 +204,8 @@
     "revealAllConfirm": "Alle aufdecken",
     "zeroRoundTitle": "Nullrunde",
     "zeroRoundMessage": "Nullrunde — kein Feldfortschritt und keine Punkte für diesen Versuch. Fortfahren?",
+    "devPickFieldHint": "Station antippen, um einen Turn zu simulieren (Dev)",
+    "devActivityLegend": "q Quiz · p Performance · m Media · c Co-op",
     "simulateScanDev": "Scan simulieren (Dev)",
     "logoutDev": "Ausloggen (Dev)",
     "goalCelebration": {
@@ -118,6 +218,9 @@
     },
     "turnScore": {
       "title": "Zug abgeschlossen",
+      "crewConfirmedTitle": "Crew-Bestätigung",
+      "crewConfirmedMessage": "Feld {n} wurde von der Crew bestätigt.",
+      "crewConfirmedGratulation": "Gratulation!",
       "gained": "Hinzugekommen",
       "deducted": "Abgezogen",
       "base": "Basis",
@@ -138,10 +241,14 @@
       "simulateScanFailed": "Scan-Simulation fehlgeschlagen",
       "completePerformanceFailed": "Performance konnte nicht abgeschlossen werden",
       "answerFailed": "Antwort fehlgeschlagen",
-      "abandonFailed": "Abbrechen fehlgeschlagen"
+      "abandonFailed": "Abbrechen fehlgeschlagen",
+      "continuePlayingFailed": "Weiterspielen fehlgeschlagen",
+      "completeCoopFailed": "Co-op konnte nicht abgeschlossen werden",
+      "coopLinkFailed": "Co-op-Bonus-Scan fehlgeschlagen"
     }
   },
   "hints": {
+    "nextHintIn": "Nächster Hinweis in",
     "mapBelow": "Siehe Festivalplan unten.",
     "mapUnavailable": "Karte nicht verfügbar — Festivalplan nicht hochgeladen.",
     "revealNextAria": "Nächsten Hinweis aufdecken",
@@ -199,7 +306,52 @@
   },
   "privacy": {
     "title": "Datenschutz",
-    "body": "Wir speichern den Namen deiner Bande, Spielstand und Punkte für die Dauer der Festival-Edition. Daten werden nach dem Event gelöscht. Keine Marketing-E-Mails. Löschanfragen bitte an den Festival-Infostand."
+    "intro": "Diese Hinweise gelten für das Festival-Feldspiel „Zugvögel“ (Web-App). Sie ergänzen die Datenschutzerklärung von Zugvögel e.V. für die Festival-Website.",
+    "controllerHeading": "Verantwortlicher",
+    "controllerBody": "Zugvögel e.V.\nPoller Kirchweg 124\n51105 Köln\nE-Mail: abflug{'@'}zugvoegelfestival.org",
+    "purposeHeading": "Zweck der Verarbeitung",
+    "purposeBody": "Die App ermöglicht die Teilnahme am Feldspiel während einer Festival-Edition: Bande anlegen, würfeln, Stationen per QR finden, Aufgaben lösen, Punkte sammeln und die Highscore-Tabelle einsehen. Eine Nutzung zu Werbezwecken findet nicht statt.",
+    "dataHeading": "Verarbeitete Daten",
+    "dataTeam": "Bandenname, optional Motto, Teamgröße und gewählter Avatar (Piktogramm, keine Personenfotos).",
+    "dataGame": "Spielstand: Feldposition, abgeschlossene Stationen, Würfe, Aufgaben, Hinweise, Quiz-Antworten, Punkte, Crew-Bewertungen bei Performance-Aufgaben sowie Kooperations-Verknüpfungen zwischen Banden.",
+    "dataAuth": "Vierstellige PIN nur als kryptografischer Hash; Sitzungs-Cookie (httpOnly) zur Anmeldung auf einem Gerät pro Bande.",
+    "dataMedia": "Bei Medien-Aufgaben: von euch hochgeladene Fotos oder Videos (inkl. Metadaten wie Dateiname, Größe, Dauer). Crew-Mitglieder können Einreichungen zur Bewertung einsehen.",
+    "dataTech": "Technisch: IP-Adresse kurzzeitig im Arbeitsspeicher für Missbrauchsschutz (Rate-Limiting); Spracheinstellung lokal im Browser.",
+    "publicHeading": "Öffentliche Anzeige",
+    "publicBody": "Bandenname, Avatar, Motto (falls angegeben), Punkte und Fortschritt erscheinen in der Live-Highscore-Liste und im Banden-Verzeichnis für andere teilnehmende Banden derselben Edition.",
+    "cameraHeading": "Kamera",
+    "cameraBody": "Die Kamera wird für QR-Scans im Browser genutzt. Bilddaten werden dabei nicht auf unseren Servern gespeichert, außer ihr ladet sie ausdrücklich bei einer Medien-Aufgabe hoch.",
+    "cookiesHeading": "Cookies & lokale Speicherung",
+    "cookiesBody": "Wir setzen ein technisch notwendiges Sitzungs-Cookie (team_session, httpOnly, max. 48 Stunden) ein, damit ihr angemeldet bleibt. Die Sprachwahl wird lokal im Browser gespeichert. Keine Tracking- oder Marketing-Cookies.",
+    "legalBasisHeading": "Rechtsgrundlagen",
+    "legalBasisBody": "Art. 6 Abs. 1 lit. b DSGVO (Durchführung der Spielteilnahme), Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Betrieb, Missbrauchsschutz und öffentlicher Highscore-Anzeige). Medien-Uploads erfolgen freiwillig im Rahmen der Aufgabenstellung.",
+    "retentionHeading": "Speicherdauer",
+    "retentionBody": "Daten werden für die Dauer der jeweiligen Festival-Edition und einen angemessenen Zeitraum danach gespeichert, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Anschließend werden sie gelöscht. Keine Newsletter oder Werbe-E-Mails über die App.",
+    "recipientsHeading": "Empfänger",
+    "recipientsBody": "Zugriff haben autorisierte Festival-Crew und Administratoren. Die technische Umsetzung erfolgt durch ma:nü im Auftrag von Zugvögel e.V. auf der vom Veranstalter betriebenen Infrastruktur. Eine Weitergabe an Dritte zu Werbezwecken findet nicht statt.",
+    "rightsHeading": "Deine Rechte",
+    "rightsBody": "Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch und Datenübertragbarkeit. Wende dich an abflug{'@'}zugvoegelfestival.org oder an den Festival-Infostand. Einwilligungen (z. B. Medien-Upload) kannst du durch Unterlassen künftiger Uploads oder Löschanfrage widerrufen.",
+    "complaintHeading": "Beschwerderecht",
+    "complaintBody": "Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. beim Landesbeauftragten für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW).",
+    "externalHeading": "Weitere Hinweise",
+    "externalBody": "Die allgemeine Datenschutzerklärung von Zugvögel (Website, Shop, Newsletter u. a.) findest du unter "
+  },
+  "impressum": {
+    "title": "Impressum",
+    "operatorHeading": "Angaben gemäß § 5 TMG",
+    "operatorName": "Zugvögel e.V.",
+    "operatorAddress": "Poller Kirchweg 124\n51105 Köln",
+    "operatorEmail": "abflug{'@'}zugvoegelfestival.org",
+    "representativesHeading": "Vertretungsberechtigt",
+    "representatives": "Wolfgang Schadow, Tobias Kirchgatter, Carsten Kugele",
+    "registerHeading": "Vereinsregister",
+    "register": "Registergericht: Amtsgericht Köln\nRegisternummer: VR 18917",
+    "appHeading": "Festival-Feldspiel (Web-App)",
+    "appBody": "Diese Progressive Web App („Zugvögel“) wird im Rahmen des Zugvögel Festivals betrieben. Verantwortlich für den Inhalt im Sinne des § 18 Abs. 2 MStV ist der Zugvögel e.V. (Anschrift wie oben).",
+    "implementationHeading": "Konzept & technische Umsetzung",
+    "implementationBody": "ma:nü im Auftrag von Zugvögel e.V. / Zugvögel Festival",
+    "liabilityHeading": "Haftung für Inhalte und Links",
+    "liabilityBody": "Als Diensteanbieter sind wir für eigene Inhalte nach den allgemeinen Gesetzen verantwortlich. Für verlinkte externe Inhalte übernehmen wir keine Gewähr; für deren Inhalte sind ausschließlich deren Betreiber verantwortlich."
   },
   "leaderboard": {
     "draft": "Das Spiel startet bald — schau wieder vorbei, wenn es live ist.",
@@ -242,6 +394,19 @@
     "waitForHints": "Warte auf alle Hinweise oder nutze „Alle aufdecken“",
     "taskNotCompleted": "Aufgabe noch nicht erledigt",
     "tooManyRequests": "Zu viele Anfragen",
-    "teamSessionRequired": "Banden-Session erforderlich"
+    "teamSessionRequired": "Banden-Session erforderlich",
+    "alreadyWaitingForCrew": "Ihr wartet bereits auf eine Crew-Bewertung",
+    "continuePlayingOnlyDuringPerformance": "Tippe zuerst auf „Weiter spielen und auf Crew warten“",
+    "continuePlayingOnlyDuringCrew": "Tippe zuerst auf „Weiter spielen und auf Crew warten“",
+    "continuePlayingOnlyDuringCoop": "Tippe zuerst auf „Weiter spielen und auf Bonus warten“",
+    "noCoopTask": "Keine Co-op-Aufgabe aktiv",
+    "noCoopDepot": "Kein Co-op-Depot auf diesem Feld",
+    "coopDepotOpen": "Co-op-Depot auf diesem Feld ist schon offen",
+    "coopDepotHasPartner": "Dieses Co-op-Depot hat schon einen Partner",
+    "ownCoopDepot": "Ihr könnt euer eigenes Depot nicht als Partner nutzen",
+    "fieldAlreadyCompleted": "Dieses Feld habt ihr schon erledigt",
+    "noCoopLink": "Keine Co-op-Verbindung mit dieser Bande",
+    "coopBonusClaimed": "Co-op-Bonus wurde schon eingelöst",
+    "invalidTeamQr": "Ungültiger Banden-QR"
   }
 }

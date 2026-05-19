@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { AdminTaskCreateInput, AdminTaskPatchInput } from '#shared/schemas'
 import type { LocalizedString, LocalizedStringList } from '#shared/localized'
-import type { AdminTask, QuizInputMode } from '#shared/types'
+import type { AdminTask, MediaKind, QuizInputMode } from '#shared/types'
+import { MAX_EDITION_FIELD_COUNT } from '#shared/types'
 import { normalizeQuizInputMode } from '#shared/quiz-payload'
 import { resolveTaskSlug } from '#shared/task-slug'
 
@@ -19,13 +20,16 @@ const props = defineProps<{
   open: boolean
   task: AdminTask | null
   createField?: number | null
+  fieldCount?: number
   usedSlugs?: string[]
+  canRemove?: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
   saveEdit: [payload: AdminTaskPatchInput]
   saveCreate: [payload: AdminTaskCreateInput]
+  remove: []
 }>()
 
 const slug = ref('')
@@ -34,7 +38,7 @@ const hintLevel1 = ref<LocalizedField>(emptyLocalizedField())
 const hintLevel2 = ref<LocalizedField>(emptyLocalizedField())
 const mapX = ref(0)
 const mapY = ref(0)
-const activityType = ref<'quiz' | 'performance'>('quiz')
+const activityType = ref<'quiz' | 'performance' | 'coop' | 'media'>('quiz')
 const quizInputMode = ref<QuizInputMode>('freeText')
 const quizQuestion = ref<LocalizedField>(emptyLocalizedField())
 const quizAnswersDe = ref('')
@@ -44,12 +48,21 @@ const quizChoicesEn = ref('')
 const quizCorrectAnswerDe = ref('')
 const quizCorrectAnswerEn = ref('')
 const performanceText = ref<LocalizedField>(emptyLocalizedField())
+const mediaText = ref<LocalizedField>(emptyLocalizedField())
+const mediaAllowedPhoto = ref(true)
+const mediaAllowedVideo = ref(false)
+const mediaAllowedAudio = ref(false)
+const mediaMaxDurationSec = ref<number | null>(null)
+const coopInstructions = ref<LocalizedField>(emptyLocalizedField())
+const coopPartnerInstructions = ref<LocalizedField>(emptyLocalizedField())
 
 const parsedQuizChoicesDe = computed(() => parseLines(quizChoicesDe.value))
 const parsedQuizChoicesEn = computed(() => parseLines(quizChoicesEn.value))
 const originalSlug = ref('')
 const slugManuallyEdited = ref(false)
 const saveError = ref('')
+const fieldNumber = ref(1)
+const originalFieldNumber = ref(1)
 
 const isCreate = computed(() => props.createField != null && props.task == null)
 
@@ -58,16 +71,48 @@ const dialogOpen = computed(
 )
 
 const dialogTitle = computed(() => {
-  const field = props.task?.fieldNumber ?? props.createField
-  if (field == null) return undefined
-  return isCreate.value ? `Add task — field ${field}` : `Field ${field}`
+  if (props.task == null && props.createField == null) return undefined
+  return isCreate.value ? 'Add station' : 'Edit station'
+})
+
+const maxFieldNumber = computed(() => MAX_EDITION_FIELD_COUNT)
+
+const fieldShiftPreview = computed(() => {
+  const from = originalFieldNumber.value
+  const to = fieldNumber.value
+  if (to === from) return null
+  if (to > from) {
+    return `Fields ${to} and above shift up; stations ${from + 1}–${to - 1} move down to close the gap.`
+  }
+  return `Fields ${to} and above shift up; stations above field ${from} move down.`
 })
 
 function currentActivity() {
-  if (activityType.value !== 'quiz') {
+  if (activityType.value === 'coop') {
+    return {
+      type: 'coop' as const,
+      instructions: coopInstructions.value,
+      partnerInstructions: coopPartnerInstructions.value,
+    }
+  }
+  if (activityType.value === 'performance') {
     return {
       type: 'performance' as const,
       text: performanceText.value,
+    }
+  }
+  if (activityType.value === 'media') {
+    const allowedKinds: MediaKind[] = []
+    if (mediaAllowedPhoto.value) allowedKinds.push('photo')
+    if (mediaAllowedVideo.value) allowedKinds.push('video')
+    if (mediaAllowedAudio.value) allowedKinds.push('audio')
+    return {
+      type: 'media' as const,
+      text: mediaText.value,
+      allowedKinds: (allowedKinds.length > 0 ? allowedKinds : ['photo']) as MediaKind[],
+      ...(mediaMaxDurationSec.value != null && mediaMaxDurationSec.value > 0
+        ? { maxDurationSec: mediaMaxDurationSec.value }
+        : {}),
     }
   }
 
@@ -103,6 +148,8 @@ function resetForm() {
   saveError.value = ''
   if (props.task) {
     const s = props.task
+    fieldNumber.value = s.fieldNumber
+    originalFieldNumber.value = s.fieldNumber
     slug.value = s.slug
     originalSlug.value = s.slug
     hintVague.value = { ...s.hintVague }
@@ -132,6 +179,17 @@ function resetForm() {
         quizCorrectAnswerEn.value = ''
       }
     }
+    else if (s.activityPayload.type === 'coop') {
+      coopInstructions.value = { ...s.activityPayload.instructions }
+      coopPartnerInstructions.value = { ...s.activityPayload.partnerInstructions }
+    }
+    else if (s.activityPayload.type === 'media') {
+      mediaText.value = { ...s.activityPayload.text }
+      mediaAllowedPhoto.value = s.activityPayload.allowedKinds.includes('photo')
+      mediaAllowedVideo.value = s.activityPayload.allowedKinds.includes('video')
+      mediaAllowedAudio.value = s.activityPayload.allowedKinds.includes('audio')
+      mediaMaxDurationSec.value = s.activityPayload.maxDurationSec ?? null
+    }
     else {
       performanceText.value = { ...s.activityPayload.text }
     }
@@ -139,6 +197,8 @@ function resetForm() {
   }
 
   const field = props.createField ?? 1
+  fieldNumber.value = field
+  originalFieldNumber.value = field
   slug.value = ''
   originalSlug.value = ''
   hintVague.value = emptyLocalizedField()
@@ -156,14 +216,20 @@ function resetForm() {
   quizCorrectAnswerDe.value = ''
   quizCorrectAnswerEn.value = ''
   performanceText.value = emptyLocalizedField()
+  mediaText.value = emptyLocalizedField()
+  mediaAllowedPhoto.value = true
+  mediaAllowedVideo.value = false
+  mediaAllowedAudio.value = false
+  mediaMaxDurationSec.value = null
+  coopInstructions.value = emptyLocalizedField()
+  coopPartnerInstructions.value = emptyLocalizedField()
   updateAutoSlug()
 }
 
 function updateAutoSlug() {
   if (!isCreate.value || slugManuallyEdited.value) return
-  const field = props.createField!
   const used = new Set(props.usedSlugs ?? [])
-  slug.value = resolveTaskSlug(field, currentActivity(), undefined, used)
+  slug.value = resolveTaskSlug(fieldNumber.value, currentActivity(), undefined, used)
 }
 
 watch(
@@ -174,7 +240,7 @@ watch(
 )
 
 watch(
-  [activityType, quizQuestion, performanceText],
+  [activityType, quizQuestion, performanceText, mediaText],
   () => {
     if (isCreate.value) updateAutoSlug()
   },
@@ -194,6 +260,15 @@ function localizedFieldComplete(field: LocalizedField): boolean {
 }
 
 function validateBeforeSave(): boolean {
+  if (
+    !Number.isInteger(fieldNumber.value)
+    || fieldNumber.value < 1
+    || fieldNumber.value > maxFieldNumber.value
+  ) {
+    saveError.value = `Field number must be between 1 and ${maxFieldNumber.value}.`
+    return false
+  }
+
   if (!localizedFieldComplete(hintVague.value)) {
     saveError.value = 'Hint (vague) requires both DE and EN.'
     return false
@@ -210,6 +285,32 @@ function validateBeforeSave(): boolean {
   if (activityType.value === 'performance') {
     if (!localizedFieldComplete(performanceText.value)) {
       saveError.value = 'Performance text requires both DE and EN.'
+      return false
+    }
+    saveError.value = ''
+    return true
+  }
+
+  if (activityType.value === 'media') {
+    if (!localizedFieldComplete(mediaText.value)) {
+      saveError.value = 'Media task text requires both DE and EN.'
+      return false
+    }
+    if (!mediaAllowedPhoto.value && !mediaAllowedVideo.value && !mediaAllowedAudio.value) {
+      saveError.value = 'Select at least one allowed media kind.'
+      return false
+    }
+    saveError.value = ''
+    return true
+  }
+
+  if (activityType.value === 'coop') {
+    if (!localizedFieldComplete(coopInstructions.value)) {
+      saveError.value = 'Co-op initiator instructions require both DE and EN.'
+      return false
+    }
+    if (!localizedFieldComplete(coopPartnerInstructions.value)) {
+      saveError.value = 'Co-op partner instructions require both DE and EN.'
       return false
     }
     saveError.value = ''
@@ -266,7 +367,7 @@ function onSave() {
 
   if (isCreate.value) {
     const payload: AdminTaskCreateInput = {
-      field: props.createField!,
+      field: fieldNumber.value,
       ...buildPayloadBase(),
     }
     if (slugManuallyEdited.value && slug.value.trim()) {
@@ -277,6 +378,9 @@ function onSave() {
   }
 
   const payload: AdminTaskPatchInput = buildPayloadBase()
+  if (fieldNumber.value !== originalFieldNumber.value) {
+    payload.field = fieldNumber.value
+  }
   if (slugManuallyEdited.value && slug.value.trim()) {
     payload.slug = slug.value.trim()
   }
@@ -292,11 +396,49 @@ function onSave() {
     panel-class="max-w-lg"
     @close="emit('close')"
   >
+    <template v-if="!isCreate && canRemove" #header-actions>
+      <PixelIconButton
+        label="Remove station"
+        tooltip="Remove station"
+        variant="danger"
+        class="shrink-0"
+        @click="emit('remove')"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 7h14M9 7V5h6v2m-8 4v8h10v-8"
+            stroke-linecap="square"
+            stroke-linejoin="miter"
+          />
+        </svg>
+      </PixelIconButton>
+    </template>
+
     <div class="space-y-3">
       <p v-if="slugChanged" class="admin-body text-xs text-[var(--pixel-score-minus)]">
         Changing the slug invalidates printed task QR URLs for this field.
       </p>
       <p v-if="saveError" class="admin-body text-xs text-[var(--pixel-score-minus)]">{{ saveError }}</p>
+
+      <div>
+        <label class="admin-body text-xs block">Field number</label>
+        <input
+          v-model.number="fieldNumber"
+          type="number"
+          min="1"
+          :max="maxFieldNumber"
+          class="pixel-input w-full p-2 admin-body"
+        >
+        <p v-if="fieldShiftPreview" class="admin-body text-xs opacity-80 mt-1">
+          {{ fieldShiftPreview }}
+        </p>
+      </div>
 
       <div>
         <label class="admin-body text-xs block">Slug</label>
@@ -319,29 +461,11 @@ function onSave() {
         </button>
       </div>
 
-      <div class="space-y-2">
-        <label class="admin-body text-xs block">Hint (vague)</label>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <textarea v-model="hintVague.de" rows="2" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-          <textarea v-model="hintVague.en" rows="2" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-        </div>
-      </div>
+      <AdminLocalizedTextareas v-model="hintVague" label="Hint (vague)" />
 
-      <div class="space-y-2">
-        <label class="admin-body text-xs block">Hint level 1</label>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <textarea v-model="hintLevel1.de" rows="2" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-          <textarea v-model="hintLevel1.en" rows="2" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-        </div>
-      </div>
+      <AdminLocalizedTextareas v-model="hintLevel1" label="Hint level 1" />
 
-      <div class="space-y-2">
-        <label class="admin-body text-xs block">Hint level 2</label>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <textarea v-model="hintLevel2.de" rows="2" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-          <textarea v-model="hintLevel2.en" rows="2" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-        </div>
-      </div>
+      <AdminLocalizedTextareas v-model="hintLevel2" label="Hint level 2" />
 
       <div class="grid grid-cols-2 gap-2">
         <div>
@@ -358,16 +482,44 @@ function onSave() {
       <select v-model="activityType" class="pixel-input w-full p-2 admin-body">
         <option value="quiz">Quiz</option>
         <option value="performance">Performance</option>
+        <option value="coop">Co-op (depot)</option>
+        <option value="media">Media upload</option>
       </select>
 
-      <template v-if="activityType === 'quiz'">
-        <div class="space-y-2">
-          <label class="admin-body text-xs block">Question</label>
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <textarea v-model="quizQuestion.de" rows="2" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-            <textarea v-model="quizQuestion.en" rows="2" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-          </div>
-        </div>
+      <template v-if="activityType === 'media'">
+        <AdminLocalizedTextareas v-model="mediaText" label="Task text" :rows="3" />
+        <fieldset class="space-y-2">
+          <legend class="admin-body text-xs">Allowed media kinds</legend>
+          <label class="admin-body text-xs flex items-center gap-2">
+            <input v-model="mediaAllowedPhoto" type="checkbox">
+            Photo
+          </label>
+          <label class="admin-body text-xs flex items-center gap-2">
+            <input v-model="mediaAllowedVideo" type="checkbox">
+            Video
+          </label>
+          <label class="admin-body text-xs flex items-center gap-2">
+            <input v-model="mediaAllowedAudio" type="checkbox">
+            Audio
+          </label>
+        </fieldset>
+        <label class="admin-body text-xs block">Max duration override (seconds, optional)</label>
+        <input
+          v-model.number="mediaMaxDurationSec"
+          type="number"
+          min="1"
+          class="pixel-input w-full p-2 admin-body"
+          placeholder="Empty: 60s video / 90s audio (re-save or db:reset after JSON import)"
+        >
+      </template>
+
+      <template v-else-if="activityType === 'coop'">
+        <AdminLocalizedTextareas v-model="coopInstructions" label="Initiator instructions" :rows="3" />
+        <AdminLocalizedTextareas v-model="coopPartnerInstructions" label="Partner instructions" :rows="3" />
+      </template>
+
+      <template v-else-if="activityType === 'quiz'">
+        <AdminLocalizedTextareas v-model="quizQuestion" label="Question" />
 
         <label class="admin-body text-xs block">Input mode</label>
         <select v-model="quizInputMode" class="pixel-input w-full p-2 admin-body">
@@ -376,19 +528,23 @@ function onSave() {
         </select>
 
         <template v-if="quizInputMode === 'freeText'">
-          <label class="admin-body text-xs block">Accepted answers (one per line)</label>
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <textarea v-model="quizAnswersDe" rows="4" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs font-mono" />
-            <textarea v-model="quizAnswersEn" rows="4" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs font-mono" />
-          </div>
+          <AdminBilingualTextareas
+            v-model:de="quizAnswersDe"
+            v-model:en="quizAnswersEn"
+            label="Accepted answers (one per line)"
+            :rows="4"
+            mono
+          />
         </template>
 
         <template v-else>
-          <label class="admin-body text-xs block">Choices (one per line)</label>
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <textarea v-model="quizChoicesDe" rows="4" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs font-mono" />
-            <textarea v-model="quizChoicesEn" rows="4" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs font-mono" />
-          </div>
+          <AdminBilingualTextareas
+            v-model:de="quizChoicesDe"
+            v-model:en="quizChoicesEn"
+            label="Choices (one per line)"
+            :rows="4"
+            mono
+          />
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div>
               <label class="admin-body text-xs block">Correct answer (DE)</label>
@@ -432,21 +588,15 @@ function onSave() {
         </template>
       </template>
 
-      <template v-else>
-        <div class="space-y-2">
-          <label class="admin-body text-xs block">Performance text</label>
-          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <textarea v-model="performanceText.de" rows="3" placeholder="DE" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-            <textarea v-model="performanceText.en" rows="3" placeholder="EN" class="w-full p-2 border-4 border-[var(--pixel-forest-dark)] admin-body text-xs" />
-          </div>
-        </div>
+      <template v-else-if="activityType === 'performance'">
+        <AdminLocalizedTextareas v-model="performanceText" label="Performance text" :rows="3" />
       </template>
     </div>
 
     <template #actions>
-      <div class="flex flex-wrap gap-2 justify-end">
-        <PixelButton variant="secondary" @click="emit('close')">Cancel</PixelButton>
-        <PixelButton @click="onSave">{{ isCreate ? 'Create' : 'Save' }}</PixelButton>
+      <div class="flex flex-wrap gap-2 justify-end w-full">
+        <PixelButton variant="secondary" class="!w-auto" @click="emit('close')">Cancel</PixelButton>
+        <PixelButton class="!w-auto" @click="onSave">{{ isCreate ? 'Create' : 'Save' }}</PixelButton>
       </div>
     </template>
   </PixelDialog>

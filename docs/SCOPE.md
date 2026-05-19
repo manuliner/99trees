@@ -511,8 +511,8 @@ flowchart TD
 | 7 | **Teamgröße (optional)** | Auswahl 1–5 oder Zahl — nur Statistik, keine Spielwirkung | Gespeichert in `teams.size` |
 | 8 | **Team erstellen** | Button „Los geht's“ / „Vogelzug starten“ | `POST /api/teams` → `team_id`, `team_qr_token`, `session_token`, `position_confirmed = 0` |
 | 9 | **Session speichern** | HttpOnly-Cookie bevorzugt | Token gehasht in DB; bei Rejoin altes Token invalidieren |
-| 10 | **Kurzregeln (optional)** | Würfeln → Station → QR → Aufgabe; **„PIN notieren“** | Überspringbar; `teams.rules_seen_at` |
-| 11 | **Spielbrett** | Vogelzug 1…**N**, Team auf Feld 0; **„Unser Team-QR“** | `GET /api/me` inkl. `field_count`, `teamQrUrl` |
+| 10 | **Onboarding** | `/{slug}/onboarding`: Spielfigur wählen → Banden-Motto + Regeln bestätigen | `PATCH /api/teams/onboarding`; `teams.avatar_id`, `teams.motto`, `teams.onboarding_completed_at` |
+| 11 | **Spielbrett** | Vogelzug 1…**N**, Team auf Feld 0; **„Unser Team-QR“**; Motto in Play + Leaderboard | `GET /api/me` inkl. `field_count`, `teamQrUrl` |
 | 12 | **Erster Würfel** | Button „Würfeln“ | `POST /api/turns/roll` → UF-2 |
 
 #### Team-QR (Identität des Teams)
@@ -531,9 +531,10 @@ Jedes Team erhält einen **eigenen Team-QR** (bei Anlage generiert, unverändlic
 
 1. **`/join`** — Landing + Team-Formular (oder Redirect wenn Session); Link „Team wiederfinden“
 2. **`/rejoin`** — Teamname + 4-stellige PIN → Session wiederherstellen
-3. **`/play`** — Spielbrett + Aktionsbereich; Sheet **„Unser Team-QR“**
-4. **`/rules`** — Statische Spielregeln (verlinkt von Join + Play)
-5. **`/t/{teamSlug}`** — Deep-Link aus Team-QR; Crew eingeloggt → Weiterleitung Bewertung; sonst Login-Prompt; anderes Team (MVP): nur Anzeige Name, keine Aktion
+3. **`/onboarding`** — Spielfigur, Motto, Regeln (nach neuer Bande; Pflicht vor `/play`)
+4. **`/play`** — Spielbrett + Aktionsbereich; Sheet **„Unser Team-QR“**
+5. **`/rules`** — Statische Spielregeln (verlinkt von Join + Play)
+6. **`/t/{teamSlug}`** — Deep-Link aus Team-QR; Crew eingeloggt → Weiterleitung Bewertung; sonst Login-Prompt; anderes Team (MVP): nur Anzeige Name, keine Aktion
 
 #### Fehler- & Randfälle
 
@@ -593,6 +594,7 @@ flowchart TD
 | POST | `/api/teams` | — | Body: `{ editionId, name, pin, size? }` → Team + Set-Cookie |
 | POST | `/api/teams/rejoin` | — | Body: `{ editionId, name, pin }` → neue Session |
 | PATCH | `/api/teams/pin` | Team-Session oder Reset-Token | PIN ändern (nach Crew-Reset) |
+| PATCH | `/api/teams/onboarding` | Team-Session | Avatar (`avatarId`) oder Abschluss (`motto`, `rulesAccepted: true`) |
 | GET | `/api/me` | Team-Session | Team, Position, offener Zug, Edition-Config |
 | POST | `/api/teams/logout` | Team-Session | Session löschen (optional) |
 | POST | `/api/crew/teams/:id/reset-pin` | Crew | PIN-Hash löschen/Temp-PIN; Audit-Log |
@@ -696,7 +698,8 @@ flowchart TD
 | # | Schritt | UI | System |
 |---|---------|-----|--------|
 | D1 | Aufgabentext + **„Unser Team-QR“** (groß) + Hinweis „Crew scannt euren Team-QR“ | Status: wartend | `turn.state = awaiting_crew` |
-| D2 | Crew bewertet (UF-3) | „Warte auf Bewertung…“; ab Timeout (O7): **Auto-OK** oder Button **„Neu würfeln“** (0-Runde) | Polling + `performance_timeout_at` |
+| D1b | **„Weiter spielen und auf Crew warten“** | Position vorziehen, weiter würfeln; Banner „Feld {n} wartet auf Crew“ | `POST …/continue-playing` → `awaiting_crew_bg` |
+| D2 | Crew bewertet (UF-3) | „Warte auf Bewertung…“ (oder Banner im Hintergrund); ab Timeout (O7): **Auto-OK** oder Button **„Neu würfeln“** (0-Runde, nur vor D1b) | Polling + `performance_timeout_at` |
 | D3 | Bewertung `ok` | Aufgabe gelöst | — |
 | D4 | Bewertung `bonus` | +25 Punkte (Entwurf) | in `score_delta`, kein Extra-Feld |
 

@@ -46,7 +46,7 @@ function toggleExpanded(teamId: number) {
 
 function openTurnLabel(state: TurnState | null): string | null {
   if (!state) return null
-  if (state === 'awaiting_crew') return 'Needs approval'
+  if (state === 'awaiting_crew' || state === 'awaiting_crew_bg') return 'Needs approval'
   if (state === 'rolled') return 'Rolled'
   if (state === 'scanned') return 'Scanned'
   return state

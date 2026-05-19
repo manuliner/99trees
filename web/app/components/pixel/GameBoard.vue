@@ -6,17 +6,19 @@ import {
   computeGameBoardLayout,
   GAME_BOARD_NODE_SIZE,
 } from '#shared/game-board-layout'
+import { isTeamAvatarId } from '#shared/team-avatars'
 
 export type BoardTeam = {
   id: number
   name: string
   position: number
+  avatarId?: string | null
 }
 
 export type GameBoardFieldTooltip =
   | string
   | {
-      activityType: 'quiz' | 'performance'
+      activityType: 'quiz' | 'performance' | 'coop' | 'media'
       text: string
     }
 
@@ -28,6 +30,7 @@ const props = withDefaults(
     positionConfirmed: number
     positionPending?: number | null
     myTeamId?: number | null
+    myAvatarId?: string | null
     teams?: BoardTeam[]
     compact?: boolean
     showDice?: boolean
@@ -46,16 +49,25 @@ const props = withDefaults(
     moveOverflowFields?: number[]
     /** Verbrauchte Würfelschritte — dunkelblau. */
     moveSteppedFields?: number[]
+    /** Performance wartet auf Crew — orange hervorgehoben. */
+    pendingCrewFields?: number[]
     /** Hide static team chip at confirmed position while move token is active. */
     suppressMyTeamChip?: boolean
+    /** Dev: single-letter activity type per field (q/p/m/c). */
+    fieldActivityLetters?: Record<number, string>
+    /** Dev: allow tapping task fields to simulate a roll. */
+    devFieldPickable?: boolean
+    devPickableFields?: number[]
   }>(),
   {
     positionPending: null,
     myTeamId: null,
+    myAvatarId: null,
     teams: () => [],
     moveTokenField: null,
     moveOverflowFields: () => [],
     moveSteppedFields: () => [],
+    pendingCrewFields: () => [],
     suppressMyTeamChip: false,
     compact: false,
     showDice: false,
@@ -68,12 +80,20 @@ const props = withDefaults(
     configuredFields: () => [],
     fieldTooltips: () => ({}),
     creatable: false,
+    fieldActivityLetters: () => ({}),
+    devFieldPickable: false,
+    devPickableFields: () => [],
   },
 )
 
-const emit = defineEmits<{ diceClick: []; fieldSelect: [field: number] }>()
+const emit = defineEmits<{
+  diceClick: []
+  fieldSelect: [field: number]
+  devFieldPick: [field: number]
+}>()
 
 const configuredFieldSet = computed(() => new Set(props.configuredFields))
+const devPickableFieldSet = computed(() => new Set(props.devPickableFields))
 
 const viewportRef = ref<HTMLElement | null>(null)
 const nodeRefs = ref<Map<number, HTMLElement>>(new Map())
@@ -92,6 +112,7 @@ const teamsByField = computed(() => {
 
 const moveOverflowSet = computed(() => new Set(props.moveOverflowFields))
 const moveSteppedSet = computed(() => new Set(props.moveSteppedFields))
+const pendingCrewSet = computed(() => new Set(props.pendingCrewFields))
 
 const focusField = computed(() => {
   if (props.moveTokenField != null) return props.moveTokenField
@@ -102,7 +123,12 @@ function isMoveHighlighted(field: number): boolean {
   return moveOverflowSet.value.has(field) || moveSteppedSet.value.has(field)
 }
 
+function isPendingCrewField(field: number): boolean {
+  return pendingCrewSet.value.has(field)
+}
+
 function playTileStateClass(field: number): string {
+  if (isPendingCrewField(field)) return 'game-board-node__tile--pending-crew'
   if (moveSteppedSet.value.has(field)) return 'game-board-node__tile--step-played'
   if (moveOverflowSet.value.has(field)) return 'game-board-node__tile--step-active'
   return `game-board-node__tile--${nodeState(field)}`
@@ -119,8 +145,78 @@ function teamsOnField(field: number): BoardTeam[] {
   return list.filter((t) => t.id !== props.myTeamId)
 }
 
+function teamHasBoardAvatar(team: BoardTeam): boolean {
+  return team.avatarId != null && isTeamAvatarId(team.avatarId)
+}
+
+function teamMarkerTitle(team: BoardTeam): string {
+  if (team.id === props.myTeamId && !props.selectable) {
+    return `${tr('common.you')} — ${team.name}`
+  }
+  return team.name
+}
+
+function teamChipLabel(team: BoardTeam): string {
+  if (team.id === props.myTeamId && !props.selectable) return tr('common.you')
+  return team.name.slice(0, 6)
+}
+
+const moveTokenHasAvatar = computed(
+  () => props.myAvatarId != null && isTeamAvatarId(props.myAvatarId),
+)
+
+const boardAvatarSize = computed((): 'board' | 'board-compact' =>
+  props.compact ? 'board-compact' : 'board',
+)
+
+function showFieldLabel(field: number): boolean {
+  const onField = teamsOnFieldDisplay(field)
+  if (onField.some(teamHasBoardAvatar)) return false
+  if (props.moveTokenField === field && moveTokenHasAvatar.value) return false
+  return true
+}
+
+const MAX_FIELD_AVATARS = 4
+const MAX_OTHERS_BESIDE_MINE = MAX_FIELD_AVATARS - 1
+
+/** Visible teams on a field (own team always included; max 4 total). */
+function teamsOnFieldDisplay(field: number): BoardTeam[] {
+  const all = teamsOnField(field)
+  const mine =
+    props.myTeamId != null ? all.filter((t) => t.id === props.myTeamId) : []
+  const others = all.filter((t) => t.id !== props.myTeamId)
+
+  if (mine.length > 0) {
+    return [...others.slice(0, MAX_OTHERS_BESIDE_MINE), ...mine]
+  }
+  return others.slice(0, MAX_FIELD_AVATARS)
+}
+
+function fieldAvatarsLayout(field: number): 'solo' | 'you-and-others' | 'others-only' {
+  const displayed = teamsOnFieldDisplay(field)
+  if (displayed.length <= 1) return 'solo'
+  if (displayed.some((t) => t.id === props.myTeamId)) return 'you-and-others'
+  return 'others-only'
+}
+
+function otherAvatarCornerIndex(field: number, team: BoardTeam): number {
+  const others = teamsOnFieldDisplay(field).filter((t) => t.id !== props.myTeamId)
+  return others.findIndex((t) => t.id === team.id)
+}
+
+function avatarBadgeSize(
+  field: number,
+  team: BoardTeam,
+): 'board' | 'board-compact' | 'board-mini' {
+  const layout = fieldAvatarsLayout(field)
+  if (layout === 'solo' || team.id === props.myTeamId) return boardAvatarSize.value
+  return 'board-mini'
+}
+
 function isPlayField(field: number): boolean {
-  return field > 0 && field < props.fieldCount
+  if (field <= 0) return false
+  if (props.selectable) return field <= props.fieldCount
+  return field < props.fieldCount
 }
 
 function isFieldSelectable(field: number): boolean {
@@ -137,9 +233,23 @@ function isFieldInteractive(field: number): boolean {
   return isFieldSelectable(field) || isFieldCreatable(field)
 }
 
+function isDevFieldPickable(field: number): boolean {
+  if (!props.devFieldPickable || !isPlayField(field)) return false
+  return devPickableFieldSet.value.has(field)
+}
+
+function isNodeClickable(field: number): boolean {
+  return isFieldInteractive(field) || isDevFieldPickable(field)
+}
+
+function fieldActivityLetter(field: number): string | undefined {
+  return props.fieldActivityLetters[field]
+}
+
 function fieldTooltip(field: number): GameBoardFieldTooltip | undefined {
   if (props.fieldTooltips[field]) return props.fieldTooltips[field]
   if (props.selectable && isFieldCreatable(field)) return 'Add station'
+  if (props.selectable && configuredFieldSet.value.has(field)) return 'Edit station'
   if (props.selectable && adminNodeState(field) === 'unconfigured') return 'No station'
   return undefined
 }
@@ -150,7 +260,7 @@ function fieldTooltipText(tooltip: GameBoardFieldTooltip): string {
 
 function fieldTooltipTaskType(
   tooltip: GameBoardFieldTooltip,
-): 'quiz' | 'performance' | undefined {
+): 'quiz' | 'performance' | 'coop' | 'media' | undefined {
   return typeof tooltip === 'string' ? undefined : tooltip.activityType
 }
 
@@ -163,12 +273,17 @@ function fieldTooltipProps(field: number) {
 }
 
 function adminNodeState(field: number): 'configured' | 'unconfigured' | 'inactive' {
-  if (field === 0 || field === props.fieldCount) return 'inactive'
+  if (field === 0) return 'inactive'
+  if (!props.selectable && field === props.fieldCount) return 'inactive'
   if (configuredFieldSet.value.has(field)) return 'configured'
   return 'unconfigured'
 }
 
 function onNodeActivate(field: number) {
+  if (isDevFieldPickable(field)) {
+    emit('devFieldPick', field)
+    return
+  }
   if (isFieldInteractive(field)) emit('fieldSelect', field)
 }
 
@@ -206,8 +321,8 @@ function setNodeRef(field: number, el: Element | ComponentPublicInstance | null)
   else nodeRefs.value.delete(field)
 }
 
-/** Extra space below field tiles for team name chips. */
-const VIEWPORT_EXTRA_Y = 28
+/** Small padding below board canvas (avatars sit on tiles). */
+const VIEWPORT_EXTRA_Y = 8
 
 const fitScale = ref(1)
 
@@ -340,9 +455,9 @@ defineExpose({ scrollToFocus })
             class="game-board-node__tooltip"
           >
             <component
-              :is="isFieldInteractive(node.field) ? 'button' : 'div'"
-              :type="isFieldInteractive(node.field) ? 'button' : undefined"
-              class="game-board-node__tile flex shrink-0 items-center justify-center"
+              :is="isNodeClickable(node.field) ? 'button' : 'div'"
+              :type="isNodeClickable(node.field) ? 'button' : undefined"
+              class="game-board-node__tile relative flex shrink-0 items-center justify-center"
               :class="[
                 compact ? 'game-board-node__tile--compact' : 'game-board-node__tile--play',
                 selectable
@@ -352,14 +467,17 @@ defineExpose({ scrollToFocus })
                   'game-board-node__tile--focus':
                     !selectable
                     && !isMoveHighlighted(node.field)
+                    && !isPendingCrewField(node.field)
                     && node.field === focusField
                     && nodeState(node.field) !== 'pending',
                   'game-board-node__tile--pending-blink':
                     !selectable
                     && !isMoveHighlighted(node.field)
+                    && !isPendingCrewField(node.field)
                     && nodeState(node.field) === 'pending',
                   'game-board-node__tile--selectable': isFieldInteractive(node.field),
                   'game-board-node__tile--creatable': isFieldCreatable(node.field),
+                  'game-board-node__tile--dev-pick': isDevFieldPickable(node.field),
                 },
               ]"
               :disabled="selectable && !isFieldInteractive(node.field) ? true : undefined"
@@ -367,42 +485,82 @@ defineExpose({ scrollToFocus })
               @keydown="onNodeKeydown($event, node.field)"
             >
               <span
+                v-if="showFieldLabel(node.field)"
                 class="game-board-node__label"
                 :class="{ 'game-board-node__label--sm': node.field >= 10 }"
               >{{ node.field }}</span>
+              <span
+                v-if="fieldActivityLetter(node.field)"
+                class="game-board-node__type-badge"
+                aria-hidden="true"
+              >{{ fieldActivityLetter(node.field) }}</span>
+
+              <div
+                v-if="teamsOnFieldDisplay(node.field).length"
+                class="game-board-node__avatars pointer-events-none absolute inset-0 z-[1]"
+                :class="`game-board-node__avatars--${fieldAvatarsLayout(node.field)}`"
+              >
+                <template
+                  v-for="t in teamsOnFieldDisplay(node.field)"
+                  :key="t.id"
+                >
+                  <span
+                    v-if="teamHasBoardAvatar(t)"
+                    class="game-board-node__avatar shrink-0"
+                    :class="{
+                      'game-board-node__avatar--you': t.id === myTeamId,
+                      'game-board-node__avatar--other': t.id !== myTeamId && fieldAvatarsLayout(node.field) !== 'solo',
+                      [`game-board-node__avatar--other-${otherAvatarCornerIndex(node.field, t)}`]:
+                        t.id !== myTeamId && fieldAvatarsLayout(node.field) !== 'solo',
+                    }"
+                    :title="teamMarkerTitle(t)"
+                  >
+                    <PixelTeamAvatarBadge
+                      :avatar-id="t.avatarId"
+                      :size="avatarBadgeSize(node.field, t)"
+                      borderless
+                    />
+                  </span>
+                  <span
+                    v-else
+                    class="game-board-team-chip absolute bottom-0 left-1/2 max-w-full -translate-x-1/2 truncate px-1 text-[8px] leading-tight"
+                    :class="
+                      t.id === myTeamId
+                        ? 'game-board-team--you font-bold'
+                        : 'game-board-team--other'
+                    "
+                    :title="teamMarkerTitle(t)"
+                  >
+                    {{ teamChipLabel(t) }}
+                  </span>
+                </template>
+              </div>
             </component>
           </PixelTooltip>
-
-          <div
-            v-if="teamsOnField(node.field).length"
-            class="mt-0.5 flex max-w-[72px] flex-wrap justify-center gap-0.5"
-          >
-            <span
-              v-for="t in teamsOnField(node.field)"
-              :key="t.id"
-              class="game-board-team-chip truncate px-1 text-[8px] leading-tight"
-              :class="
-                t.id === myTeamId
-                  ? 'game-board-team--you font-bold'
-                  : 'game-board-team--other'
-              "
-              :title="t.name"
-            >
-              {{ t.id === myTeamId && !selectable ? tr('common.you') : t.name.slice(0, 6) }}
-            </span>
-          </div>
         </div>
 
         <div
           v-if="moveTokenNode && !selectable"
-          class="game-board-move-token pointer-events-none absolute z-10"
+          class="game-board-move-token pointer-events-none absolute z-10 flex items-center justify-center"
           :style="{
             left: `${moveTokenNode.x}px`,
             top: `${moveTokenNode.y}px`,
-            transform: 'translate(-50%, calc(-50% + 22px))',
+            width: compact ? '2.25rem' : '2.75rem',
+            height: compact ? '2.25rem' : '2.75rem',
+            transform: 'translate(-50%, -50%)',
           }"
+          :title="tr('common.you')"
         >
-          <span class="game-board-team-chip game-board-team--you px-1 text-[8px] font-bold leading-tight">
+          <PixelTeamAvatarBadge
+            v-if="moveTokenHasAvatar"
+            :avatar-id="myAvatarId"
+            :size="boardAvatarSize"
+            borderless
+          />
+          <span
+            v-else
+            class="game-board-team-chip game-board-team--you px-1 text-[8px] font-bold leading-tight"
+          >
             {{ tr('common.you') }}
           </span>
         </div>
@@ -499,6 +657,27 @@ defineExpose({ scrollToFocus })
 
 .game-board-node__label--sm {
   font-size: 7px;
+}
+
+.game-board-node__type-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  line-height: 1;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.game-board-node__tile--dev-pick {
+  cursor: pointer;
+}
+
+.game-board-node__tile--dev-pick:hover {
+  box-shadow:
+    0 0 0 2px var(--pixel-board-focus),
+    var(--pixel-shadow);
 }
 
 .game-board-node__tile--compact .game-board-node__label {
@@ -608,6 +787,32 @@ button.game-board-node__tile:disabled {
     var(--pixel-shadow);
 }
 
+.game-board-node__tile--pending-crew {
+  background: var(--pixel-board-pending-crew);
+  color: var(--pixel-board-pending-crew-text);
+  animation: game-board-pending-crew-pulse 1.4s ease-in-out infinite;
+  box-shadow:
+    inset 2px 2px 0 rgb(255 255 255 / 0.45),
+    0 0 0 2px var(--pixel-sunrise),
+    var(--pixel-shadow);
+}
+
+@keyframes game-board-pending-crew-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-board-node__tile--pending-crew {
+    animation: none;
+  }
+}
+
 .game-board-node__tile--future {
   background: var(--pixel-board-future);
   color: var(--pixel-board-future-text);
@@ -617,6 +822,106 @@ button.game-board-node__tile:disabled {
   box-shadow:
     0 0 0 2px var(--pixel-board-focus),
     var(--pixel-shadow);
+}
+
+.game-board-node__avatars--solo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-board-node__avatars--solo .game-board-node__avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.game-board-node__avatars--solo .game-board-node__avatar :deep(.team-avatar-badge) {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.game-board-node__avatar :deep(.team-avatar-badge img),
+.game-board-move-token :deep(.team-avatar-badge img) {
+  object-position: bottom;
+}
+
+/* Own team full-size on top; up to 3 smaller others in corners. */
+.game-board-node__avatars--you-and-others .game-board-node__avatar--you {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.game-board-node__avatars--you-and-others .game-board-node__avatar--you :deep(.team-avatar-badge) {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.game-board-node__avatars--you-and-others .game-board-node__avatar--other {
+  position: absolute;
+  z-index: 1;
+}
+
+.game-board-node__avatars--you-and-others .game-board-node__avatar--other-0 {
+  top: 0;
+  left: 0;
+}
+
+.game-board-node__avatars--you-and-others .game-board-node__avatar--other-1 {
+  top: 0;
+  right: 0;
+}
+
+.game-board-node__avatars--you-and-others .game-board-node__avatar--other-2 {
+  bottom: 0;
+  right: 0;
+}
+
+/* No own team on field: up to 4 mini avatars in corners. */
+.game-board-node__avatars--others-only .game-board-node__avatar--other {
+  position: absolute;
+  z-index: 1;
+}
+
+.game-board-node__avatars--others-only .game-board-node__avatar--other-0 {
+  top: 0;
+  left: 0;
+}
+
+.game-board-node__avatars--others-only .game-board-node__avatar--other-1 {
+  top: 0;
+  right: 0;
+}
+
+.game-board-node__avatars--others-only .game-board-node__avatar--other-2 {
+  bottom: 0;
+  left: 0;
+}
+
+.game-board-node__avatars--others-only .game-board-node__avatar--other-3 {
+  bottom: 0;
+  right: 0;
+}
+
+.game-board-move-token {
+  transition:
+    left 120ms ease-out,
+    top 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-board-move-token {
+    transition: none;
+  }
 }
 
 .game-board-team-chip {

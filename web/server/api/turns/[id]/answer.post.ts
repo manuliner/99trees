@@ -9,13 +9,13 @@ import { answerSchema } from '#shared/schemas'
 import { getDb } from '../../../utils/db'
 import { tasks, turns } from '../../../database/schema'
 import { requireTeam } from '../../../utils/team-session'
-import { confirmTurn, getOpenTurn } from '../../../services/game'
+import { confirmTurn, getActivePlayTurn } from '../../../services/game'
 
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
   const body = answerSchema.parse(await readBody(event))
-  const open = await getOpenTurn(team.id)
+  const open = await getActivePlayTurn(team.id)
   if (!open || open.id !== turnId || open.state !== 'scanned') {
     throw createError({ statusCode: 400, statusMessage: 'No quiz task active' })
   }

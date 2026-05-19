@@ -58,8 +58,8 @@ export default defineNitroPlugin(async () => {
       )
     }
     if (adminInitSecret === DEFAULT_ADMIN_INIT_SECRET) {
-      console.warn(
-        '[env] WARN: NUXT_ADMIN_INIT_SECRET is still the dev default — rotate before exposing POST /api/admin/init.',
+      throw new Error(
+        '[env] FATAL: NUXT_ADMIN_INIT_SECRET must be set to a unique value in production.',
       )
     }
   }

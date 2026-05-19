@@ -32,7 +32,13 @@ onMounted(() => {
         @click="props.dismissible ? emit('close') : undefined"
       />
       <div :class="['pixel-card relative w-full max-w-md p-4 space-y-4 z-10', props.panelClass]">
-        <h2 v-if="title" class="pixel-title text-xs">{{ title }}</h2>
+        <div
+          v-if="title || $slots['header-actions']"
+          class="flex items-start justify-between gap-2"
+        >
+          <h2 v-if="title" class="pixel-title text-xs min-w-0 flex-1">{{ title }}</h2>
+          <slot name="header-actions" />
+        </div>
         <div :class="scrollable ? 'max-h-[min(85vh,32rem)] overflow-y-auto space-y-4' : 'contents'">
           <slot />
         </div>

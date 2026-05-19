@@ -47,7 +47,6 @@ const { sessionMismatch, sessionGateReady } = useJoinSessionGate({
 })
 
 const rulesTo = computed(() => pathWithEdition('/rules'))
-const privacyTo = computed(() => pathWithEdition('/privacy'))
 
 const editionLoading = computed(
   () => !editionSlugLookupSettled.value || editionPublicPending.value,
@@ -103,7 +102,7 @@ async function createTeam() {
         pin: pin.value,
       },
     })
-    await navigateTo('/play')
+    await navigateTo(pathWithEdition('/onboarding'))
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string }; statusMessage?: string }
@@ -124,6 +123,8 @@ async function createTeam() {
     <PixelJoinHero
       variant="join"
       :edition-name="editionPublic?.name ?? null"
+      :join-description="editionPublic?.joinDescription ?? null"
+      :join-logo-url="editionPublic?.joinLogoUrl ?? null"
       :loading="editionLoading"
     />
 
@@ -153,6 +154,9 @@ async function createTeam() {
       class="pixel-card p-4 space-y-4"
       @submit.prevent="createTeam"
     >
+      <h2 class="pixel-title text-sm">
+        {{ $t('join.createTeamHeading') }}
+      </h2>
       <label class="block space-y-2">
         <span class="pixel-body text-sm">{{ $t('join.teamName') }}</span>
         <input
@@ -207,16 +211,17 @@ async function createTeam() {
     </form>
 
     <nav v-if="sessionGateReady && !sessionMismatch" class="join-page-nav" :aria-label="$t('join.navAria')">
-      <NuxtLink
+      <p
         v-if="editionId != null && canCreateTeam"
-        :to="pathWithEdition('/rejoin')"
-        class="pixel-body join-page-nav__primary underline"
+        class="pixel-title join-page-nav__primary"
       >
-        {{ $t('join.findYourTeam') }}
-      </NuxtLink>
+        {{ $t('join.rejoinPromptBefore') }}<NuxtLink
+          :to="pathWithEdition('/rejoin')"
+          class="join-page-nav__link"
+        >{{ $t('join.rejoinPromptLink') }}</NuxtLink>.
+      </p>
       <div class="join-page-nav__secondary">
         <NuxtLink :to="rulesTo" class="pixel-body underline">{{ $t('common.rules') }}</NuxtLink>
-        <NuxtLink :to="privacyTo" class="pixel-body underline">{{ $t('common.privacy') }}</NuxtLink>
       </div>
     </nav>
   </main>

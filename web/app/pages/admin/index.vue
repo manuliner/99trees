@@ -10,11 +10,12 @@ const {
   checklist,
   error,
   success,
-  joinUrl,
+  shareUrl,
   crewLoginUrl,
   setupSteps,
   nextStepId,
   canGoLive,
+  canEditBoardFields,
   loading,
   loadEditions,
   createEdition,
@@ -24,9 +25,13 @@ const {
   tasks,
   importTasks,
   downloadTasks,
+  addField,
+  removeField,
+  deleteTask,
   createTask,
   updateTask,
   uploadMap,
+  uploadJoinLogo,
   exportTaskQr,
   logout,
   teams,
@@ -67,6 +72,15 @@ async function onResolveApproval(
 const showNewEdition = ref(false)
 const showPwaInstall = ref(false)
 const { maybeAutoShow: maybeShowPwaInstall } = usePwaInstall('admin')
+const themeOverride = useEditionThemeOverride()
+
+watch(
+  () => selectedEdition.value?.config.colorPalette,
+  (palette) => {
+    themeOverride.value = palette ?? null
+  },
+  { immediate: true },
+)
 
 onMounted(async () => {
   try {
@@ -197,8 +211,11 @@ const contentReady = computed(
             :slug="selectedEdition!.slug"
             :status="selectedEdition!.status"
             :config="selectedEdition!.config"
-            :join-url="joinUrl"
+            :join-description="selectedEdition!.joinDescription"
+            :join-logo-url="selectedEdition!.joinLogoUrl"
+            :share-url="shareUrl"
             @save="saveEditionSettings"
+            @upload-logo="uploadJoinLogo"
           />
         </AdminAccordionSection>
 
@@ -213,9 +230,13 @@ const contentReady = computed(
             :edition-slug="selectedEdition!.slug"
             :task-count="checklist!.taskCount"
             :field-count="checklist!.fieldCount"
+            :can-edit-fields="canEditBoardFields"
             :tasks="tasks"
             @import="importTasks"
             @download="onDownloadTasks"
+            @add-field="addField"
+            @remove-field="removeField"
+            @delete-task="deleteTask"
             @save-task="updateTask"
             @create-task="createTask"
           />
@@ -272,14 +293,14 @@ const contentReady = computed(
       <section class="space-y-2">
         <p class="pixel-title text-xs px-1">Print &amp; distribute</p>
         <AdminAccordionSection
-          title="QR codes & entry link"
+          title="QR codes & sharing link"
           :done="stepDone('print')"
           :is-next="nextStepId === 'print'"
           :expanded="isStepExpanded('print')"
           @toggle="toggleStepExpanded('print')"
         >
           <AdminPrintPack
-            :join-url="joinUrl"
+            :share-url="shareUrl"
             :crew-login-url="crewLoginUrl"
             :ready="printReady"
             @export-qr="exportTaskQr"

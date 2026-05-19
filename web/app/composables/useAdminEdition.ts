@@ -1,8 +1,9 @@
 import type { AdminTaskCreateInput, AdminTaskPatchInput } from '#shared/schemas'
 import type { AdminTask, AdminTeamListItem, EditionConfig, EditionStatus, PendingApproval } from '#shared/types'
+import type { LocalizedString } from '#shared/localized'
 import { adminTasksToImportDocument } from '#shared/admin-task-import'
 import { cloneEditionConfig, DEFAULT_EDITION_CONFIG } from '#shared/types'
-import { editionPath, isValidEditionSlug, joinPath } from '#shared/edition-urls'
+import { editionLandingPath, editionPath, isValidEditionSlug } from '#shared/edition-urls'
 
 export interface AdminEdition {
   id: number
@@ -12,6 +13,8 @@ export interface AdminEdition {
   fieldCount: number
   teamCount: number
   mapImageUrl: string | null
+  joinLogoUrl: string | null
+  joinDescription: LocalizedString
   config: EditionConfig
 }
 
@@ -62,18 +65,18 @@ export function useAdminEdition() {
   )
 
   /** Full public URLs — set on client only to avoid SSR/hydration text mismatch. */
-  const joinUrl = ref('')
+  const shareUrl = ref('')
   const crewLoginUrl = ref('')
 
   function refreshEditionUrls() {
     const slug = selectedEdition.value?.slug
     if (!slug) {
-      joinUrl.value = ''
+      shareUrl.value = ''
       crewLoginUrl.value = ''
       return
     }
     const origin = window.location.origin
-    joinUrl.value = `${origin}${joinPath(slug)}`
+    shareUrl.value = `${origin}${editionLandingPath(slug)}`
     crewLoginUrl.value = `${origin}${editionPath(slug, '/crew/login')}`
   }
 
@@ -109,6 +112,12 @@ export function useAdminEdition() {
   const nextStepId = computed(() => setupSteps.value.find((s) => !s.done)?.id ?? null)
 
   const canGoLive = computed(() => checklist.value?.ok === true && selectedEdition.value?.status === 'draft')
+
+  const canEditBoardFields = computed(() => {
+    const e = selectedEdition.value
+    if (!e) return false
+    return e.status === 'draft' || e.status === 'paused' || e.status === 'live'
+  })
 
   function setMessage(err?: string, ok?: string) {
     error.value = err ?? ''
@@ -286,12 +295,14 @@ export function useAdminEdition() {
     name: string
     slug?: string
     config: EditionConfig
+    joinDescription: LocalizedString
   }) {
     const edition = selectedEdition.value
     if (!edition) return
     const body: Record<string, unknown> = {
       name: payload.name,
       config: payload.config,
+      joinDescription: payload.joinDescription,
     }
     if (edition.status === 'draft' && payload.slug) {
       body.slug = payload.slug.trim().toLowerCase()
@@ -354,6 +365,66 @@ export function useAdminEdition() {
     URL.revokeObjectURL(url)
   }
 
+  async function addField() {
+    if (selectedId.value == null) return
+    setMessage()
+    try {
+      const res = await api<{ fieldCount: number }>(
+        `/api/admin/editions/${selectedId.value}/fields/add`,
+        { method: 'POST', credentials: 'include' },
+      )
+      await loadEditions()
+      await refreshChecklist()
+      setMessage(undefined, `Board now has ${res.fieldCount} fields`)
+    }
+    catch (e: unknown) {
+      setMessage(apiErrorMessage(e, 'Add field failed'))
+    }
+  }
+
+  async function removeField() {
+    if (selectedId.value == null) return
+    setMessage()
+    try {
+      const res = await api<{ fieldCount: number; deletedTask: boolean; abandonedTurns: number }>(
+        `/api/admin/editions/${selectedId.value}/fields/remove`,
+        { method: 'POST', credentials: 'include' },
+      )
+      await loadEditions()
+      await loadTasks()
+      await refreshChecklist()
+      const parts: string[] = [`Board now has ${res.fieldCount} fields`]
+      if (res.deletedTask) parts.push('task on removed field deleted')
+      if (res.abandonedTurns > 0) {
+        parts.push(
+          `${res.abandonedTurns} open ${res.abandonedTurns === 1 ? 'turn' : 'turns'} on that field abandoned`,
+        )
+      }
+      setMessage(undefined, parts.join(' — '))
+    }
+    catch (e: unknown) {
+      setMessage(apiErrorMessage(e, 'Remove field failed'))
+    }
+  }
+
+  async function deleteTask(taskId: number) {
+    if (selectedId.value == null) return
+    setMessage()
+    try {
+      const res = await api<{ fieldCount: number }>(
+        `/api/admin/editions/${selectedId.value}/tasks/${taskId}`,
+        { method: 'DELETE', credentials: 'include' },
+      )
+      await loadEditions()
+      await loadTasks()
+      await refreshChecklist()
+      setMessage(undefined, `Station removed (${res.fieldCount} fields on board)`)
+    }
+    catch (e: unknown) {
+      setMessage(apiErrorMessage(e, 'Remove station failed'))
+    }
+  }
+
   async function createTask(body: AdminTaskCreateInput) {
     if (selectedId.value == null) return
     setMessage()
@@ -386,6 +457,24 @@ export function useAdminEdition() {
     }
     catch (e: unknown) {
       setMessage(apiErrorMessage(e, 'Save failed'))
+    }
+  }
+
+  async function uploadJoinLogo(file: File) {
+    if (selectedId.value == null) return
+    setMessage()
+    const form = new FormData()
+    form.append('logo', file)
+    try {
+      const res = await api<{ joinLogoPath: string }>(
+        `/api/admin/editions/${selectedId.value}/join-logo`,
+        { method: 'POST', body: form, credentials: 'include' },
+      )
+      await loadEditions()
+      setMessage(undefined, `Join logo saved: ${res.joinLogoPath}`)
+    }
+    catch (e: unknown) {
+      setMessage(apiErrorMessage(e, 'Logo upload failed'))
     }
   }
 
@@ -431,11 +520,12 @@ export function useAdminEdition() {
     error,
     success,
     expandedSteps,
-    joinUrl,
+    shareUrl,
     crewLoginUrl,
     setupSteps,
     nextStepId,
     canGoLive,
+    canEditBoardFields,
     isStepExpanded,
     toggleStepExpanded,
     loadEditions,
@@ -454,9 +544,13 @@ export function useAdminEdition() {
     approvalResolvingTurnId,
     resolveApproval,
     setTeamPin,
+    addField,
+    removeField,
+    deleteTask,
     createTask,
     updateTask,
     uploadMap,
+    uploadJoinLogo,
     exportTaskQr,
     logout,
     defaultConfig,

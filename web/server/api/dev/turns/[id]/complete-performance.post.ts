@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (!turn || turn.teamId !== team.id) {
     throw createError({ statusCode: 404, statusMessage: 'Turn not found' })
   }
-  if (turn.state !== 'awaiting_crew') {
+  if (turn.state !== 'awaiting_crew' && turn.state !== 'awaiting_crew_bg') {
     throw createError({ statusCode: 400, statusMessage: 'Team is not awaiting crew rating' })
   }
 

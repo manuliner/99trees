@@ -10,6 +10,7 @@ import {
   serializeHint,
   taskRowToAdminTask,
 } from '../../../../../utils/admin-task'
+import { insertTaskAtField } from '../../../../../utils/admin-task-field-shift'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -32,12 +33,26 @@ export default defineEventHandler(async (event) => {
   )[0]
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Task not found' })
 
+  if (body.field != null && body.field !== existing.fieldNumber) {
+    await insertTaskAtField(db, edition, taskId, body.field)
+    const moved = (
+      await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, taskId), eq(tasks.editionId, editionId)))
+        .limit(1)
+    )[0]
+    if (moved) existing.fieldNumber = moved.fieldNumber
+  }
+
+  const fieldForSlug = body.field ?? existing.fieldNumber
+
   const otherSlugs = await db
     .select({ slug: tasks.slug })
     .from(tasks)
     .where(and(eq(tasks.editionId, editionId), ne(tasks.id, taskId)))
   const usedSlugs = new Set(otherSlugs.map((r) => r.slug))
-  const slug = resolveTaskSlug(existing.fieldNumber, body.activity, body.slug, usedSlugs)
+  const slug = resolveTaskSlug(fieldForSlug, body.activity, body.slug, usedSlugs)
 
   const hints = resolveHintLevels(body)
 

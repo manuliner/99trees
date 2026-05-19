@@ -11,7 +11,7 @@ const props = withDefaults(
     text?: string
     sections?: PixelTooltipSection[]
     gap?: number
-    taskType?: 'quiz' | 'performance'
+    taskType?: 'quiz' | 'performance' | 'media' | 'coop'
     multiline?: boolean
     hints?: boolean
     toggleOnClick?: boolean
@@ -19,9 +19,13 @@ const props = withDefaults(
   { text: '', gap: 6, multiline: false, hints: false, toggleOnClick: false },
 )
 
-const taskLabel = computed(() =>
-  props.taskType === 'quiz' ? 'Quiz' : props.taskType === 'performance' ? 'Performance' : '',
-)
+const taskLabel = computed(() => {
+  if (props.taskType === 'quiz') return 'Quiz'
+  if (props.taskType === 'performance') return 'Performance'
+  if (props.taskType === 'media') return 'Media'
+  if (props.taskType === 'coop') return 'Co-op'
+  return ''
+})
 
 const hasContent = computed(() =>
   Boolean(props.taskType || props.sections?.length || props.text.trim()),

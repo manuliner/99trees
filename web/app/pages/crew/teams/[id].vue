@@ -16,6 +16,7 @@ type CrewTeamResponse = {
   team: { id: number; name: string; positionConfirmed: number }
   currentTurn: { id: number; state: string } | null
   pendingApproval: PendingApproval | null
+  pendingApprovals: PendingApproval[]
 }
 
 const { data, refresh, error } = await useFetch<CrewTeamResponse>(`/api/crew/teams/${teamId}`, {
@@ -47,8 +48,16 @@ watch(error, (e) => {
   }
 })
 
-async function onResolve(actionId: string) {
-  const item = data.value?.pendingApproval
+const pendingApprovals = computed(
+  () =>
+    data.value?.pendingApprovals?.length
+      ? data.value.pendingApprovals
+      : data.value?.pendingApproval
+        ? [data.value.pendingApproval]
+        : [],
+)
+
+async function onResolve(actionId: string, item: PendingApproval) {
   if (!item) return
   const rating = actionIdToRating(item.kind, actionId)
   if (!rating) return
@@ -97,10 +106,11 @@ async function resetPin() {
     <p class="pixel-body text-sm">Field {{ data?.team.positionConfirmed }}</p>
 
     <StaffApprovalCard
-      v-if="data?.pendingApproval"
-      :item="data.pendingApproval"
-      :disabled="loading || resolvingTurnId === data.pendingApproval.turnId"
-      @resolve="onResolve"
+      v-for="item in pendingApprovals"
+      :key="item.turnId"
+      :item="item"
+      :disabled="loading || resolvingTurnId === item.turnId"
+      @resolve="(actionId) => onResolve(actionId, item)"
     />
 
     <PixelButton variant="secondary" @click="resetPin">Reset PIN</PixelButton>

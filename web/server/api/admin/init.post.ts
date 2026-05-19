@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getDb } from '../../utils/db'
 import { adminUsers } from '../../database/schema'
 import { setAdminSession } from '../../utils/admin-session'
+import { isProductionRuntime } from '../../utils/runtime-env'
 
 const schema = z.object({
   secret: z.string().min(1),
@@ -20,6 +21,9 @@ export default defineEventHandler(async (event) => {
   const db = getDb()
   const existing = await db.select().from(adminUsers).limit(1)
   if (existing[0]) {
+    if (isProductionRuntime()) {
+      throw createError({ statusCode: 404, statusMessage: 'Not found' })
+    }
     throw createError({ statusCode: 409, statusMessage: 'Admin already initialized' })
   }
 

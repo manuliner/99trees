@@ -13,7 +13,15 @@ const tab = ref<'progress' | 'highscore'>('highscore')
 
 type LeaderboardData = {
   edition: { id: number; name: string; status: string; fieldCount: number }
-  teams: { id: number; name: string; position: number; scoreTotal: number; reachedGoal: boolean }[]
+  teams: {
+    id: number
+    name: string
+    position: number
+    scoreTotal: number
+    reachedGoal: boolean
+    avatarId: string | null
+    motto: string | null
+  }[]
   officialRanking: boolean
   fallbackRanking?: boolean
   winnerTeamId: number | null
@@ -123,11 +131,19 @@ onUnmounted(stopPoll)
           :class="{ 'ring-2 ring-[var(--sunrise)]': me?.team?.id === team.id }"
         >
           <span class="pixel-title text-xs w-6">{{ i + 1 }}</span>
-          <span class="pixel-body text-sm flex-1 truncate">
-            {{ team.name }}
-            <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
-          </span>
-          <span class="pixel-body text-xs">{{ t('leaderboard.field', { n: team.position }) }}</span>
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <PixelTeamAvatarBadge :avatar-id="team.avatarId" />
+            <div class="min-w-0 flex-1">
+              <span class="pixel-body text-sm block truncate">
+                {{ team.name }}
+                <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
+              </span>
+              <span v-if="team.motto" class="pixel-body block truncate text-[10px] opacity-70">
+                „{{ team.motto }}“
+              </span>
+            </div>
+          </div>
+          <span class="pixel-body text-xs shrink-0">{{ t('leaderboard.field', { n: team.position }) }}</span>
         </li>
       </ol>
 
@@ -142,11 +158,19 @@ onUnmounted(stopPoll)
           }"
         >
           <span class="pixel-title text-xs w-6">{{ i + 1 }}</span>
-          <span class="pixel-body text-sm flex-1 truncate">
-            {{ team.name }}
-            <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
-          </span>
-          <span class="pixel-body text-xs text-right">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <PixelTeamAvatarBadge :avatar-id="team.avatarId" />
+            <div class="min-w-0 flex-1">
+              <span class="pixel-body text-sm block truncate">
+                {{ team.name }}
+                <span v-if="me?.team?.id === team.id" class="text-[10px] opacity-70"> {{ t('leaderboard.youMarker') }}</span>
+              </span>
+              <span v-if="team.motto" class="pixel-body block truncate text-[10px] opacity-70">
+                „{{ team.motto }}“
+              </span>
+            </div>
+          </div>
+          <span class="pixel-body text-xs text-right shrink-0">
             {{ team.scoreTotal }} {{ t('common.pts') }}
             <span v-if="team.reachedGoal" class="text-[var(--pixel-gold)]"> ★</span>
             <span v-else-if="!data?.officialRanking" class="block text-[10px]">{{ t('leaderboard.enRoute') }}</span>

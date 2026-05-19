@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { parseEditionId } from '#shared/edition-urls'
-import { editionPath } from '#shared/edition-urls'
 
 const route = useRoute()
 const legacyId = parseEditionId(route.query.edition)
 
 if (legacyId != null) {
   const { slug } = await $fetch<{ slug: string }>(`/api/editions/${legacyId}/slug`)
-  await navigateTo(editionPath(slug, '/join'))
+  await navigateTo(`/${slug}`)
 }
 
 const { data } = await useFetch<{ editions: { id: number; slug: string; name: string }[] }>(
@@ -27,12 +26,14 @@ const { data } = await useFetch<{ editions: { id: number; slug: string; name: st
     <ul v-else class="space-y-3">
       <li v-for="e in data.editions" :key="e.id">
         <NuxtLink
-          :to="`/${e.slug}/join`"
+          :to="`/${e.slug}`"
           class="pixel-card p-4 block pixel-body text-sm hover:opacity-90"
         >
           {{ e.name }}
         </NuxtLink>
       </li>
     </ul>
+
+    <MadeByCredit class="mt-8" />
   </main>
 </template>

@@ -3,7 +3,15 @@ import type { AdminTeamListItem, TurnState } from '#shared/types'
 import { getDb } from '../utils/db'
 import { editions, tasks, teams, turns } from '../database/schema'
 
-const OPEN_TURN_STATES = ['rolled', 'scanned', 'awaiting_crew', 'completed'] as const
+const OPEN_TURN_STATES = [
+  'rolled',
+  'scanned',
+  'awaiting_crew',
+  'awaiting_crew_bg',
+  'awaiting_coop',
+  'awaiting_coop_bg',
+  'completed',
+] as const
 
 function parseCompletedFields(json: string): number[] {
   try {

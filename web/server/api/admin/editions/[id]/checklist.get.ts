@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
+import { analyzeEditionBoard } from '#shared/edition-board-checklist'
+import { isValidEditionSlug } from '#shared/edition-urls'
 import { getDb } from '../../../../utils/db'
 import { editions, tasks } from '../../../../database/schema'
 import { requireAdmin } from '../../../../utils/admin-session'
-import { isValidEditionSlug } from '#shared/edition-urls'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -14,16 +15,15 @@ export default defineEventHandler(async (event) => {
   const taskRows = await db.select().from(tasks).where(eq(tasks.editionId, id))
   const issues: string[] = []
   if (!edition.slug || !isValidEditionSlug(edition.slug)) issues.push('Edition slug not set or invalid')
-  if (taskRows.length === 0) issues.push('No tasks imported')
-  if (taskRows.length !== edition.fieldCount) {
-    issues.push(`Task count ${taskRows.length} != field_count ${edition.fieldCount}`)
-  }
+
+  const board = analyzeEditionBoard(
+    taskRows.map((s) => s.fieldNumber),
+    edition.fieldCount,
+  )
+  issues.push(...board.issues)
+
   if (!edition.crewPasswordHash) issues.push('Crew password not set')
   if (!edition.mapImagePath) issues.push('Festival map image not uploaded')
-  const fields = new Set(taskRows.map((s) => s.fieldNumber))
-  for (let i = 1; i <= edition.fieldCount; i++) {
-    if (!fields.has(i)) issues.push(`Missing task for field ${i}`)
-  }
 
   return {
     ok: issues.length === 0,

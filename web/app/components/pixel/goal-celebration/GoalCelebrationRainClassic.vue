@@ -15,8 +15,6 @@ const SUIT_SYMBOL: Record<Suit, string> = {
   clubs: '♣',
 }
 
-const FELT_GREEN = '#167d3a'
-
 const MAX_CARDS = 52
 const SPAWN_INTERVAL_MS = 88
 const CARD_W = 42
@@ -24,6 +22,12 @@ const CARD_H = 58
 const GRAVITY = 0.42
 const BOUNCE_RESTITUTION = 0.72
 const WALL_RESTITUTION = 0.62
+
+function pixelColor(name: string, fallback: string): string {
+  if (import.meta.server) return fallback
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return value || fallback
+}
 
 type CardParticle = {
   suit: Suit
@@ -94,13 +98,15 @@ function resizeCanvas() {
 
 function fillFelt(ctx: CanvasRenderingContext2D) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  ctx.fillStyle = FELT_GREEN
+  ctx.fillStyle = pixelColor('--pixel-forest-mid', '#4a7c59')
   ctx.fillRect(0, 0, viewW, viewH)
 }
 
 function drawCardFace(ctx: CanvasRenderingContext2D, p: CardParticle) {
   const red = p.suit === 'hearts' || p.suit === 'diamonds'
-  const color = red ? '#c62828' : '#1a1c2c'
+  const color = red
+    ? pixelColor('--pixel-dice-pip-accent', '#c62828')
+    : pixelColor('--pixel-forest-dark', '#1a1c2c')
   const suit = SUIT_SYMBOL[p.suit]
 
   ctx.save()
@@ -108,8 +114,8 @@ function drawCardFace(ctx: CanvasRenderingContext2D, p: CardParticle) {
   ctx.rotate(p.rotation)
   ctx.translate(-CARD_W / 2, -CARD_H / 2)
 
-  ctx.fillStyle = '#fffef8'
-  ctx.strokeStyle = '#1a1c2c'
+  ctx.fillStyle = pixelColor('--pixel-cream', '#f4f1de')
+  ctx.strokeStyle = pixelColor('--pixel-forest-dark', '#1a1c2c')
   ctx.lineWidth = 1.5
   ctx.beginPath()
   ctx.roundRect(0, 0, CARD_W, CARD_H, 3)
@@ -290,7 +296,7 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: #167d3a;
+  background: var(--pixel-forest-mid);
 }
 
 .goal-rain-classic__canvas {

@@ -6,7 +6,7 @@
     <div class="flex-1 player-layout-content">
       <slot />
     </div>
-    <AppVersionFooter />
+    <AppVersionFooter show-legal-links />
   </PixelPullToRefresh>
 </template>
 

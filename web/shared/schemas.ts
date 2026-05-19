@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { TEAM_AVATAR_IDS } from './team-avatars'
+import { MAX_EDITION_FIELD_COUNT } from './types'
 import {
   isCompleteLocalizedString,
   isCompleteLocalizedStringList,
@@ -21,7 +23,27 @@ export const rejoinTeamSchema = z.object({
   pin: z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits'),
 })
 
+const teamAvatarIdField = z.enum(TEAM_AVATAR_IDS)
+
+export const teamOnboardingAvatarSchema = z.object({
+  avatarId: teamAvatarIdField,
+})
+
+export const teamOnboardingCompleteSchema = z.object({
+  motto: z.string().trim().min(3).max(80),
+  rulesAccepted: z.literal(true),
+})
+
+export const teamOnboardingPatchSchema = z.union([
+  teamOnboardingAvatarSchema,
+  teamOnboardingCompleteSchema,
+])
+
 export const rollSchema = z.object({})
+
+export const devRollSchema = z.object({
+  targetField: z.number().int().min(1),
+})
 
 export const hintSchema = z.object({
   level: z.number().int().min(1).max(3).optional(),
@@ -79,14 +101,25 @@ export const localizedStringListSchema = z.union([
     }),
 ])
 
+export const coopLinkSchema = z.object({
+  partnerSlug: z.string().min(1),
+  token: z.string().min(1),
+  depotId: z.number().int().positive().optional(),
+  turnId: z.number().int().positive().optional(),
+})
+
 export const adminTaskActivitySchema = z
   .object({
-    type: z.enum(['quiz', 'performance']),
+    type: z.enum(['quiz', 'performance', 'coop', 'media']),
     question: localizedStringSchema.optional(),
     inputMode: z.enum(['freeText', 'multipleChoice']).optional(),
     choices: localizedStringListSchema.optional(),
     answers: localizedStringListSchema.optional(),
     text: localizedStringSchema.optional(),
+    instructions: localizedStringSchema.optional(),
+    partnerInstructions: localizedStringSchema.optional(),
+    allowedKinds: z.array(z.enum(['photo', 'video', 'audio'])).optional(),
+    maxDurationSec: z.number().int().positive().optional(),
   })
   .superRefine((activity, ctx) => {
     if (activity.type === 'performance') {
@@ -95,6 +128,43 @@ export const adminTaskActivitySchema = z
           code: z.ZodIssueCode.custom,
           message: 'Performance text is required in de and en',
           path: ['text'],
+        })
+      }
+      return
+    }
+
+    if (activity.type === 'media') {
+      if (!activity.text || !isCompleteLocalizedString(activity.text)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Media task text is required in de and en',
+          path: ['text'],
+        })
+      }
+      const kinds = activity.allowedKinds ?? ['photo']
+      if (kinds.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one media kind is required',
+          path: ['allowedKinds'],
+        })
+      }
+      return
+    }
+
+    if (activity.type === 'coop') {
+      if (!activity.instructions || !isCompleteLocalizedString(activity.instructions)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Co-op initiator instructions are required in de and en',
+          path: ['instructions'],
+        })
+      }
+      if (!activity.partnerInstructions || !isCompleteLocalizedString(activity.partnerInstructions)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Co-op partner instructions are required in de and en',
+          path: ['partnerInstructions'],
         })
       }
       return
@@ -167,9 +237,11 @@ const adminTaskHintsSchema = z.object({
   hint_level_2: localizedStringSchema.optional(),
 })
 
+const adminTaskFieldSchema = z.number().int().positive().max(MAX_EDITION_FIELD_COUNT)
+
 export const adminTaskInputSchema = z
   .object({
-    field: z.number().int().positive(),
+    field: adminTaskFieldSchema,
     slug: optionalTaskSlug,
     map: z.object({ x: z.number(), y: z.number() }).optional(),
     activity: adminTaskActivitySchema,
@@ -184,7 +256,7 @@ export const adminTasksImportSchema = z.object({
 
 export const adminTaskCreateSchema = z
   .object({
-    field: z.number().int().positive(),
+    field: adminTaskFieldSchema,
     map: z.object({ x: z.number(), y: z.number() }).optional(),
     activity: adminTaskActivitySchema,
     slug: optionalTaskSlug,
@@ -193,6 +265,7 @@ export const adminTaskCreateSchema = z
 
 export const adminTaskPatchSchema = z
   .object({
+    field: adminTaskFieldSchema.optional(),
     slug: optionalTaskSlug,
     map: z.object({ x: z.number(), y: z.number() }),
     activity: adminTaskActivitySchema,

@@ -13,12 +13,10 @@ watch(
 </script>
 
 <template>
-  <main v-if="!editionError" class="p-4 max-w-md mx-auto space-y-4 pixel-card p-4">
+  <main v-if="!editionError" class="p-4 max-w-lg mx-auto space-y-4 pixel-card p-4">
     <h1 class="pixel-title text-base">{{ $t('privacy.title') }}</h1>
-    <p class="pixel-body text-sm">
-      {{ $t('privacy.body') }}
-    </p>
-    <NuxtLink :to="pathWithEdition('/join')" class="pixel-body text-sm underline">
+    <LegalPrivacyContent />
+    <NuxtLink :to="pathWithEdition('/')" class="pixel-body text-sm underline">
       {{ $t('common.back') }}
     </NuxtLink>
   </main>

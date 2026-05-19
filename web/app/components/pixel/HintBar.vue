@@ -46,7 +46,7 @@ function onShowNow() {
   <template v-if="embedded">
     <div
       v-if="showNextRow"
-      class="pixel-body text-sm seeking-card__hint-line"
+      class="pixel-body text-sm seeking-card__hint-line seeking-card__hint-line--center"
       role="group"
       :aria-label="t('hints.revealNextAria')"
     >
@@ -55,7 +55,7 @@ function onShowNow() {
         class="seeking-card__hint-timer"
         aria-live="polite"
       >
-        {{ countdownLabel }}
+        {{ t('hints.nextHintIn') }} {{ countdownLabel }}
       </span>
       <span
         v-if="showCountdown && showNowVisible"
@@ -111,7 +111,7 @@ function onShowNow() {
       class="hint-bar__timer"
       aria-live="polite"
     >
-      {{ countdownLabel }}
+      {{ t('hints.nextHintIn') }} {{ countdownLabel }}
     </span>
     <PixelTooltip
       v-if="showNowVisible"
@@ -152,9 +152,8 @@ function onShowNow() {
 
 .hint-bar__timer {
   font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  min-width: 2.75rem;
+  font-size: 8px;
+  line-height: 1.5;
   text-align: left;
   color: var(--pixel-forest-dark);
   font-variant-numeric: tabular-nums;

@@ -24,12 +24,40 @@ function serializeLocalizedString(value) {
   return JSON.stringify(normalizeLocalizedString(value))
 }
 
-function buildActivityPayload(activityRaw) {
+function buildActivityPayload(activityRaw, taskItem) {
   if (activityRaw.type === 'performance') {
     return {
       type: 'performance',
       text: normalizeLocalizedString(activityRaw.text ?? ''),
     }
+  }
+
+  if (activityRaw.type === 'coop') {
+    return {
+      type: 'coop',
+      instructions: normalizeLocalizedString(activityRaw.instructions ?? ''),
+      partnerInstructions: normalizeLocalizedString(activityRaw.partnerInstructions ?? ''),
+    }
+  }
+
+  if (activityRaw.type === 'media') {
+    const payload = {
+      type: 'media',
+      text: normalizeLocalizedString(activityRaw.text ?? ''),
+      allowedKinds: Array.isArray(activityRaw.allowedKinds) && activityRaw.allowedKinds.length > 0
+        ? activityRaw.allowedKinds
+        : ['photo'],
+    }
+    const maxDurationSec =
+      typeof activityRaw.maxDurationSec === 'number' && activityRaw.maxDurationSec > 0
+        ? activityRaw.maxDurationSec
+        : typeof taskItem?.maxDurationSec === 'number' && taskItem.maxDurationSec > 0
+          ? taskItem.maxDurationSec
+          : null
+    if (maxDurationSec != null) {
+      payload.maxDurationSec = maxDurationSec
+    }
+    return payload
   }
 
   const payload = {

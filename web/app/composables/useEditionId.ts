@@ -1,4 +1,6 @@
 import { editionPath, parseEditionSlug } from '#shared/edition-urls'
+import type { LocalizedString } from '#shared/localized'
+import type { EditionColorPalette } from '#shared/pixel-palettes'
 
 export type EditionIdSource = 'route' | 'crew'
 
@@ -8,6 +10,9 @@ export type EditionPublic = {
   name: string
   status: string
   fieldCount: number
+  joinDescription: LocalizedString | null
+  joinLogoUrl: string | null
+  colorPalette: EditionColorPalette
 }
 
 export function useEditionId(options?: { source?: EditionIdSource; required?: boolean }) {
@@ -19,6 +24,7 @@ export function useEditionId(options?: { source?: EditionIdSource; required?: bo
 
   const crewEditionId = ref<number | null>(null)
   const crewEditionSlug = ref<string | null>(null)
+  const crewColorPalette = ref<EditionColorPalette | null>(null)
   const crewSessionLoaded = ref(false)
 
   if (source === 'crew') {
@@ -28,15 +34,21 @@ export function useEditionId(options?: { source?: EditionIdSource; required?: bo
         return
       }
       try {
-        const res = await $fetch<{ editionId: number; editionSlug?: string }>('/api/crew/session', {
+        const res = await $fetch<{
+          editionId: number
+          editionSlug?: string
+          colorPalette?: EditionColorPalette
+        }>('/api/crew/session', {
           credentials: 'include',
         })
         crewEditionId.value = res.editionId
         crewEditionSlug.value = res.editionSlug ?? null
+        crewColorPalette.value = res.colorPalette ?? null
       }
       catch {
         crewEditionId.value = null
         crewEditionSlug.value = null
+        crewColorPalette.value = null
       }
       finally {
         crewSessionLoaded.value = true
@@ -114,6 +126,7 @@ export function useEditionId(options?: { source?: EditionIdSource; required?: bo
     editionSlugLookupSettled,
     crewEditionId,
     crewEditionSlug,
+    crewColorPalette,
     crewSessionLoaded,
     pathWithEdition,
   }

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { isProductionRuntime } from '../utils/runtime-env'
 
 interface VersionInfo {
   version?: string
@@ -31,9 +32,13 @@ const cachedVersion: VersionInfo = readVersionInfo()
 const cachedAppVersion = process.env.NUXT_APP_VERSION
 
 export default defineEventHandler(() => {
+  if (isProductionRuntime()) {
+    return { status: 'ok' as const }
+  }
+
   const config = useRuntimeConfig()
   return {
-    status: 'ok',
+    status: 'ok' as const,
     version: cachedVersion.version ?? cachedAppVersion ?? config.public.appVersion ?? 'unknown',
     buildTime: cachedVersion.buildTime ?? null,
     environment: process.env.NUXT_ENVIRONMENT ?? process.env.NODE_ENV ?? 'development',

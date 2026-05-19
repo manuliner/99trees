@@ -11,9 +11,11 @@ export const RESERVED_EDITION_SLUGS = new Set([
   'api',
   'crew',
   'join',
+  'onboarding',
   'leaderboard',
   'play',
   'privacy',
+  'impressum',
   'rejoin',
   'rules',
   's',
@@ -58,8 +60,14 @@ export function validateEditionSlug(slug: string): string | null {
   return null
 }
 
+/** Player landing URL: logo, sharing link, join / rejoin entry. */
+export function editionLandingPath(slug: string): string {
+  return `/${encodeURIComponent(slug)}`
+}
+
+/** @deprecated Use editionLandingPath */
 export function joinPath(slug: string): string {
-  return `/${encodeURIComponent(slug)}/join`
+  return editionLandingPath(slug)
 }
 
 export function editionPath(slug: string, subpath: string): string {

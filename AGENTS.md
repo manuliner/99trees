@@ -37,7 +37,7 @@ web/
   server/database/  # Drizzle schema + migrations
   server/utils/    # db, *-session cookies, edition-config
   shared/        # types, Zod schemas, scoring (pure — importable both sides)
-  data/          # demo-tasks.json (seed/import sample; legacy demo-stations.json fallback)
+  data/          # demo-tasks.json (seed/import sample; seed falls back to demo-stations.json if present)
   scripts/       # seed.mjs, db-reset.mjs
 docs/            # SCOPE (product spec), DEPLOY, release notes
 .vibe/docs/      # architecture, requirements, design, flows
@@ -66,6 +66,9 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 | Task | Start here |
 |------|------------|
 | Turn rules, roll/scan/confirm | `web/server/services/game.ts` + `web/server/api/turns/` |
+| Co-op depots (async partner) | `web/server/services/coop.ts`, `docs/COOP_V2.md` |
+| Media photo/video submissions | `web/server/services/media-submission.ts`, `web/app/utils/media/` |
+| Team onboarding (avatar, motto) | `web/server/services/team-onboarding.ts`, `web/app/pages/onboarding.vue` |
 | Points formula | `web/shared/scoring.ts` |
 | Team play UI | `web/app/pages/play.vue` |
 | Crew rating / PIN reset | `web/app/pages/crew/`, `web/server/services/crew.ts` |
@@ -76,9 +79,13 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 
 - Migrations run on Nitro boot (`server/plugins/00-database-migration.ts`) — restart dev after schema changes.
 - Performance tasks auto-complete after `performanceTimeoutMinutes` (`server/plugins/01-performance-timeout.ts`).
-- `pnpm db:seed` reads `web/data/demo-tasks.json` (falls back to `demo-stations.json`); import API for admin is YAML-shaped JSON.
+- `pnpm db:seed` reads `web/data/demo-tasks.json` (optional legacy `demo-stations.json` if tasks file missing); import API for admin is YAML-shaped JSON.
+- Task `activity_type`: `quiz`, `performance`, `coop`, `media` — see `web/shared/quiz-payload.ts` and `docs/COOP_V2.md` for coop.
+- Board **overflow** (passed fields without solve) uses `overflow_fields_json` / hellblau tiles (`web/shared/board-overflow.ts`).
+- Media uploads: client transcode via `@ffmpeg/ffmpeg`; server stores under `server/database/uploads/submissions/` (gitignored).
 - iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`TaskQrScanner.vue`).
 - Rejoin invalidates prior team session token (single active device per team).
+- Crew login issues a per-edition session token (migration `0014`); existing crew cookies may need re-login after deploy.
 
 ## Doc index
 
@@ -88,6 +95,7 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 | Module map (where is X?) | [`web/README.md`](web/README.md) → per-folder README |
 | Architecture, flows, design | [`.vibe/docs/`](.vibe/docs/) (`architecture.md`, `play-flow.md`, …) |
 | Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) |
+| Co-op depot flow (Model B) | [`docs/COOP_V2.md`](docs/COOP_V2.md) |
 | Deploy, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md), operator runbook [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Implementation checklist | [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) |
 

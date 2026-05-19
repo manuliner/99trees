@@ -51,10 +51,14 @@
         "y": 52
       },
       "activity": {
-        "type": "performance",
-        "text": {
-          "de": "Stellt euch als Schwarm vor und ruft wie ziehende Vögel.",
-          "en": "Form a flock and call like migrating birds."
+        "type": "coop",
+        "instructions": {
+          "de": "Eröffnet das Co-op-Depot: plant gemeinsam eure nächste Station und bestätigt hier.",
+          "en": "Open the co-op depot: plan your next stop together and confirm here."
+        },
+        "partnerInstructions": {
+          "de": "Ihr seid Partner-Bande: erfüllt die gemeinsame Aufgabe am Depot und scannt danach den Team-QR für Bonus.",
+          "en": "You are the partner team: complete the depot task, then scan the team QR for bonus."
         }
       }
     },
@@ -74,33 +78,14 @@
         "y": 50
       },
       "activity": {
-        "type": "quiz",
-        "inputMode": "multipleChoice",
-        "question": {
-          "de": "Welcher Vogel ist berühmt für V-Formation?",
-          "en": "Which bird is famous for V-formation flight?"
+        "type": "coop",
+        "instructions": {
+          "de": "Am Steg: Taumelt gemeinsam drei Landeschritte wie Vögel aufs Wasser — ohne ins Schilf zu fallen. Bestätigt hier.",
+          "en": "At the dock: wobble together through three landing steps like birds on water—stay out of the reeds. Confirm here."
         },
-        "choices": {
-          "de": [
-            "Gans",
-            "Spatz",
-            "Pinguin",
-            "Eule"
-          ],
-          "en": [
-            "Goose",
-            "Sparrow",
-            "Penguin",
-            "Owl"
-          ]
-        },
-        "answers": {
-          "de": [
-            "Gans"
-          ],
-          "en": [
-            "Goose"
-          ]
+        "partnerInstructions": {
+          "de": "Partner-Bande: Ihr seid die Landungs-Crew. Zählt laut mit, haltet die Balance, dann scannt den Team-QR.",
+          "en": "Partner team: you're the landing crew. Count aloud, keep balance, then scan the team QR."
         }
       }
     },
@@ -122,7 +107,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Tell a one-minute migration story without using the word 'fly'.",
+          "de": "Erzählt eine einminütige Zuggeschichte, ohne das Wort „fliegen“ zu benutzen.",
           "en": "Tell a one-minute migration story without using the word 'fly'."
         }
       }
@@ -146,15 +131,15 @@
         "type": "quiz",
         "inputMode": "multipleChoice",
         "question": {
-          "de": "What do migratory birds use to navigate?",
+          "de": "Womit orientieren sich Zugvögel?",
           "en": "What do migratory birds use to navigate?"
         },
         "choices": {
           "de": [
-            "Stars and the sun",
-            "Only smell",
-            "Underground tunnels",
-            "Traffic signs"
+            "Sterne und Sonne",
+            "Nur Geruch",
+            "Unterirdische Tunnel",
+            "Verkehrsschilder"
           ],
           "en": [
             "Stars and the sun",
@@ -165,7 +150,7 @@
         },
         "answers": {
           "de": [
-            "Stars and the sun"
+            "Sterne und Sonne"
           ],
           "en": [
             "Stars and the sun"
@@ -177,11 +162,11 @@
       "field": 6,
       "slug": "birch-grove",
       "hint_vague": {
-        "de": "White bark stripes the afternoon light.",
+        "de": "Weiße Rinde streift das Nachmittagslicht.",
         "en": "White bark stripes the afternoon light."
       },
       "hint_level_1": {
-        "de": "Northwest corner of the woods.",
+        "de": "Nordwestliche Ecke des Waldes.",
         "en": "Northwest corner of the woods."
       },
       "map": {
@@ -191,7 +176,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Mime building a nest in under thirty seconds.",
+          "de": "Pantomimisch einen Nestbau in unter dreißig Sekunden.",
           "en": "Mime building a nest in under thirty seconds."
         }
       }
@@ -200,11 +185,11 @@
       "field": 7,
       "slug": "bridge-crossing",
       "hint_vague": {
-        "de": "Ropes sway over a shallow brook.",
+        "de": "Seile schwingen über einem flachen Bach.",
         "en": "Ropes sway over a shallow brook."
       },
       "hint_level_1": {
-        "de": "Between meadow and orchard.",
+        "de": "Zwischen Wiese und Obstgarten.",
         "en": "Between meadow and orchard."
       },
       "map": {
@@ -212,20 +197,14 @@
         "y": 60
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "How many demo fields does this edition have?",
-          "en": "How many demo fields does this edition have?"
+        "type": "coop",
+        "instructions": {
+          "de": "Überquert die Brücke im Gleichtakt: ein Schritt pro Flügelschlag. Am anderen Ende gemeinsam bestätigen.",
+          "en": "Cross the bridge in sync: one step per wingbeat. Confirm together on the far side."
         },
-        "answers": {
-          "de": [
-            "50",
-            "fifty"
-          ],
-          "en": [
-            "50",
-            "fifty"
-          ]
+        "partnerInstructions": {
+          "de": "Ihr führt die Partner-Bande: Gebt den Rhythmus vor, fangt Stolperer auf, dann Team-QR scannen.",
+          "en": "Lead your partner team: set the rhythm, catch stumbles, then scan the team QR."
         }
       }
     },
@@ -233,11 +212,11 @@
       "field": 8,
       "slug": "orchard-row",
       "hint_vague": {
-        "de": "Fallen fruit scents the path.",
+        "de": "Fallobst duftet auf dem Weg.",
         "en": "Fallen fruit scents the path."
       },
       "hint_level_1": {
-        "de": "East side, rows of old apple trees.",
+        "de": "Ostseite, Reihen alter Apfelbäume.",
         "en": "East side, rows of old apple trees."
       },
       "map": {
@@ -245,22 +224,10 @@
         "y": 62
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "What season do many birds migrate south?",
-          "en": "What season do many birds migrate south?"
-        },
-        "answers": {
-          "de": [
-            "autumn",
-            "fall",
-            "winter"
-          ],
-          "en": [
-            "autumn",
-            "fall",
-            "winter"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Pflückt imaginäre Äpfel von den untersten Ästen und reicht sie die Reihe runter — nichts darf fallen.",
+          "en": "Pick imaginary apples from the lowest branches and pass them down the row—nothing may drop."
         }
       }
     },
@@ -268,11 +235,11 @@
       "field": 9,
       "slug": "stage-back",
       "hint_vague": {
-        "de": "Cables and cases hide behind curtains.",
+        "de": "Kabel und Kisten verstecken sich hinter Vorhängen.",
         "en": "Cables and cases hide behind curtains."
       },
       "hint_level_1": {
-        "de": "Behind the main stage, crew entrance.",
+        "de": "Hinter der Hauptbühne, Crew-Eingang.",
         "en": "Behind the main stage, crew entrance."
       },
       "map": {
@@ -282,7 +249,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Perform a ten-second bird dance for the crew.",
+          "de": "Führt einen zehnsekündigen Vogeltanz für die Crew auf.",
           "en": "Perform a ten-second bird dance for the crew."
         }
       }
@@ -291,11 +258,11 @@
       "field": 10,
       "slug": "info-booth",
       "hint_vague": {
-        "de": "Pamphlets flap in the breeze.",
+        "de": "Flyer flattern im Wind.",
         "en": "Pamphlets flap in the breeze."
       },
       "hint_level_1": {
-        "de": "Near registration, look for the green awning.",
+        "de": "Nahe der Anmeldung, sucht die grüne Markise.",
         "en": "Near registration, look for the green awning."
       },
       "map": {
@@ -305,7 +272,7 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What does Zugvögel mean in English?",
+          "de": "Wie heißt „Zugvögel“ auf Englisch?",
           "en": "What does Zugvögel mean in English?"
         },
         "answers": {
@@ -326,11 +293,11 @@
       "field": 11,
       "slug": "hay-bale-maze",
       "hint_vague": {
-        "de": "Golden walls block the horizon.",
+        "de": "Goldene Wände versperren den Horizont.",
         "en": "Golden walls block the horizon."
       },
       "hint_level_1": {
-        "de": "South field, follow the straw scent.",
+        "de": "Südliches Feld, folgt dem Strohduft.",
         "en": "South field, follow the straw scent."
       },
       "map": {
@@ -340,7 +307,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Navigate your team through the maze without speaking.",
+          "de": "Navigiert euer Team stumm durch das Labyrinth.",
           "en": "Navigate your team through the maze without speaking."
         }
       }
@@ -349,11 +316,11 @@
       "field": 12,
       "slug": "observation-tower",
       "hint_vague": {
-        "de": "Metal stairs climb above the treeline.",
+        "de": "Metalltreppen führen über die Baumkronen.",
         "en": "Metal stairs climb above the treeline."
       },
       "hint_level_1": {
-        "de": "Southeast, count fifty steps up.",
+        "de": "Südosten, zählt fünfzig Stufen nach oben.",
         "en": "Southeast, count fifty steps up."
       },
       "map": {
@@ -363,16 +330,16 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "Name one tool birds do NOT use to migrate.",
+          "de": "Nennt ein Werkzeug, das Vögel zum Ziehen NICHT benutzen.",
           "en": "Name one tool birds do NOT use to migrate."
         },
         "answers": {
           "de": [
-            "compass",
+            "kompass",
             "gps",
-            "map",
+            "karte",
             "smartphone",
-            "suitcase"
+            "koffer"
           ],
           "en": [
             "compass",
@@ -388,11 +355,11 @@
       "field": 13,
       "slug": "herb-garden",
       "hint_vague": {
-        "de": "Mint and rosemary line narrow beds.",
+        "de": "Minze und Rosmarin säumen schmale Beete.",
         "en": "Mint and rosemary line narrow beds."
       },
       "hint_level_1": {
-        "de": "West of the kitchen tents.",
+        "de": "Westlich der Küchenzelte.",
         "en": "West of the kitchen tents."
       },
       "map": {
@@ -400,24 +367,14 @@
         "y": 66
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Which sense helps birds find food on the ground?",
-          "en": "Which sense helps birds find food on the ground?"
+        "type": "coop",
+        "instructions": {
+          "de": "Schnuppert drei Kräuter, nennt je einen Vogel der sie mag — eure Partner-Bande notiert mit. Hier bestätigen.",
+          "en": "Sniff three herbs, name a bird that likes each—your partner band writes them down. Confirm here."
         },
-        "answers": {
-          "de": [
-            "sight",
-            "vision",
-            "smell",
-            "hearing"
-          ],
-          "en": [
-            "sight",
-            "vision",
-            "smell",
-            "hearing"
-          ]
+        "partnerInstructions": {
+          "de": "Partner-Bande: Sammelt die Namen, lest sie der Bande vor. Abschluss: Team-QR für Bonus scannen.",
+          "en": "Partner team: collect the names, read them to your band. Finish with a team QR scan for bonus."
         }
       }
     },
@@ -425,11 +382,11 @@
       "field": 14,
       "slug": "lantern-path",
       "hint_vague": {
-        "de": "Paper lights guide the evening walk.",
+        "de": "Papierlaternen leiten den Abendspaziergang.",
         "en": "Paper lights guide the evening walk."
       },
       "hint_level_1": {
-        "de": "Curved path between tents and lake.",
+        "de": "Geschwungener Weg zwischen Zelten und See.",
         "en": "Curved path between tents and lake."
       },
       "map": {
@@ -439,7 +396,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Carry an imaginary egg safely across the path.",
+          "de": "Tragt ein imaginäres Ei sicher über den Pfad.",
           "en": "Carry an imaginary egg safely across the path."
         }
       }
@@ -448,11 +405,11 @@
       "field": 15,
       "slug": "drum-circle",
       "hint_vague": {
-        "de": "Rhythm echoes from packed earth.",
+        "de": "Rhythmus hallt vom festgetretenen Boden.",
         "en": "Rhythm echoes from packed earth."
       },
       "hint_level_1": {
-        "de": "Open ground near the workshop yurt.",
+        "de": "Freie Fläche beim Workshop-Jurten.",
         "en": "Open ground near the workshop yurt."
       },
       "map": {
@@ -462,7 +419,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Create a wingbeat rhythm with hands and feet for fifteen seconds.",
+          "de": "Erzeugt fünfzehn Sekunden lang einen Flügelschlag-Rhythmus mit Händen und Füßen.",
           "en": "Create a wingbeat rhythm with hands and feet for fifteen seconds."
         }
       }
@@ -471,11 +428,11 @@
       "field": 16,
       "slug": "workshop-yurt",
       "hint_vague": {
-        "de": "Fabric walls billow with craft supplies.",
+        "de": "Stoffwände wehen voller Bastelmaterial.",
         "en": "Fabric walls billow with craft supplies."
       },
       "hint_level_1": {
-        "de": "North meadow, round tent with flags.",
+        "de": "Nordwiese, rundes Zelt mit Fahnen.",
         "en": "North meadow, round tent with flags."
       },
       "map": {
@@ -485,16 +442,17 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What material do most birds use for nests?",
+          "de": "Welches Material nutzen die meisten Vögel für Nester?",
           "en": "What material do most birds use for nests?"
         },
         "answers": {
           "de": [
-            "twigs",
-            "grass",
-            "leaves",
-            "mud",
-            "feathers"
+            "zweige",
+            "äste",
+            "gras",
+            "blätter",
+            "lehm",
+            "federn"
           ],
           "en": [
             "twigs",
@@ -510,11 +468,11 @@
       "field": 17,
       "slug": "compost-corner",
       "hint_vague": {
-        "de": "Rich soil steams behind the kitchens.",
+        "de": "Kräftiger Boden dampft hinter den Küchen.",
         "en": "Rich soil steams behind the kitchens."
       },
       "hint_level_1": {
-        "de": "Back of food court, follow the wheelbarrow tracks.",
+        "de": "Hinter dem Food Court, folgt den Schubkarrenspuren.",
         "en": "Back of food court, follow the wheelbarrow tracks."
       },
       "map": {
@@ -522,20 +480,10 @@
         "y": 70
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "What do birds eat that starts with 'w'?",
-          "en": "What do birds eat that starts with 'w'?"
-        },
-        "answers": {
-          "de": [
-            "worms",
-            "worm"
-          ],
-          "en": [
-            "worms",
-            "worm"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Spielt in zehn Sekunden den Wurm, der aus Kompost frisches Bodenleben wird — charmant ekelig.",
+          "en": "In ten seconds, act the worm turning compost into rich soil—charmingly gross."
         }
       }
     },
@@ -543,11 +491,11 @@
       "field": 18,
       "slug": "flag-pole",
       "hint_vague": {
-        "de": "Colorful cloth snaps at the crossroads.",
+        "de": "Bunte Tücher knattern an der Kreuzung.",
         "en": "Colorful cloth snaps at the crossroads."
       },
       "hint_level_1": {
-        "de": "Center of the four main paths.",
+        "de": "Mitte der vier Hauptwege.",
         "en": "Center of the four main paths."
       },
       "map": {
@@ -557,7 +505,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Salute the flag and name three birds native to this region.",
+          "de": "Salutiert die Fahne und nennt drei heimische Vogelarten.",
           "en": "Salute the flag and name three birds native to this region."
         }
       }
@@ -566,11 +514,11 @@
       "field": 19,
       "slug": "bee-hives",
       "hint_vague": {
-        "de": "A low hum comes from painted boxes.",
+        "de": "Ein leises Summen kommt aus bemalten Kästen.",
         "en": "A low hum comes from painted boxes."
       },
       "hint_level_1": {
-        "de": "East orchard fence, stay calm and quiet.",
+        "de": "Östlicher Obstgartenzaun — ruhig und leise bleiben.",
         "en": "East orchard fence, stay calm and quiet."
       },
       "map": {
@@ -580,15 +528,15 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "Do bees migrate like birds?",
+          "de": "Wandern Bienen wie Vögel?",
           "en": "Do bees migrate like birds?"
         },
         "answers": {
           "de": [
-            "no",
-            "nope",
-            "not really",
-            "some do"
+            "nein",
+            "nee",
+            "nicht wirklich",
+            "manchmal"
           ],
           "en": [
             "no",
@@ -603,11 +551,11 @@
       "field": 20,
       "slug": "stone-circle",
       "hint_vague": {
-        "de": "Ancient rocks form a perfect ring.",
+        "de": "Alte Steine bilden einen perfekten Kreis.",
         "en": "Ancient rocks form a perfect ring."
       },
       "hint_level_1": {
-        "de": "West hilltop, moss on every stone.",
+        "de": "Westlicher Hügelkamm, Moos auf jedem Stein.",
         "en": "West hilltop, moss on every stone."
       },
       "map": {
@@ -617,7 +565,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Stand in the circle and improvise a dawn chorus.",
+          "de": "Stellt euch in den Kreis und improvisiert einen Morgenchor.",
           "en": "Stand in the circle and improvise a dawn chorus."
         }
       }
@@ -626,11 +574,11 @@
       "field": 21,
       "slug": "rain-barrel",
       "hint_vague": {
-        "de": "Water drips from a green container.",
+        "de": "Wasser tropft aus einem grünen Behälter.",
         "en": "Water drips from a green container."
       },
       "hint_level_1": {
-        "de": "Behind the sustainability tent.",
+        "de": "Hinter dem Nachhaltigkeitszelt.",
         "en": "Behind the sustainability tent."
       },
       "map": {
@@ -640,15 +588,15 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What do birds need besides food on long flights?",
+          "de": "Was brauchen Vögel auf langen Flügen außer Futter?",
           "en": "What do birds need besides food on long flights?"
         },
         "answers": {
           "de": [
-            "water",
-            "rest",
-            "shelter",
-            "fat reserves"
+            "wasser",
+            "ruhe",
+            "schutz",
+            "fettreserven"
           ],
           "en": [
             "water",
@@ -663,11 +611,11 @@
       "field": 22,
       "slug": "climbing-wall",
       "hint_vague": {
-        "de": "Colored holds dot a tall plywood face.",
+        "de": "Farbige Griffe punktieren eine hohe Sperrholzwand.",
         "en": "Colored holds dot a tall plywood face."
       },
       "hint_level_1": {
-        "de": "Adventure zone, north of the zip line.",
+        "de": "Abenteuerzone, nördlich der Seilrutsche.",
         "en": "Adventure zone, north of the zip line."
       },
       "map": {
@@ -677,7 +625,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Demonstrate how a bird lands—soft knees, wings out.",
+          "de": "Zeigt, wie ein Vogel landet — weiche Knie, Flügel ausgebreitet.",
           "en": "Demonstrate how a bird lands—soft knees, wings out."
         }
       }
@@ -686,11 +634,11 @@
       "field": 23,
       "slug": "zip-line-start",
       "hint_vague": {
-        "de": "Harnesses hang from a steel cable.",
+        "de": "Gurte hängen an einem Stahlseil.",
         "en": "Harnesses hang from a steel cable."
       },
       "hint_level_1": {
-        "de": "Top of the adventure hill.",
+        "de": "Gipfel des Abenteuerhügels.",
         "en": "Top of the adventure hill."
       },
       "map": {
@@ -700,13 +648,13 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "Which bird is the fastest in a dive?",
+          "de": "Welcher Vogel ist im Sturzflug am schnellsten?",
           "en": "Which bird is the fastest in a dive?"
         },
         "answers": {
           "de": [
-            "peregrine falcon",
-            "falcon",
+            "wanderfalke",
+            "falke",
             "peregrine"
           ],
           "en": [
@@ -721,11 +669,11 @@
       "field": 24,
       "slug": "meditation-tent",
       "hint_vague": {
-        "de": "Silence is requested inside the blue fabric.",
+        "de": "In der blauen Hülle wird Stille erbeten.",
         "en": "Silence is requested inside the blue fabric."
       },
       "hint_level_1": {
-        "de": "Quiet zone, lakeside west.",
+        "de": "Ruhezone, westlich am See.",
         "en": "Quiet zone, lakeside west."
       },
       "map": {
@@ -735,7 +683,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Sit still for twenty seconds and breathe like a resting stork.",
+          "de": "Sitzt zwanzig Sekunden still und atmet wie ein ruhender Storch.",
           "en": "Sit still for twenty seconds and breathe like a resting stork."
         }
       }
@@ -744,11 +692,11 @@
       "field": 25,
       "slug": "craft-market",
       "hint_vague": {
-        "de": "Handmade goods cover long tables.",
+        "de": "Handgemachtes bedeckt lange Tische.",
         "en": "Handmade goods cover long tables."
       },
       "hint_level_1": {
-        "de": "Main avenue, between food and music.",
+        "de": "Hauptallee, zwischen Essen und Musik.",
         "en": "Main avenue, between food and music."
       },
       "map": {
@@ -756,22 +704,14 @@
         "y": 72
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "What do you scan at each station?",
-          "en": "What do you scan at each station?"
+        "type": "coop",
+        "instructions": {
+          "de": "Am Markt: Tauscht euch kurz mit einer anderen Bande aus — was ist euer Team-Vogel? Danach hier bestätigen.",
+          "en": "At the market: swap with another band—what's your team bird? Then confirm here."
         },
-        "answers": {
-          "de": [
-            "qr",
-            "qr code",
-            "code"
-          ],
-          "en": [
-            "qr",
-            "qr code",
-            "code"
-          ]
+        "partnerInstructions": {
+          "de": "Partner-Bande: Sucht die andere Bande, stellt vor, hört zu. Abschluss: Team-QR scannen.",
+          "en": "Partner team: find the other band, introduce yourselves, listen. Finish with a team QR scan."
         }
       }
     },
@@ -779,11 +719,11 @@
       "field": 26,
       "slug": "face-paint-station",
       "hint_vague": {
-        "de": "Mirrors reflect bright feathers on cheeks.",
+        "de": "Spiegel reflektieren bunte Federn auf Wangen.",
         "en": "Mirrors reflect bright feathers on cheeks."
       },
       "hint_level_1": {
-        "de": "Family area near the playground.",
+        "de": "Familienbereich beim Spielplatz.",
         "en": "Family area near the playground."
       },
       "map": {
@@ -793,7 +733,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Paint one teammate's cheek with an imaginary beak.",
+          "de": "„Malt“ einem Teammitglied mit imaginärem Schnabel die Wange an.",
           "en": "Paint one teammate's cheek with an imaginary beak."
         }
       }
@@ -802,11 +742,11 @@
       "field": 27,
       "slug": "playground-nest",
       "hint_vague": {
-        "de": "Rope nets sag like giant baskets.",
+        "de": "Seilnetze hängen wie riesige Körbe durch.",
         "en": "Rope nets sag like giant baskets."
       },
       "hint_level_1": {
-        "de": "Kids zone, look for the wooden eggs.",
+        "de": "Kinderzone, sucht die Holzeier.",
         "en": "Kids zone, look for the wooden eggs."
       },
       "map": {
@@ -814,28 +754,10 @@
         "y": 48
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "How many eggs might a songbird lay?",
-          "en": "How many eggs might a songbird lay?"
-        },
-        "answers": {
-          "de": [
-            "3",
-            "4",
-            "5",
-            "three",
-            "four",
-            "five"
-          ],
-          "en": [
-            "3",
-            "4",
-            "5",
-            "three",
-            "four",
-            "five"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Sitzt im Nest und schlüpft: Auf drei knackt ihr gemeinsam aus imaginären Eierschalen.",
+          "en": "Sit in the nest and hatch: on three, crack out of imaginary shells together."
         }
       }
     },
@@ -843,11 +765,11 @@
       "field": 28,
       "slug": "solar-panel-array",
       "hint_vague": {
-        "de": "Glass panels tilt toward the sun.",
+        "de": "Glasscheiben neigen sich zur Sonne.",
         "en": "Glass panels tilt toward the sun."
       },
       "hint_level_1": {
-        "de": "South edge of the tech area.",
+        "de": "Südlicher Rand des Technikbereichs.",
         "en": "South edge of the tech area."
       },
       "map": {
@@ -855,20 +777,10 @@
         "y": 44
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Birds often migrate toward which direction in Europe for winter?",
-          "en": "Birds often migrate toward which direction in Europe for winter?"
-        },
-        "answers": {
-          "de": [
-            "south",
-            "southward"
-          ],
-          "en": [
-            "south",
-            "southward"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Breitet die Flügel zur Sonne und haltet die Pose — Migrations-Aufladung für zwanzig Sekunden.",
+          "en": "Spread your wings toward the sun and hold the pose—a twenty-second migration recharge."
         }
       }
     },
@@ -876,11 +788,11 @@
       "field": 29,
       "slug": "radio-tower",
       "hint_vague": {
-        "de": "Antennas blink red at night.",
+        "de": "Antennen blinken nachts rot.",
         "en": "Antennas blink red at night."
       },
       "hint_level_1": {
-        "de": "Far east perimeter fence.",
+        "de": "Weit östlich am Außenzaun.",
         "en": "Far east perimeter fence."
       },
       "map": {
@@ -888,22 +800,28 @@
         "y": 48
       },
       "activity": {
-        "type": "performance",
+        "type": "media",
         "text": {
-          "de": "Send a morse-style wing signal to another team.",
-          "en": "Send a morse-style wing signal to another team."
-        }
+          "de": "Macht ein Foto vom roten Blinklicht am Sendemast.",
+          "en": "Take a photo of the red beacon light on the radio tower."
+        },
+        "allowedKinds": [
+          "photo",
+          "video",
+          "audio"
+        ],
+        "maxDurationSec": 60
       }
     },
     {
       "field": 30,
       "slug": "green-room",
       "hint_vague": {
-        "de": "Artists wait behind a black door.",
+        "de": "Künstler warten hinter einer schwarzen Tür.",
         "en": "Artists wait behind a black door."
       },
       "hint_level_1": {
-        "de": "Stage left, follow the 'crew only' sign.",
+        "de": "Bühnenlinks, folgt dem Schild „nur Crew“.",
         "en": "Stage left, follow the 'crew only' sign."
       },
       "map": {
@@ -913,14 +831,15 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What do crews rate after a performance task?",
+          "de": "Was bewertet die Crew nach einer Performance-Aufgabe?",
           "en": "What do crews rate after a performance task?"
         },
         "answers": {
           "de": [
             "performance",
-            "act",
-            "show"
+            "auftritt",
+            "show",
+            "vorführung"
           ],
           "en": [
             "performance",
@@ -934,11 +853,11 @@
       "field": 31,
       "slug": "first-aid-tent",
       "hint_vague": {
-        "de": "A red cross marks the canvas.",
+        "de": "Ein rotes Kreuz markiert das Zelt.",
         "en": "A red cross marks the canvas."
       },
       "hint_level_1": {
-        "de": "Near main entrance, always staffed.",
+        "de": "Nahe dem Haupteingang, immer besetzt.",
         "en": "Near main entrance, always staffed."
       },
       "map": {
@@ -948,15 +867,16 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "If injured during play, who should you find first?",
+          "de": "Bei Verletzung im Spiel — wen sucht ihr zuerst?",
           "en": "If injured during play, who should you find first?"
         },
         "answers": {
           "de": [
-            "medic",
-            "first aid",
+            "sanitäter",
+            "erste hilfe",
             "crew",
-            "staff"
+            "personal",
+            "medic"
           ],
           "en": [
             "medic",
@@ -971,11 +891,11 @@
       "field": 32,
       "slug": "lost-and-found",
       "hint_vague": {
-        "de": "Tagged jackets pile on a rack.",
+        "de": "Beschriftete Jacken stapeln sich auf einer Stange.",
         "en": "Tagged jackets pile on a rack."
       },
       "hint_level_1": {
-        "de": "Info booth annex, small wooden shed.",
+        "de": "Anbau zum Infostand, kleiner Holzschuppen.",
         "en": "Info booth annex, small wooden shed."
       },
       "map": {
@@ -985,7 +905,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Describe a lost feather in three poetic lines.",
+          "de": "Beschreibt eine verlorene Feder in drei poetischen Zeilen.",
           "en": "Describe a lost feather in three poetic lines."
         }
       }
@@ -994,11 +914,11 @@
       "field": 33,
       "slug": "bike-rack",
       "hint_vague": {
-        "de": "Metal loops hold festival wheels.",
+        "de": "Metallschlaufen halten Festivalräder.",
         "en": "Metal loops hold festival wheels."
       },
       "hint_level_1": {
-        "de": "Parking strip west of the gate.",
+        "de": "Parkstreifen westlich des Tors.",
         "en": "Parking strip west of the gate."
       },
       "map": {
@@ -1006,34 +926,26 @@
         "y": 38
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Can ostriches fly?",
-          "en": "Can ostriches fly?"
+        "type": "media",
+        "text": {
+          "de": "Filmt kurz die Fahrradständer am Westtor (max. 60 Sekunden).",
+          "en": "Record a short clip of the bike racks at the west gate (max. 60 seconds)."
         },
-        "answers": {
-          "de": [
-            "no",
-            "nope",
-            "never"
-          ],
-          "en": [
-            "no",
-            "nope",
-            "never"
-          ]
-        }
+        "allowedKinds": [
+          "video"
+        ],
+        "maxDurationSec": 60
       }
     },
     {
       "field": 34,
       "slug": "shower-block",
       "hint_vague": {
-        "de": "Steam rises from wooden cubicles.",
+        "de": "Dampf steigt aus Holzkabinen.",
         "en": "Steam rises from wooden cubicles."
       },
       "hint_level_1": {
-        "de": "Camping zone B, follow the hose.",
+        "de": "Campingzone B, folgt dem Schlauch.",
         "en": "Camping zone B, follow the hose."
       },
       "map": {
@@ -1043,7 +955,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Act out a bird bathing in a puddle—no real water needed.",
+          "de": "Spielt einen Vogel, der in einer Pfütze badet — kein echtes Wasser nötig.",
           "en": "Act out a bird bathing in a puddle—no real water needed."
         }
       }
@@ -1052,11 +964,11 @@
       "field": 35,
       "slug": "recycling-bins",
       "hint_vague": {
-        "de": "Three colors stand in a row.",
+        "de": "Drei Farben stehen in einer Reihe.",
         "en": "Three colors stand in a row."
       },
       "hint_level_1": {
-        "de": "Every major intersection; pick the central one.",
+        "de": "An jeder großen Kreuzung — nehmt die mittlere.",
         "en": "Every major intersection; pick the central one."
       },
       "map": {
@@ -1064,22 +976,10 @@
         "y": 50
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Which bin is usually for plastic at festivals?",
-          "en": "Which bin is usually for plastic at festivals?"
-        },
-        "answers": {
-          "de": [
-            "yellow",
-            "blue",
-            "green"
-          ],
-          "en": [
-            "yellow",
-            "blue",
-            "green"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Sortiert drei imaginäre Festival-Reste in die richtigen Tonnen — jedes Stück laut ansagen.",
+          "en": "Sort three imaginary festival leftovers into the right bins—call out each item."
         }
       }
     },
@@ -1087,11 +987,11 @@
       "field": 36,
       "slug": "sound-check-booth",
       "hint_vague": {
-        "de": "Headphones and sliders glow in the dark.",
+        "de": "Kopfhörer und Regler leuchten im Dunkeln.",
         "en": "Headphones and sliders glow in the dark."
       },
       "hint_level_1": {
-        "de": "Stage right, behind the speakers.",
+        "de": "Bühnenrechts, hinter den Lautsprechern.",
         "en": "Stage right, behind the speakers."
       },
       "map": {
@@ -1101,7 +1001,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Hum the highest note your team can reach together.",
+          "de": "Summt gemeinsam die höchste Note, die eure Bande erreichen kann.",
           "en": "Hum the highest note your team can reach together."
         }
       }
@@ -1110,11 +1010,11 @@
       "field": 37,
       "slug": "merch-stand",
       "hint_vague": {
-        "de": "T-shirts flap on a rope line.",
+        "de": "T-Shirts flattern an einer Leine.",
         "en": "T-shirts flap on a rope line."
       },
       "hint_level_1": {
-        "de": "Avenue end cap near the north gate.",
+        "de": "Alleeende nahe dem Nordtor.",
         "en": "Avenue end cap near the north gate."
       },
       "map": {
@@ -1122,20 +1022,10 @@
         "y": 70
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "What number appears in the festival brand name?",
-          "en": "What number appears in the festival brand name?"
-        },
-        "answers": {
-          "de": [
-            "99",
-            "ninety-nine"
-          ],
-          "en": [
-            "99",
-            "ninety-nine"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Schlagt eure beste Bande-auf-Tour-Pose mit imaginärem Festival-Shirt ein.",
+          "en": "Strike your best band-on-tour pose wearing an imaginary festival shirt."
         }
       }
     },
@@ -1143,11 +1033,11 @@
       "field": 38,
       "slug": "vip-fence",
       "hint_vague": {
-        "de": "A white barrier separates the lawn.",
+        "de": "Eine weiße Absperrung trennt die Wiese.",
         "en": "A white barrier separates the lawn."
       },
       "hint_level_1": {
-        "de": "Front of stage, look for wristband check.",
+        "de": "Vor der Bühne, sucht die Armband-Kontrolle.",
         "en": "Front of stage, look for wristband check."
       },
       "map": {
@@ -1155,22 +1045,10 @@
         "y": 78
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Are VIP areas part of the field game?",
-          "en": "Are VIP areas part of the field game?"
-        },
-        "answers": {
-          "de": [
-            "no",
-            "nope",
-            "not for teams"
-          ],
-          "en": [
-            "no",
-            "nope",
-            "not for teams"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Winkt der Bühne zu hinter dem Zaun — für diese Aktion braucht ihr kein VIP-Armband.",
+          "en": "Wave to the stage crowd from behind the fence—no VIP wristband needed for this act."
         }
       }
     },
@@ -1178,11 +1056,11 @@
       "field": 39,
       "slug": "food-truck-row",
       "hint_vague": {
-        "de": "Grill smoke drifts down the lane.",
+        "de": "Grillrauch zieht die Gasse entlang.",
         "en": "Grill smoke drifts down the lane."
       },
       "hint_level_1": {
-        "de": "East avenue, smell of falafel and fries.",
+        "de": "Ostallee, Duft von Falafel und Pommes.",
         "en": "East avenue, smell of falafel and fries."
       },
       "map": {
@@ -1192,7 +1070,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Peck at imaginary seeds for ten seconds without using hands.",
+          "de": "Pikt zehn Sekunden lang imaginäre Körner — ohne die Hände zu benutzen.",
           "en": "Peck at imaginary seeds for ten seconds without using hands."
         }
       }
@@ -1201,11 +1079,11 @@
       "field": 40,
       "slug": "coffee-cart",
       "hint_vague": {
-        "de": "Espresso hisses beside a small cart.",
+        "de": "Espresso zischt neben einem kleinen Wagen.",
         "en": "Espresso hisses beside a small cart."
       },
       "hint_level_1": {
-        "de": "Morning queue near the workshop yurt.",
+        "de": "Morgenschlange beim Workshop-Jurten.",
         "en": "Morning queue near the workshop yurt."
       },
       "map": {
@@ -1215,14 +1093,15 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What time of day do many birds sing loudest?",
+          "de": "Zu welcher Tageszeit singen viele Vögel am lautesten?",
           "en": "What time of day do many birds sing loudest?"
         },
         "answers": {
           "de": [
-            "dawn",
-            "morning",
-            "sunrise"
+            "morgendämmerung",
+            "morgen",
+            "sonnenaufgang",
+            "früh"
           ],
           "en": [
             "dawn",
@@ -1236,11 +1115,11 @@
       "field": 41,
       "slug": "yoga-mat-field",
       "hint_vague": {
-        "de": "Colorful rectangles cover the grass.",
+        "de": "Bunte Rechtecke bedecken die Wiese.",
         "en": "Colorful rectangles cover the grass."
       },
       "hint_level_1": {
-        "de": "Wellness glade, sunrise sessions.",
+        "de": "Wellnesslichtung, Sessions bei Sonnenaufgang.",
         "en": "Wellness glade, sunrise sessions."
       },
       "map": {
@@ -1250,7 +1129,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Hold a one-legged 'flamingo' pose for fifteen seconds per person.",
+          "de": "Haltet pro Person fünfzehn Sekunden die einbeinige „Flamingo“-Pose.",
           "en": "Hold a one-legged 'flamingo' pose for fifteen seconds per person."
         }
       }
@@ -1259,11 +1138,11 @@
       "field": 42,
       "slug": "archery-range",
       "hint_vague": {
-        "de": "Targets wait behind a safety net.",
+        "de": "Ziele warten hinter einem Sicherheitsnetz.",
         "en": "Targets wait behind a safety net."
       },
       "hint_level_1": {
-        "de": "Northwest adventure strip—do not cross the rope.",
+        "de": "Nordwestlicher Abenteuerstreifen — nicht über das Seil.",
         "en": "Northwest adventure strip—do not cross the rope."
       },
       "map": {
@@ -1271,22 +1150,10 @@
         "y": 78
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "Which bird has the widest wingspan?",
-          "en": "Which bird has the widest wingspan?"
-        },
-        "answers": {
-          "de": [
-            "albatross",
-            "wandering albatross",
-            "condor"
-          ],
-          "en": [
-            "albatross",
-            "wandering albatross",
-            "condor"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Breitet die Arme so weit wie der größte Vogel, den ihr kennt — zehn Sekunden halten.",
+          "en": "Spread your arms as wide as the biggest bird you know—hold for ten seconds."
         }
       }
     },
@@ -1294,11 +1161,11 @@
       "field": 43,
       "slug": "pottery-kiln",
       "hint_vague": {
-        "de": "Heat shimmers from a brick oven.",
+        "de": "Hitze flimmert aus einem Ziegelofen.",
         "en": "Heat shimmers from a brick oven."
       },
       "hint_level_1": {
-        "de": "Craft village, listen for the bellows.",
+        "de": "Handwerkerdorf, hört auf die Blasebälge.",
         "en": "Craft village, listen for the bellows."
       },
       "map": {
@@ -1308,7 +1175,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Shape an imaginary egg cup and name your bird species.",
+          "de": "Formt einen imaginären Eierbecher und nennt eure Vogelart.",
           "en": "Shape an imaginary egg cup and name your bird species."
         }
       }
@@ -1317,11 +1184,11 @@
       "field": 44,
       "slug": "storytelling-log",
       "hint_vague": {
-        "de": "Everyone sits on a fallen trunk.",
+        "de": "Alle sitzen auf einem umgefallenen Stamm.",
         "en": "Everyone sits on a fallen trunk."
       },
       "hint_level_1": {
-        "de": "Shaded grove east of the stone circle.",
+        "de": "Schattiger Hain östlich des Steinkreises.",
         "en": "Shaded grove east of the stone circle."
       },
       "map": {
@@ -1331,7 +1198,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Each teammate adds one sentence to a migration epic.",
+          "de": "Jedes Teammitglied fügt einen Satz zu einem Zugepos hinzu.",
           "en": "Each teammate adds one sentence to a migration epic."
         }
       }
@@ -1340,11 +1207,11 @@
       "field": 45,
       "slug": "stargazing-blanket",
       "hint_vague": {
-        "de": "Blankets spread where the sky opens widest.",
+        "de": "Decken liegen dort, wo der Himmel am weitesten offen ist.",
         "en": "Blankets spread where the sky opens widest."
       },
       "hint_level_1": {
-        "de": "Open north field after sunset.",
+        "de": "Offenes Nordfeld nach Sonnenuntergang.",
         "en": "Open north field after sunset."
       },
       "map": {
@@ -1354,14 +1221,14 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "Which constellation is also called the Big Dipper?",
+          "de": "Welches Sternbild heißt auch Großer Wagen?",
           "en": "Which constellation is also called the Big Dipper?"
         },
         "answers": {
           "de": [
-            "ursa major",
-            "the plough",
-            "big bear"
+            "großer wagen",
+            "großer bär",
+            "ursa major"
           ],
           "en": [
             "ursa major",
@@ -1375,11 +1242,11 @@
       "field": 46,
       "slug": "ferry-landing",
       "hint_vague": {
-        "de": "A small pier juts into the lake.",
+        "de": "Ein kleiner Steg ragt in den See.",
         "en": "A small pier juts into the lake."
       },
       "hint_level_1": {
-        "de": "North shore, look for the rowboats.",
+        "de": "Nordufer, sucht die Ruderboote.",
         "en": "North shore, look for the rowboats."
       },
       "map": {
@@ -1389,7 +1256,7 @@
       "activity": {
         "type": "performance",
         "text": {
-          "de": "Row in sync for twenty seconds without a boat.",
+          "de": "Rudert zwanzig Sekunden lang synchron — ohne Boot.",
           "en": "Row in sync for twenty seconds without a boat."
         }
       }
@@ -1398,11 +1265,11 @@
       "field": 47,
       "slug": "willow-tunnel",
       "hint_vague": {
-        "de": "Living branches arch overhead.",
+        "de": "Lebende Äste wölben sich über dem Weg.",
         "en": "Living branches arch overhead."
       },
       "hint_level_1": {
-        "de": "Garden path between herb beds and lake.",
+        "de": "Gartenpfad zwischen Kräuterbeeten und See.",
         "en": "Garden path between herb beds and lake."
       },
       "map": {
@@ -1410,24 +1277,10 @@
         "y": 58
       },
       "activity": {
-        "type": "quiz",
-        "question": {
-          "de": "What do ducklings follow when they hatch?",
-          "en": "What do ducklings follow when they hatch?"
-        },
-        "answers": {
-          "de": [
-            "mother",
-            "mom",
-            "their mother",
-            "the hen"
-          ],
-          "en": [
-            "mother",
-            "mom",
-            "their mother",
-            "the hen"
-          ]
+        "type": "performance",
+        "text": {
+          "de": "Geht im Einser durch den Tunnel: Vorvogel führt, Heckvogel spiegelt jede Kurve.",
+          "en": "Walk the tunnel in single file: front bird leads, rear bird mirrors every turn."
         }
       }
     },
@@ -1435,11 +1288,11 @@
       "field": 48,
       "slug": "finish-banner",
       "hint_vague": {
-        "de": "A checkered cloth marks the end of the trail.",
+        "de": "Ein kariertes Tuch markiert das Ende der Strecke.",
         "en": "A checkered cloth marks the end of the trail."
       },
       "hint_level_1": {
-        "de": "Opposite the south gate, north path terminus.",
+        "de": "Gegenüber dem Südtor, nördliches Wegende.",
         "en": "Opposite the south gate, north path terminus."
       },
       "map": {
@@ -1449,14 +1302,15 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "Leaderboard ranks teams by what?",
+          "de": "Woran sortiert die Bestenliste die Banden?",
           "en": "Leaderboard ranks teams by what?"
         },
         "answers": {
           "de": [
-            "points",
-            "score",
-            "total points"
+            "punkte",
+            "punktzahl",
+            "gesamtpunkte",
+            "score"
           ],
           "en": [
             "points",
@@ -1468,36 +1322,42 @@
     },
     {
       "field": 49,
-      "slug": "crew-shack",
+      "slug": "open-mic-stand",
       "hint_vague": {
-        "de": "Radios crackle inside a tin-roof hut.",
-        "en": "Radios crackle inside a tin-roof hut."
+        "de": "Ein Mikrofon wartet auf mutige Stimmen.",
+        "en": "A microphone waits for brave voices."
       },
       "hint_level_1": {
-        "de": "Service road behind the main stage.",
-        "en": "Service road behind the main stage."
+        "de": "Neben der Bühne, unter dem Holzschild 'Open Mic'.",
+        "en": "Beside the stage, under the wooden 'Open Mic' sign."
       },
       "map": {
-        "x": 40,
-        "y": 80
+        "x": 48,
+        "y": 58
       },
       "activity": {
-        "type": "performance",
+        "type": "media",
         "text": {
-          "de": "Thank the crew with a coordinated bow or curtsy.",
-          "en": "Thank the crew with a coordinated bow or curtsy."
-        }
+          "de": "Dokumentiert den Open-Mic-Stand: Ladet ein Foto, ein Video oder eine Audio-Aufnahme hoch — wählt genau eine Form.",
+          "en": "Document the open mic stand: upload a photo, a video, or an audio clip — pick exactly one format."
+        },
+        "allowedKinds": [
+          "photo",
+          "video",
+          "audio"
+        ],
+        "maxDurationSec": 600
       }
     },
     {
       "field": 50,
       "slug": "north-star-post",
       "hint_vague": {
-        "de": "A carved post points toward the pole star.",
+        "de": "Ein geschnitzter Pfosten zeigt zum Polarstern.",
         "en": "A carved post points toward the pole star."
       },
       "hint_level_1": {
-        "de": "Northernmost marker on the festival map.",
+        "de": "Nördlichster Marker auf der Festivalkarte.",
         "en": "Northernmost marker on the festival map."
       },
       "map": {
@@ -1507,17 +1367,19 @@
       "activity": {
         "type": "quiz",
         "question": {
-          "de": "What is the final field number on this demo trail?",
+          "de": "Wie lautet die letzte Feldnummer auf dieser Demo-Strecke?",
           "en": "What is the final field number on this demo trail?"
         },
         "answers": {
           "de": [
-            "50",
-            "fifty"
+            "51",
+            "einundfünfzig",
+            "fifty one"
           ],
           "en": [
-            "50",
-            "fifty"
+            "51",
+            "fifty one",
+            "fifty-one"
           ]
         }
       }

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import type { BoardTeam } from '~/components/pixel/GameBoard.vue'
 import type { FestivalMapPin } from '~/components/pixel/FestivalMap.vue'
-import { joinPath } from '#shared/edition-urls'
+import { editionLandingPath } from '#shared/edition-urls'
 import type { LocalizedString, LocalizedStringList } from '#shared/localized'
 import type { TurnScoreBreakdown } from '#shared/scoring'
-import { normalizeQuizInputMode } from '#shared/quiz-payload'
-import type { QuizInputMode } from '#shared/types'
+import { normalizeQuizInputMode, parseMediaActivityPayload } from '#shared/quiz-payload'
+import type { CoopTurnRole, PendingCoopItem, QuizInputMode, ClientTranscodePolicy, MediaActivityPayload } from '#shared/types'
+import { resolveClientTranscodePolicy } from '#shared/types'
 import { pickRollDicePrompt } from '~/utils/roll-dice-prompts'
 import { mapApiError } from '~/utils/api-errors'
+import { useOnboardingPlayGuard } from '~/composables/useOnboardingRedirect'
+import { activityBoardLetter } from '#shared/activity-board-letter'
 import { boardFieldsBetween } from '#shared/game-board-layout'
 import {
   moveStepMs,
@@ -27,6 +30,8 @@ const { flash, show: showScore } = useScoreFeedback()
 const { confirm: pixelConfirm } = usePixelConfirm()
 
 const showScanner = ref(false)
+const showCoopBonusScanner = ref(false)
+const coopLinkDepotId = ref<number | null>(null)
 const showTeamQr = ref(false)
 const showMenu = ref(false)
 const showPwaInstall = ref(false)
@@ -36,7 +41,11 @@ const showRules = ref(false)
 const showFestivalMapFullscreen = ref(false)
 const mapSectionRef = ref<HTMLElement | null>(null)
 const scoreAtTurnStart = ref<number | null>(null)
-const turnScoreSummary = ref<{ breakdown: TurnScoreBreakdown; newScore: number } | null>(null)
+const turnScoreSummary = ref<{
+  breakdown: TurnScoreBreakdown
+  newScore: number
+  crewConfirmedField?: number
+} | null>(null)
 const summaryShownForTurnId = ref<number | null>(null)
 
 const { data: me, refresh, error: meError } = await useFetch('/api/me', {
@@ -47,9 +56,11 @@ const { data: me, refresh, error: meError } = await useFetch('/api/me', {
 watchEffect(() => {
   if (meError.value && 'statusCode' in meError.value && (meError.value as { statusCode: number }).statusCode === 401) {
     const slug = me.value?.edition?.slug
-    navigateTo(slug ? joinPath(slug) : '/')
+    navigateTo(slug ? editionLandingPath(slug) : '/')
   }
 })
+
+useOnboardingPlayGuard(me)
 
 watch(
   () => me.value?.team?.id,
@@ -63,7 +74,7 @@ watch(
 )
 
 type LeaderboardData = {
-  teams: { id: number; name: string; position: number }[]
+  teams: { id: number; name: string; position: number; avatarId?: string | null }[]
 }
 
 const leaderboardTeams = ref<BoardTeam[]>([])
@@ -79,6 +90,7 @@ async function refreshLeaderboard() {
       id: t.id,
       name: t.name,
       position: t.position,
+      avatarId: t.avatarId ?? null,
     }))
   }
   catch {
@@ -107,7 +119,30 @@ usePullToRefresh(async () => {
 })
 
 const showDevSimulation = computed(
-  () => import.meta.dev || me.value?.devSimulation === true,
+  () => import.meta.dev,
+)
+
+type DevFieldActivity = {
+  fieldNumber: number
+  activityType: 'quiz' | 'performance' | 'media' | 'coop'
+}
+
+const devFieldActivities = computed((): DevFieldActivity[] => {
+  if (!showDevSimulation.value) return []
+  const list = me.value?.devFieldActivities
+  return Array.isArray(list) ? list : []
+})
+
+const devFieldActivityLetters = computed(() => {
+  const map: Record<number, string> = {}
+  for (const item of devFieldActivities.value) {
+    map[item.fieldNumber] = activityBoardLetter(item.activityType)
+  }
+  return map
+})
+
+const devPickableFields = computed(() =>
+  devFieldActivities.value.map((item) => item.fieldNumber),
 )
 
 const loading = ref(false)
@@ -143,8 +178,77 @@ const rollAnimating = computed(
 )
 
 const turn = computed(() => me.value?.openTurn)
+type PendingCrewTurnItem = {
+  turnId: number
+  fieldNumber: number
+  scannedAt: string | null
+}
+
+const pendingCrewTurns = computed((): PendingCrewTurnItem[] => {
+  const list = me.value?.pendingCrewTurns
+  if (Array.isArray(list) && list.length > 0) return list
+  const single = me.value?.pendingCrewTurn
+  return single ? [single] : []
+})
+
+const pendingCrewHighlightFields = computed(() =>
+  pendingCrewTurns.value.map((p) => p.fieldNumber),
+)
+
+const pendingCrewFieldsLabel = computed(() =>
+  pendingCrewHighlightFields.value.join(', '),
+)
+
+const pendingCoopItems = computed((): PendingCoopItem[] => me.value?.pendingCoopItems ?? [])
+
+const pendingCoopDepotItems = computed(() =>
+  pendingCoopItems.value.filter((p) => p.role === 'depot_open'),
+)
+
+const pendingCoopBonusItems = computed(() =>
+  pendingCoopItems.value.filter((p) => p.role === 'bonus_pending'),
+)
+
+const pendingCoopDepotFieldsLabel = computed(() =>
+  pendingCoopDepotItems.value.map((p) => p.fieldNumber).join(', '),
+)
+
 const team = computed(() => me.value?.team)
 const edition = computed(() => me.value?.edition)
+
+/** Board marker position for own team (pending target while turn is open). */
+const myBoardDisplayPosition = computed(() => {
+  const confirmed = team.value?.positionConfirmed ?? 0
+  if (!turn.value) return confirmed
+  const pending = Number(turn.value.positionPending)
+  if (Number.isFinite(pending) && pending > confirmed) return pending
+  return confirmed
+})
+
+const boardTeams = computed((): BoardTeam[] => {
+  const myId = team.value?.id
+  if (myId == null) return leaderboardTeams.value
+
+  const pos = myBoardDisplayPosition.value
+  const mapped = leaderboardTeams.value.map((t) =>
+    t.id === myId ? { ...t, position: pos } : t,
+  )
+
+  if (mapped.some((t) => t.id === myId)) return mapped
+
+  if (!team.value) return mapped
+  return [
+    ...mapped,
+    {
+      id: myId,
+      name: team.value.name,
+      position: pos,
+      avatarId: team.value.avatarId ?? null,
+    },
+  ]
+})
+
+const coopBonusPoints = computed(() => edition.value?.config?.coopBonusPoints ?? 25)
 
 const {
   celebrationOpen,
@@ -160,6 +264,7 @@ usePullToRefreshDisabled(
   computed(
     () =>
       showScanner.value
+      || showCoopBonusScanner.value
       || showTeamQr.value
       || showMenu.value
       || showPwaInstall.value
@@ -226,7 +331,18 @@ const diceFace = computed(() => {
 const canReroll = computed(
   () =>
     (turn.value?.state === 'rolled' && turn.value.canRollAgain)
-    || turn.value?.state === 'awaiting_crew',
+    || turn.value?.state === 'awaiting_crew'
+    || turn.value?.state === 'awaiting_coop',
+)
+
+const showPendingCrewBanner = computed(
+  () => pendingCrewTurns.value.length > 0 && turn.value?.state !== 'awaiting_crew',
+)
+
+const showPendingCoopBanner = computed(
+  () =>
+    (pendingCoopDepotItems.value.length > 0 || pendingCoopBonusItems.value.length > 0)
+    && turn.value?.state !== 'awaiting_coop',
 )
 
 const diceInteractive = computed(
@@ -251,9 +367,8 @@ const overlayDiceValue = computed(() => {
 
 const seekingDialogTitle = computed(() => {
   const n = turn.value?.positionPending
-  const total = edition.value?.fieldCount
-  if (n == null || total == null) return t('play.findSpot')
-  return t('play.seekingTitle', { n, total })
+  if (n == null) return t('play.findSpot')
+  return t('play.seekingTitle', { n })
 })
 
 const canScan = computed(() => turn.value?.state === 'rolled')
@@ -282,8 +397,13 @@ type OpenTurnTask = {
     inputMode?: QuizInputMode
     choices?: LocalizedStringList
     text?: LocalizedString
+    instructions?: LocalizedString
+    partnerInstructions?: LocalizedString
+    allowedKinds?: ('photo' | 'video' | 'audio')[]
+    maxDurationSec?: number
   }
 }
+
 
 const openTask = computed((): OpenTurnTask | null =>
   (turn.value?.task as OpenTurnTask | null | undefined) ?? null,
@@ -329,13 +449,47 @@ const performanceText = computed(() => {
   return localized(payload?.text)
 })
 
+const isCoopTask = computed(() => openTask.value?.activityType === 'coop')
+const isMediaTask = computed(() => openTask.value?.activityType === 'media')
+
+const mediaPayload = computed((): MediaActivityPayload | null => {
+  const payload = openTask.value?.activityPayload
+  if (payload?.type !== 'media') return null
+  return parseMediaActivityPayload(payload)
+})
+
+const clientTranscodePolicy = computed((): ClientTranscodePolicy =>
+  resolveClientTranscodePolicy(
+    me.value?.mediaUploadPolicy?.clientTranscode
+    ?? edition.value?.config?.clientTranscode,
+  ),
+)
+
+const mediaTaskText = computed(() => {
+  const payload = openTask.value?.activityPayload
+  return localized(payload?.text)
+})
+
+const coopRole = computed((): CoopTurnRole => {
+  const role = turn.value?.coopRole
+  return role === 'partner' ? 'partner' : 'initiator'
+})
+
+const coopTaskText = computed(() => {
+  const payload = openTask.value?.activityPayload
+  if (payload?.type !== 'coop') return ''
+  if (coopRole.value === 'partner') return localized(payload.partnerInstructions)
+  return localized(payload.instructions)
+})
+
 const playStepLabel = computed(() => {
   if (team.value?.reachedGoal || edition.value?.status !== 'live') return null
   if (!turn.value) return t('play.step1')
   switch (turn.value.state) {
     case 'rolled': return t('play.step2')
     case 'scanned':
-    case 'awaiting_crew': return t('play.step3')
+    case 'awaiting_crew':
+    case 'awaiting_coop': return t('play.step3')
     default: return null
   }
 })
@@ -356,7 +510,7 @@ function openFestivalMapFromMenu() {
 }
 
 const showTeamQrInHeader = computed(
-  () => turn.value?.state !== 'awaiting_crew',
+  () => turn.value?.state !== 'awaiting_crew' && turn.value?.state !== 'awaiting_coop',
 )
 
 const teamQrUrl = ref('')
@@ -408,7 +562,7 @@ watch(
   },
 )
 
-const MOVE_PATH_HIGHLIGHT_STATES = ['rolled', 'scanned', 'awaiting_crew'] as const
+const MOVE_PATH_HIGHLIGHT_STATES = ['rolled', 'scanned', 'awaiting_crew', 'awaiting_coop'] as const
 
 function isMovePathHighlightActive(): boolean {
   const state = turn.value?.state
@@ -429,6 +583,12 @@ function resetRollAnimation() {
 
 function resetRollVisualState() {
   resetRollAnimation()
+}
+
+function clearMovePathHighlights() {
+  moveSteppedFields.value = []
+  moveOverflowFields.value = []
+  pendingBoardHighlights.value = null
 }
 
 /** End of roll animation only — keep path colors until the next roll (step 1). */
@@ -535,7 +695,16 @@ async function runRollSequence(
   gameBoardRef.value?.scrollToFocus()
 }
 
-async function roll() {
+type RollApiResponse = {
+  dice: number
+  positionPending: number
+  boardHighlights?: { playedFields: number[]; overflowFields: number[] }
+}
+
+async function executeRoll(
+  rollUrl: string,
+  body: Record<string, unknown> = {},
+) {
   if (rollAnimating.value) return
   loading.value = true
   actionError.value = ''
@@ -546,14 +715,7 @@ async function roll() {
     overflowFields: [...moveOverflowFields.value],
   }
   try {
-    const res = await api<{
-      dice: number
-      positionPending: number
-      boardHighlights?: { playedFields: number[]; overflowFields: number[] }
-    }>(
-      '/api/turns/roll',
-      { method: 'POST', body: {} },
-    )
+    const res = await api<RollApiResponse>(rollUrl, { method: 'POST', body })
     const rolled = toDiceNumber(res.dice)
     const to = Number(res.positionPending)
     if (rolled == null || !Number.isFinite(to)) {
@@ -602,6 +764,15 @@ async function roll() {
   finally {
     loading.value = false
   }
+}
+
+async function roll() {
+  await executeRoll('/api/turns/roll')
+}
+
+async function rollAtField(field: number) {
+  if (!showDevSimulation.value || !canRollNext.value || rollAnimating.value) return
+  await executeRoll('/api/dev/turns/roll', { targetField: field })
 }
 
 async function useHint(level?: number, mode?: 'reveal_all') {
@@ -688,7 +859,7 @@ async function logoutDev() {
   catch {
     // still leave play in dev if cookie clear failed
   }
-  await navigateTo(slug ? joinPath(slug) : '/')
+  await navigateTo(slug ? editionLandingPath(slug) : '/')
 }
 
 async function fillCorrectAnswer() {
@@ -709,16 +880,52 @@ async function fillCorrectAnswer() {
   }
 }
 
-function showTurnScoreSummary(breakdown: TurnScoreBreakdown, newScore: number, turnId?: number) {
-  if (breakdown.total === 0) {
+const EMPTY_TURN_BREAKDOWN: TurnScoreBreakdown = {
+  base: 0,
+  timeBonus: 0,
+  crewBonus: 0,
+  hintsDuringTurn: 0,
+  hintsAtConfirm: 0,
+  quizPenalty: 0,
+  total: 0,
+}
+
+function showTurnScoreSummary(
+  breakdown: TurnScoreBreakdown,
+  newScore: number,
+  turnId?: number,
+  options?: { crewConfirmedField?: number },
+) {
+  if (breakdown.total === 0 && options?.crewConfirmedField == null) {
     if (turnId != null) summaryShownForTurnId.value = turnId
     return
   }
-  turnScoreSummary.value = { breakdown, newScore }
+  turnScoreSummary.value = {
+    breakdown,
+    newScore,
+    crewConfirmedField: options?.crewConfirmedField,
+  }
   if (turnId != null) summaryShownForTurnId.value = turnId
 }
 
-async function fetchTurnScoreSummary(turnId: number): Promise<boolean> {
+function showPerformanceCrewConfirmed(
+  fieldNumber: number,
+  turnId: number,
+  breakdown?: TurnScoreBreakdown,
+  newScore?: number,
+) {
+  showTurnScoreSummary(
+    breakdown ?? EMPTY_TURN_BREAKDOWN,
+    newScore ?? team.value?.scoreTotal ?? 0,
+    turnId,
+    { crewConfirmedField: fieldNumber },
+  )
+}
+
+async function fetchTurnScoreSummary(
+  turnId: number,
+  crewConfirmedField?: number,
+): Promise<boolean> {
   if (summaryShownForTurnId.value === turnId) return true
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -726,11 +933,13 @@ async function fetchTurnScoreSummary(turnId: number): Promise<boolean> {
         `/api/turns/${turnId}/score-summary`,
       )
       if (res.breakdown != null && res.newScore != null) {
-        if (res.scoreDelta === 0) {
+        if (res.scoreDelta === 0 && crewConfirmedField == null) {
           summaryShownForTurnId.value = turnId
           return false
         }
-        showTurnScoreSummary(res.breakdown, res.newScore, turnId)
+        showTurnScoreSummary(res.breakdown, res.newScore, turnId, {
+          crewConfirmedField,
+        })
         return true
       }
       return false
@@ -740,6 +949,20 @@ async function fetchTurnScoreSummary(turnId: number): Promise<boolean> {
     }
   }
   return false
+}
+
+async function onPerformanceCrewConfirmed(turnId: number, fieldNumber: number) {
+  const scoreBefore = scoreAtTurnStart.value
+  scoreAtTurnStart.value = null
+  const shown = await fetchTurnScoreSummary(turnId, fieldNumber)
+  if (!shown) {
+    showPerformanceCrewConfirmed(fieldNumber, turnId)
+    if (scoreBefore != null) {
+      const delta = (team.value?.scoreTotal ?? 0) - scoreBefore
+      if (delta !== 0) showScore(delta)
+    }
+  }
+  await refreshLeaderboard()
 }
 
 async function completePerformanceDev() {
@@ -847,6 +1070,126 @@ watch(
   },
 )
 
+async function completeCoop() {
+  loading.value = true
+  actionError.value = ''
+  const turnId = turn.value!.id
+  try {
+    const res = await api<{
+      scoreDelta?: number
+      newScore?: number
+      breakdown?: TurnScoreBreakdown
+      reachedGoal?: boolean
+    }>(`/api/turns/${turnId}/coop/complete`, { method: 'POST' })
+    if (res.breakdown != null && res.newScore != null) {
+      showTurnScoreSummary(res.breakdown, res.newScore, turnId)
+    }
+    await refresh()
+    syncMovePathHighlightsIfNeeded()
+    await refreshLeaderboard()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = mapApiError(err.data?.statusMessage, 'play.errors.completeCoopFailed', t)
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function openCoopBonusScanner(depotId?: number) {
+  coopLinkDepotId.value = depotId ?? null
+  showCoopBonusScanner.value = true
+}
+
+async function onCoopTeamQrScanned(payload: { slug: string; token: string }) {
+  loading.value = true
+  actionError.value = ''
+  try {
+    const body: { partnerSlug: string; token: string; depotId?: number } = {
+      partnerSlug: payload.slug,
+      token: payload.token,
+    }
+    if (coopLinkDepotId.value != null) body.depotId = coopLinkDepotId.value
+    const res = await api<{ bonusPoints: number; newScore: number }>('/api/coop/link', {
+      method: 'POST',
+      body,
+    })
+    showCoopBonusScanner.value = false
+    coopLinkDepotId.value = null
+    if (res.bonusPoints) showScore(res.bonusPoints)
+    await refresh()
+    await refreshLeaderboard()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = mapApiError(err.data?.statusMessage, 'play.errors.coopLinkFailed', t)
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+async function onMediaUploaded() {
+  await refresh()
+}
+
+async function continuePlaying() {
+  const turnId = turn.value?.id
+  if (turnId == null || turn.value?.state !== 'awaiting_crew') return
+  loading.value = true
+  actionError.value = ''
+  scoreAtTurnStart.value = team.value?.scoreTotal ?? 0
+  try {
+    await api(`/api/turns/${turnId}/continue-playing`, { method: 'POST' })
+    resetRollVisualState()
+    clearMovePathHighlights()
+    showSeekingModal.value = false
+    await refresh()
+    hydratePathHighlightsFromMe()
+    await refreshLeaderboard()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = mapApiError(
+      err.data?.statusMessage,
+      'play.errors.continuePlayingFailed',
+      t,
+    )
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+async function continuePlayingCoop() {
+  const turnId = turn.value?.id
+  if (turnId == null || turn.value?.state !== 'awaiting_coop') return
+  loading.value = true
+  actionError.value = ''
+  scoreAtTurnStart.value = team.value?.scoreTotal ?? 0
+  try {
+    await api(`/api/turns/${turnId}/coop/continue-playing`, { method: 'POST' })
+    resetRollVisualState()
+    clearMovePathHighlights()
+    showSeekingModal.value = false
+    await refresh()
+    hydratePathHighlightsFromMe()
+    await refreshLeaderboard()
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string } }
+    actionError.value = mapApiError(
+      err.data?.statusMessage,
+      'play.errors.continuePlayingFailed',
+      t,
+    )
+  }
+  finally {
+    loading.value = false
+  }
+}
+
 async function abandonTurn() {
   const ok = await pixelConfirm({
     title: t('play.zeroRoundTitle'),
@@ -856,6 +1199,7 @@ async function abandonTurn() {
   })
   if (!ok) return
   resetRollVisualState()
+  clearMovePathHighlights()
   showSeekingModal.value = false
   const turnId = turn.value!.id
   summaryShownForTurnId.value = turnId
@@ -864,6 +1208,7 @@ async function abandonTurn() {
   try {
     await api(`/api/turns/${turnId}/abandon`, { method: 'POST' })
     await refresh()
+    hydratePathHighlightsFromMe()
     await refreshLeaderboard()
   }
   catch (e: unknown) {
@@ -888,26 +1233,35 @@ watch(
 )
 
 watch(
-  () => turn.value,
+  pendingCrewTurns,
   async (current, previous) => {
-    if (!previous || current || previous.state !== 'awaiting_crew') return
-    const turnId = previous.id
-    const scoreBefore = scoreAtTurnStart.value
-    scoreAtTurnStart.value = null
-    const shown = await fetchTurnScoreSummary(turnId)
-    if (!shown && scoreBefore != null) {
-      const delta = (team.value?.scoreTotal ?? 0) - scoreBefore
-      if (delta !== 0) showScore(delta)
+    if (!previous?.length) return
+    const currentIds = new Set(current.map((p) => p.turnId))
+    for (const prev of previous) {
+      if (!currentIds.has(prev.turnId)) {
+        await onPerformanceCrewConfirmed(prev.turnId, prev.fieldNumber)
+      }
     }
   },
+  { deep: true },
 )
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
 watch(
-  () => turn.value?.state,
-  (state) => {
+  () =>
+    [
+      turn.value?.state,
+      pendingCrewTurns.value.length,
+      pendingCoopItems.value.length,
+    ] as const,
+  ([state, crewPendingCount, coopPendingCount]) => {
     if (pollTimer) clearInterval(pollTimer)
-    if (state === 'awaiting_crew') {
+    if (
+      state === 'awaiting_crew'
+      || state === 'awaiting_coop'
+      || crewPendingCount > 0
+      || coopPendingCount > 0
+    ) {
       pollTimer = setInterval(async () => {
         await refresh()
         await refreshLeaderboard()
@@ -926,9 +1280,22 @@ onUnmounted(() => {
     <PixelScoreFlash :delta="flash.delta" :visible="flash.visible" />
 
     <header class="flex flex-col gap-2">
-      <div class="min-w-0">
-        <h1 class="pixel-title truncate text-sm">{{ team?.name ?? '…' }}</h1>
-        <p class="pixel-title text-xs opacity-90">{{ $t('play.score', { n: team?.scoreTotal ?? 0 }) }}</p>
+      <div class="flex min-w-0 items-start gap-2">
+        <PixelTeamAvatarBadge
+          v-if="team?.avatarId"
+          :avatar-id="team.avatarId"
+          size="md"
+        />
+        <div class="min-w-0 flex-1">
+          <h1 class="pixel-title truncate text-sm">{{ team?.name ?? '…' }}</h1>
+          <p
+            v-if="team?.motto"
+            class="pixel-body truncate text-[10px] opacity-80"
+          >
+            „{{ team.motto }}“
+          </p>
+          <p class="pixel-title text-xs opacity-90">{{ $t('play.score', { n: team?.scoreTotal ?? 0 }) }}</p>
+        </div>
       </div>
       <div class="flex flex-wrap gap-2">
         <PixelButton
@@ -956,6 +1323,70 @@ onUnmounted(() => {
 
     <p v-if="playStepLabel" class="pixel-title text-center text-xs opacity-90">{{ playStepLabel }}</p>
 
+    <section
+      v-if="showPendingCrewBanner"
+      class="pixel-card space-y-2 p-3 text-center"
+    >
+      <p class="pixel-body text-xs">
+        {{
+          pendingCrewTurns.length === 1
+            ? $t('play.pendingCrewBanner', { n: pendingCrewTurns[0]!.fieldNumber })
+            : $t('play.pendingCrewBannerMultiple', { fields: pendingCrewFieldsLabel })
+        }}
+      </p>
+      <PixelButton
+        variant="secondary"
+        class="!w-auto !min-h-0 !py-2 !px-3 !text-[10px] mx-auto"
+        @click="showTeamQr = true"
+      >
+        {{ $t('play.showTeamQr') }}
+      </PixelButton>
+    </section>
+
+    <section
+      v-for="item in pendingCoopDepotItems"
+      v-show="showPendingCoopBanner"
+      :key="`coop-depot-${item.depotId}`"
+      class="pixel-card space-y-2 p-3 text-center"
+    >
+      <p class="pixel-body text-xs">
+        {{
+          pendingCoopDepotItems.length === 1
+            ? $t('play.pendingCoopDepotBanner', { n: item.fieldNumber })
+            : $t('play.pendingCoopDepotBannerMultiple', { fields: pendingCoopDepotFieldsLabel })
+        }}
+      </p>
+    </section>
+
+    <section
+      v-for="item in pendingCoopBonusItems"
+      v-show="showPendingCoopBanner"
+      :key="`coop-bonus-${item.depotId}`"
+      class="pixel-card space-y-2 p-3 text-center"
+    >
+      <p class="pixel-body text-xs">
+        {{
+          item.partnerTeamName
+            ? $t('play.pendingCoopBonusBanner', {
+              n: item.fieldNumber,
+              team: item.partnerTeamName,
+              bonus: coopBonusPoints,
+            })
+            : $t('play.pendingCoopBonusBannerNoTeam', {
+              n: item.fieldNumber,
+              bonus: coopBonusPoints,
+            })
+        }}
+      </p>
+      <PixelButton
+        variant="secondary"
+        class="!w-auto !min-h-0 !py-2 !px-3 !text-[10px] mx-auto"
+        @click="openCoopBonusScanner(item.depotId)"
+      >
+        {{ $t('play.coopScanTeamQrBonus') }}
+      </PixelButton>
+    </section>
+
     <ClientOnly>
       <div v-if="edition" class="relative">
         <PixelGameBoard
@@ -966,17 +1397,30 @@ onUnmounted(() => {
           :move-token-field="moveTokenField"
           :move-overflow-fields="moveOverflowFields"
           :move-stepped-fields="moveSteppedFields"
+          :pending-crew-fields="pendingCrewHighlightFields"
           :suppress-my-team-chip="rollSequence === 'move'"
           :my-team-id="team?.id ?? null"
-          :teams="leaderboardTeams"
+          :my-avatar-id="team?.avatarId ?? null"
+          :teams="boardTeams"
           :show-dice="!team?.reachedGoal"
           :dice-value="diceFace"
           :dice-tooltip="diceTooltip"
           :dice-interactive="diceInteractive"
           :dice-loading="diceLoadingBoard"
           :roll-prompt="canRollNext ? rollPromptPhrase : null"
+          :field-activity-letters="showDevSimulation ? devFieldActivityLetters : {}"
+          :dev-field-pickable="showDevSimulation && canRollNext"
+          :dev-pickable-fields="devPickableFields"
           @dice-click="onDiceClick"
+          @dev-field-pick="rollAtField"
         />
+        <p
+          v-if="showDevSimulation"
+          class="pixel-body text-center text-[9px] opacity-70"
+        >
+          {{ $t('play.devPickFieldHint') }}
+          <span class="block mt-0.5">{{ $t('play.devActivityLegend') }}</span>
+        </p>
         <PixelRollDiceOverlay
           :visible="rollSequence === 'dice'"
           :value="overlayDiceValue"
@@ -998,6 +1442,36 @@ onUnmounted(() => {
         <p class="text-center text-xs opacity-70">{{ $t('play.gameStatus', { status: edition?.status }) }}</p>
       </section>
 
+
+      <section
+        v-else-if="turn && turn.state === 'scanned' && isCoopTask"
+        class="pixel-card space-y-4 p-4"
+      >
+        <p class="pixel-title text-xs">
+          {{
+            coopRole === 'partner'
+              ? $t('play.coopPartnerTitle')
+              : $t('play.coopInitiatorTitle')
+          }}
+        </p>
+        <p class="pixel-body text-sm whitespace-pre-wrap">{{ coopTaskText }}</p>
+        <PixelButton :disabled="loading" @click="completeCoop">
+          {{ $t('play.coopDone') }}
+        </PixelButton>
+      </section>
+
+      <section
+        v-else-if="turn && turn.state === 'scanned' && isMediaTask && mediaPayload"
+        class="space-y-4"
+      >
+        <MediaTaskUpload
+          :turn-id="turn.id"
+          :payload="mediaPayload"
+          :client-transcode="clientTranscodePolicy"
+          :disabled="loading"
+          @uploaded="onMediaUploaded"
+        />
+      </section>
 
       <section v-else-if="turn && turn.state === 'scanned'" class="pixel-card space-y-4 p-4">
         <p class="pixel-title text-xs">{{ $t('play.quiz') }}</p>
@@ -1035,6 +1509,51 @@ onUnmounted(() => {
         </PixelButton>
       </section>
 
+      <section v-else-if="turn && turn.state === 'awaiting_coop'" class="pixel-card space-y-4 p-4 text-center">
+        <p class="pixel-title text-xs">{{ $t('play.coop') }}</p>
+        <p class="pixel-body text-sm">{{ $t('play.coopScanPartnerQr', { bonus: coopBonusPoints }) }}</p>
+        <PixelButton
+          :disabled="loading"
+          @click="openCoopBonusScanner()"
+        >
+          {{ $t('play.coopScanTeamQrBonus') }}
+        </PixelButton>
+        <PixelButton
+          :disabled="loading"
+          @click="continuePlayingCoop"
+        >
+          {{ $t('play.continuePlayingWaitCoop') }}
+        </PixelButton>
+        <PixelButton
+          v-if="canReroll"
+          variant="secondary"
+          :disabled="loading"
+          @click="abandonTurn"
+        >
+          {{ $t('play.rollAgain') }}
+        </PixelButton>
+      </section>
+
+      <section v-else-if="turn && turn.state === 'awaiting_crew' && isMediaTask" class="pixel-card space-y-4 p-4 text-center">
+        <p class="pixel-title text-xs">{{ $t('play.media.title') }}</p>
+        <p class="pixel-body text-sm whitespace-pre-wrap">{{ mediaTaskText }}</p>
+        <p class="pixel-body text-sm opacity-80">{{ $t('play.media.waitingForCrew') }}</p>
+        <PixelButton
+          :disabled="loading"
+          @click="continuePlaying"
+        >
+          {{ $t('play.continuePlayingWaitCrew') }}
+        </PixelButton>
+        <PixelButton
+          v-if="canReroll"
+          variant="secondary"
+          :disabled="loading"
+          @click="abandonTurn"
+        >
+          {{ $t('play.rollAgain') }}
+        </PixelButton>
+      </section>
+
       <section v-else-if="turn && turn.state === 'awaiting_crew'" class="pixel-card space-y-4 p-4 text-center">
         <p class="pixel-title text-xs">{{ $t('play.performance') }}</p>
         <p class="pixel-body text-sm">{{ performanceText }}</p>
@@ -1048,6 +1567,12 @@ onUnmounted(() => {
           height="220"
         >
         <p class="pixel-body text-sm opacity-80">{{ $t('play.waitingForCrew') }}</p>
+        <PixelButton
+          :disabled="loading"
+          @click="continuePlaying"
+        >
+          {{ $t('play.continuePlayingWaitCrew') }}
+        </PixelButton>
         <PixelButton
           v-if="canReroll"
           variant="secondary"
@@ -1139,7 +1664,10 @@ onUnmounted(() => {
     >
       <div v-if="turn?.state === 'rolled'" class="space-y-4">
         <div class="seeking-card__action space-y-4 text-center">
-          <p class="pixel-body text-base seeking-card__hint-vague text-left">{{ taskHintVague }}</p>
+          <p class="pixel-body text-base seeking-card__hint-vague text-left">
+            <span class="seeking-card__hint-label">{{ $t('play.hintLabel') }}</span>
+            {{ taskHintVague }}
+          </p>
           <PixelButton :disabled="loading || rollAnimating" @click="showScanner = true">
             {{ $t('play.scanQr') }}
           </PixelButton>
@@ -1227,6 +1755,7 @@ onUnmounted(() => {
       :open="turnScoreSummary != null"
       :breakdown="turnScoreSummary?.breakdown ?? null"
       :new-score="turnScoreSummary?.newScore ?? null"
+      :crew-confirmed-field="turnScoreSummary?.crewConfirmedField ?? null"
       @close="closeTurnScoreSummary"
     />
 
@@ -1236,6 +1765,21 @@ onUnmounted(() => {
       @close="closeCelebration"
       @open-leaderboard="closeCelebration(); showLeaderboard = true"
     />
+
+    <PixelDialog
+      :open="showCoopBonusScanner"
+      :title="$t('play.coopScanTeamQrBonus')"
+      panel-class="!p-3"
+      @close="showCoopBonusScanner = false; coopLinkDepotId = null"
+    >
+      <TaskQrScanner
+        v-if="showCoopBonusScanner"
+        embedded
+        mode="team"
+        @scanned="onCoopTeamQrScanned"
+        @close="showCoopBonusScanner = false; coopLinkDepotId = null"
+      />
+    </PixelDialog>
 
     <PixelDialog :open="showTeamQr" :title="$t('play.yourTeamQr')" @close="showTeamQr = false">
       <p class="pixel-body text-center text-sm">{{ team?.name }}</p>
@@ -1336,8 +1880,8 @@ onUnmounted(() => {
 }
 
 .seeking-card .seeking-card__hint-timer {
-  font-size: 14px;
-  line-height: 1;
+  font-size: 8px;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
 

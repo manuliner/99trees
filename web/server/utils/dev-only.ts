@@ -1,11 +1,6 @@
-function resolveEnvironment(): string {
-  return process.env.NUXT_ENVIRONMENT || process.env.NODE_ENV || 'development'
-}
-
-/** Local Vite dev, or hosted test (`NUXT_ENVIRONMENT=test`). Never production. */
+/** Local Vite dev only — never enabled on deployed hosts (including NUXT_ENVIRONMENT=test). */
 export function isDevSimulationEnabled(): boolean {
-  if (import.meta.dev) return true
-  return resolveEnvironment() === 'test'
+  return import.meta.dev
 }
 
 export function assertDevOnly() {

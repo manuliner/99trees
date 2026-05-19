@@ -1,13 +1,13 @@
 import { requireTeam } from '../../../../utils/team-session'
 import { assertDevOnly } from '../../../../utils/dev-only'
-import { getEditionOrThrow, getOpenTurn, getTaskForField } from '../../../../services/game'
+import { getEditionOrThrow, getActivePlayTurn, getTaskForField } from '../../../../services/game'
 import { applyTaskScan } from '../../../../services/turn-scan'
 
 export default defineEventHandler(async (event) => {
   assertDevOnly()
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
-  const open = await getOpenTurn(team.id)
+  const open = await getActivePlayTurn(team.id)
   if (!open || open.id !== turnId || open.state !== 'rolled') {
     throw createError({ statusCode: 400, statusMessage: 'Scan not allowed now' })
   }

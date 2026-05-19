@@ -1,23 +1,23 @@
 <script setup lang="ts">
 const props = defineProps<{
-  joinUrl: string
+  shareUrl: string
   crewLoginUrl: string
   ready: boolean
 }>()
 
-const emit = defineEmits<{ exportQr: []; copyJoin: []; copyCrewLogin: [] }>()
+const emit = defineEmits<{ exportQr: []; copyShare: []; copyCrewLogin: [] }>()
 
-const copiedJoin = ref(false)
+const copiedShare = ref(false)
 const copiedCrewLogin = ref(false)
 
-async function copyToClipboard(text: string, which: 'join' | 'crew') {
+async function copyToClipboard(text: string, which: 'share' | 'crew') {
   if (!text) return
   await navigator.clipboard.writeText(text)
-  if (which === 'join') {
-    copiedJoin.value = true
-    emit('copyJoin')
+  if (which === 'share') {
+    copiedShare.value = true
+    emit('copyShare')
     setTimeout(() => {
-      copiedJoin.value = false
+      copiedShare.value = false
     }, 2000)
   } else {
     copiedCrewLogin.value = true
@@ -40,14 +40,14 @@ async function copyToClipboard(text: string, which: 'join' | 'crew') {
     </p>
 
     <div class="space-y-1">
-      <p class="admin-body text-xs font-medium">Entry / join URL</p>
-      <p class="admin-body text-xs break-all">{{ joinUrl || 'Set a valid slug first' }}</p>
+      <p class="admin-body text-xs font-medium">Player sharing link</p>
+      <p class="admin-body text-xs break-all">{{ shareUrl || 'Set a valid slug first' }}</p>
       <PixelButton
         variant="secondary"
-        :disabled="!joinUrl"
-        @click="copyToClipboard(joinUrl, 'join')"
+        :disabled="!shareUrl"
+        @click="copyToClipboard(shareUrl, 'share')"
       >
-        {{ copiedJoin ? 'Copied!' : 'Copy join URL' }}
+        {{ copiedShare ? 'Copied!' : 'Copy sharing link' }}
       </PixelButton>
     </div>
 

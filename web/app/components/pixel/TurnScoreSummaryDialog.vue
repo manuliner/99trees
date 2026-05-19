@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import type { TurnScoreBreakdown } from '#shared/scoring'
 
-const props = defineProps<{
-  open: boolean
-  breakdown: TurnScoreBreakdown | null
-  newScore: number | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    open: boolean
+    breakdown: TurnScoreBreakdown | null
+    newScore: number | null
+    /** Performance confirmed by crew — custom headline instead of default title. */
+    crewConfirmedField?: number | null
+  }>(),
+  { crewConfirmedField: null },
+)
 
 const emit = defineEmits<{ close: [] }>()
 
@@ -56,6 +61,16 @@ const deductedLines = computed((): ScoreLine[] => {
 
 const totalDelta = computed(() => props.breakdown?.total ?? 0)
 
+const isCrewConfirmation = computed(() => props.crewConfirmedField != null)
+
+const dialogTitle = computed(() =>
+  isCrewConfirmation.value
+    ? t('play.turnScore.crewConfirmedTitle')
+    : t('play.turnScore.title'),
+)
+
+const showScoreHero = computed(() => !isCrewConfirmation.value || totalDelta.value !== 0)
+
 function formatLine(line: ScoreLine) {
   return line.sign === 'plus'
     ? t('play.turnScore.linePlus', { n: line.value })
@@ -70,10 +85,23 @@ function formatTotal(n: number) {
 <template>
   <PixelDialog
     :open="open && breakdown != null"
-    :title="t('play.turnScore.title')"
+    :title="dialogTitle"
     @close="emit('close')"
   >
+    <div
+      v-if="isCrewConfirmation"
+      class="turn-score-summary__crew-confirmed space-y-2 text-center"
+    >
+      <p class="pixel-title text-sm">
+        {{ t('play.turnScore.crewConfirmedMessage', { n: crewConfirmedField }) }}
+      </p>
+      <p class="pixel-title text-xs text-[var(--pixel-sunrise)]">
+        {{ t('play.turnScore.crewConfirmedGratulation') }}
+      </p>
+    </div>
+
     <p
+      v-if="showScoreHero"
       class="turn-score-summary__hero pixel-title text-center"
       :class="totalDelta >= 0 ? 'turn-score-summary__hero--plus' : 'turn-score-summary__hero--minus'"
     >

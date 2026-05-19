@@ -1,7 +1,7 @@
-import { requireCrewEdition } from '../../utils/crew-session'
+import { clearCrewSession, requireCrewEdition } from '../../utils/crew-session'
 
-export default defineEventHandler((event) => {
-  requireCrewEdition(event)
-  deleteCookie(event, 'crew_session', { path: '/' })
+export default defineEventHandler(async (event) => {
+  const editionId = await requireCrewEdition(event)
+  await clearCrewSession(event, editionId)
   return { ok: true }
 })

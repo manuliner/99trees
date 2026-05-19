@@ -7,10 +7,21 @@
     "continue": "Continue",
     "rules": "Rules",
     "privacy": "Privacy",
+    "impressum": "Legal notice",
+    "crewLogin": "Crew login",
     "teamQr": "Team QR",
     "teamQrAlt": "Team QR",
     "pointsPenalty": "−{n} pts",
     "installApp": "Install app"
+  },
+  "footer": {
+    "aria": "Page footer",
+    "legalAria": "Legal"
+  },
+  "credit": {
+    "aria": "Credits",
+    "madeBy": "made by ma:nü",
+    "madeWith": "made with ❤️ in 🇪🇺"
   },
   "pwa": {
     "title": "Install Zugvögel",
@@ -29,6 +40,7 @@
     "en": "EN"
   },
   "join": {
+    "createTeamHeading": "Create your team",
     "teamName": "Team name",
     "teamNamePlaceholder": "3–32 characters",
     "pin4": "4-digit PIN",
@@ -36,6 +48,8 @@
     "creatingTeam": "Creating team…",
     "startGame": "Start game",
     "findYourTeam": "Find your team",
+    "rejoinPromptBefore": "Already have a team? Sign in ",
+    "rejoinPromptLink": "here",
     "sessionMismatchBefore": "You are signed in to a different event. Use",
     "sessionMismatchRejoin": "Find your team",
     "sessionMismatchMiddle": "for this festival, or continue your current game on",
@@ -48,12 +62,21 @@
     }
   },
   "rejoin": {
+    "signInHeading": "Sign in to your team",
     "teamName": "Team name",
     "teamNamePlaceholder": "3–32 characters",
+    "teamSearchPlaceholder": "Search for your team…",
+    "teamSearchLoading": "Loading teams…",
+    "teamSearchEmpty": "No matching team found.",
+    "teamSearchListAria": "Available teams",
+    "teamSearchLoadFailed": "Could not load teams.",
+    "teamMottoMissing": "No motto yet",
     "pin": "PIN",
     "signingIn": "Signing in…",
     "continue": "Continue",
     "newTeam": "New team",
+    "newTeamPromptBefore": "No team yet? Create one ",
+    "newTeamPromptLink": "here",
     "navAria": "Rejoin page links",
     "errors": {
       "pinLength": "PIN must be 4 digits",
@@ -64,9 +87,39 @@
     "joinTagline": "Roll the dice, scan the stations, race your flock to the goal.",
     "rejoinTagline": "Pick up where you left off — same team, same trail."
   },
+  "landing": {
+    "createTeam": "Create team",
+    "signIn": "Sign in to team",
+    "navAria": "Get started"
+  },
   "teamName": {
     "tooShort": "Team name must be at least {min} characters",
     "tooLong": "Team name must be at most {max} characters"
+  },
+  "onboarding": {
+    "title": "Get your team ready",
+    "stepAvatar": "Choose your character",
+    "stepProfile": "Set your motto and read the rules",
+    "motto": "Team motto",
+    "mottoPlaceholder": "e.g. Always into the wind",
+    "rulesConfirm": "We have read and understood the game rules.",
+    "startGame": "Go to the board",
+    "saving": "Saving…",
+    "avatarGroupAria": "Choose character",
+    "avatars": {
+      "stork": "Stork",
+      "goose": "Goose",
+      "crane": "Crane",
+      "swallow": "Swallow",
+      "owl": "Owl",
+      "eagle": "Eagle"
+    },
+    "errors": {
+      "avatarRequired": "Please choose a character.",
+      "mottoTooShort": "Motto must be at least 3 characters.",
+      "rulesRequired": "Please confirm the game rules.",
+      "saveFailed": "Could not save"
+    }
   },
   "editionStatus": {
     "draft": "The game has not started yet. Check back when the festival opens.",
@@ -83,9 +136,10 @@
     "reachedGoal": "You reached the goal!",
     "gameStatus": "Game status: {status}",
     "findSpot": "Find the next QR Code",
-    "seekingTitle": "Find station — field {n} of {total}",
+    "seekingTitle": "Find QR code for field {n}",
     "scanQr": "Scan QR",
-    "hintsSection": "Hints",
+    "hintLabel": "Hint:",
+    "hintsSection": "More hints",
     "hintN": "Hint {n}:",
     "rollAgain": "Roll again (zero round)",
     "quiz": "Quiz",
@@ -94,7 +148,51 @@
     "performance": "Performance",
     "showQrToCrew": "Show this QR to crew",
     "waitingForCrew": "Waiting for crew…",
+    "continuePlayingWaitCrew": "Keep playing and wait for crew",
+    "pendingCrewBanner": "Field {n} is waiting for crew rating",
+    "pendingCrewBannerMultiple": "Fields {fields} are waiting for crew rating",
+    "showTeamQr": "Show team QR",
+    "performanceApproved": "Your performance on field {n} has been marked complete.",
     "completePerformanceDev": "Complete performance (dev)",
+    "media": {
+      "title": "Media upload",
+      "hintKinds": "Choose {kinds} from your device (no camera capture).",
+      "hintTrimVideo": "Long videos are shortened to the first {seconds} seconds.",
+      "chooseFile": "Choose file",
+      "chooseDifferent": "Choose different file",
+      "upload": "Upload",
+      "retry": "Retry upload",
+      "validating": "Checking file…",
+      "preparing": "Preparing file…",
+      "compressing": "Shrinking video…",
+      "uploading": "Uploading…",
+      "waitingForCrew": "Upload complete — crew is reviewing your submission.",
+      "errors": {
+        "unsupportedType": "File type not allowed.",
+        "kindNotAllowed": "This media type is not allowed for the task.",
+        "tooLarge": "File is too large.",
+        "sourceTooLarge": "File is too large — choose a shorter or smaller video.",
+        "sourceTooLargeForBrowser": "This file is too large to process in the phone browser. Please choose a shorter video (e.g. under 60 seconds) or a smaller file.",
+        "transcodeFailed": "Could not shrink the video — choose a smaller file.",
+        "transcodeUnavailable": "Video shrinking is not available here — choose a smaller file.",
+        "tooLong": "Recording is too long.",
+        "durationUnknown": "Could not read duration.",
+        "uploadFailed": "Upload failed.",
+        "unknown": "Could not process file."
+      }
+    },
+    "coop": "Co-op depot",
+    "coopInitiatorTitle": "Co-op — open depot",
+    "coopPartnerTitle": "Co-op — partner task",
+    "coopDone": "Done",
+    "coopWaitingPartner": "Your depot on field {n} is waiting for a partner team.",
+    "coopScanPartnerQr": "Scan your partner team's QR for +{bonus} bonus points.",
+    "coopScanTeamQrBonus": "Scan partner QR",
+    "continuePlayingWaitCoop": "Keep playing and wait for bonus",
+    "pendingCoopDepotBanner": "Field {n}: co-op depot waiting for partner",
+    "pendingCoopDepotBannerMultiple": "Open co-op depots: fields {fields}",
+    "pendingCoopBonusBanner": "Field {n}: scan {team} for co-op bonus (+{bonus})",
+    "pendingCoopBonusBannerNoTeam": "Field {n}: scan partner team for co-op bonus (+{bonus})",
     "festivalMap": "Festival map",
     "gameRules": "Game rules",
     "leaderboard": "Leaderboard",
@@ -106,6 +204,8 @@
     "revealAllConfirm": "Reveal all",
     "zeroRoundTitle": "Zero round",
     "zeroRoundMessage": "Zero round — no field progress and no points for this attempt. Continue?",
+    "devPickFieldHint": "Tap a station to simulate a turn (dev)",
+    "devActivityLegend": "q Quiz · p Performance · m Media · c Co-op",
     "simulateScanDev": "Simulate scan (dev)",
     "logoutDev": "Log out (dev)",
     "goalCelebration": {
@@ -118,6 +218,9 @@
     },
     "turnScore": {
       "title": "Turn complete",
+      "crewConfirmedTitle": "Crew confirmation",
+      "crewConfirmedMessage": "Field {n} was confirmed by crew.",
+      "crewConfirmedGratulation": "Congratulations!",
       "gained": "Gained",
       "deducted": "Deducted",
       "base": "Base",
@@ -138,10 +241,14 @@
       "simulateScanFailed": "Simulate scan failed",
       "completePerformanceFailed": "Complete performance failed",
       "answerFailed": "Answer failed",
-      "abandonFailed": "Abandon failed"
+      "abandonFailed": "Abandon failed",
+      "continuePlayingFailed": "Could not continue playing",
+      "completeCoopFailed": "Could not complete co-op",
+      "coopLinkFailed": "Co-op bonus scan failed"
     }
   },
   "hints": {
+    "nextHintIn": "Next hint in",
     "mapBelow": "See festival map below.",
     "mapUnavailable": "Map unavailable — festival map not uploaded.",
     "revealNextAria": "Reveal next hint",
@@ -199,7 +306,52 @@
   },
   "privacy": {
     "title": "Privacy",
-    "body": "We store your team name, game progress, and scores for the duration of the festival edition. Data is deleted after the event. No marketing emails. Contact the festival info desk for deletion requests."
+    "intro": "These notices apply to the “Zugvögel” festival field game (web app). They supplement the privacy policy of Zugvögel e.V. for the festival website.",
+    "controllerHeading": "Controller",
+    "controllerBody": "Zugvögel e.V.\nPoller Kirchweg 124\n51105 Köln, Germany\nEmail: abflug{'@'}zugvoegelfestival.org",
+    "purposeHeading": "Purpose of processing",
+    "purposeBody": "The app lets you take part in the field game during a festival edition: create a team, roll dice, find stations via QR, complete tasks, earn points, and view the leaderboard. We do not use the app for advertising.",
+    "dataHeading": "Data we process",
+    "dataTeam": "Team name, optional motto, team size, and chosen avatar (illustration, not personal photos).",
+    "dataGame": "Game state: field position, completed stations, rolls, tasks, hints, quiz answers, points, crew ratings for performance tasks, and co-op links between teams.",
+    "dataAuth": "Four-digit PIN stored only as a cryptographic hash; session cookie (httpOnly) for login on one device per team.",
+    "dataMedia": "For media tasks: photos or videos you upload (including metadata such as filename, size, duration). Festival crew may view submissions for rating.",
+    "dataTech": "Technical: IP address briefly in memory for abuse protection (rate limiting); language preference stored locally in the browser.",
+    "publicHeading": "Public display",
+    "publicBody": "Team name, avatar, motto (if provided), points, and progress appear on the live leaderboard and team directory for other teams in the same edition.",
+    "cameraHeading": "Camera",
+    "cameraBody": "The camera is used in the browser for QR scans. Image data is not stored on our servers unless you explicitly upload it for a media task.",
+    "cookiesHeading": "Cookies & local storage",
+    "cookiesBody": "We use a technically necessary session cookie (team_session, httpOnly, up to 48 hours) to keep you signed in. Language choice is stored locally in the browser. No tracking or marketing cookies.",
+    "legalBasisHeading": "Legal basis",
+    "legalBasisBody": "Art. 6(1)(b) GDPR (performance of game participation), Art. 6(1)(f) GDPR (legitimate interests in operation, abuse protection, and public leaderboard). Media uploads are voluntary as part of tasks.",
+    "retentionHeading": "Retention",
+    "retentionBody": "Data is kept for the duration of the festival edition and a reasonable period afterwards, unless statutory retention obligations apply. Data is then deleted. No newsletters or marketing emails via the app.",
+    "recipientsHeading": "Recipients",
+    "recipientsBody": "Authorized festival crew and administrators have access. Technical implementation by ma:nü on behalf of Zugvögel e.V. on infrastructure operated for the event. No sharing with third parties for advertising.",
+    "rightsHeading": "Your rights",
+    "rightsBody": "You have the right to access, rectification, erasure, restriction, objection, and data portability. Contact abflug{'@'}zugvoegelfestival.org or the festival info desk. You may withdraw consent (e.g. media uploads) by not uploading further or requesting deletion.",
+    "complaintHeading": "Complaint",
+    "complaintBody": "You may lodge a complaint with a supervisory authority, e.g. the State Commissioner for Data Protection and Freedom of Information of North Rhine-Westphalia (LDI NRW), Germany.",
+    "externalHeading": "Further information",
+    "externalBody": "The general privacy policy of Zugvögel (website, shop, newsletter, etc.) is available at "
+  },
+  "impressum": {
+    "title": "Legal notice",
+    "operatorHeading": "Provider information (§ 5 TMG)",
+    "operatorName": "Zugvögel e.V.",
+    "operatorAddress": "Poller Kirchweg 124\n51105 Köln, Germany",
+    "operatorEmail": "abflug{'@'}zugvoegelfestival.org",
+    "representativesHeading": "Authorized representatives",
+    "representatives": "Wolfgang Schadow, Tobias Kirchgatter, Carsten Kugele",
+    "registerHeading": "Register of associations",
+    "register": "Court: Amtsgericht Köln (Cologne)\nRegistration no.: VR 18917",
+    "appHeading": "Festival field game (web app)",
+    "appBody": "This progressive web app (“Zugvögel”) is operated as part of the Zugvögel festival. Responsible for content under § 18(2) MStV: Zugvögel e.V. (address as above).",
+    "implementationHeading": "Concept & technical implementation",
+    "implementationBody": "ma:nü on behalf of Zugvögel e.V. / Zugvögel Festival",
+    "liabilityHeading": "Liability for content and links",
+    "liabilityBody": "As a service provider we are responsible for our own content under general law. We do not guarantee external linked content; respective operators are solely responsible."
   },
   "leaderboard": {
     "draft": "The game starts soon — check back when it is live.",
@@ -242,6 +394,19 @@
     "waitForHints": "Wait for all hints or use Reveal All first",
     "taskNotCompleted": "Task not completed yet",
     "tooManyRequests": "Too many requests",
-    "teamSessionRequired": "Team session required"
+    "teamSessionRequired": "Team session required",
+    "alreadyWaitingForCrew": "You are already waiting for a crew rating",
+    "continuePlayingOnlyDuringPerformance": "Tap “Keep playing and wait for crew” first",
+    "continuePlayingOnlyDuringCrew": "Tap “Keep playing and wait for crew” first",
+    "continuePlayingOnlyDuringCoop": "Tap “Keep playing and wait for bonus” first",
+    "noCoopTask": "No co-op task active",
+    "noCoopDepot": "No co-op depot on this field",
+    "coopDepotOpen": "A co-op depot is already open on this field",
+    "coopDepotHasPartner": "This co-op depot already has a partner",
+    "ownCoopDepot": "You cannot join your own co-op depot",
+    "fieldAlreadyCompleted": "Your team already completed this field",
+    "noCoopLink": "No co-op link with this team",
+    "coopBonusClaimed": "Co-op bonus already claimed",
+    "invalidTeamQr": "Invalid team QR code"
   }
 }

@@ -4,7 +4,7 @@ export function actionIdToRating(
   kind: PendingApproval['kind'],
   actionId: string,
 ): 'ok' | 'bonus' | null {
-  if (kind !== 'performance') return null
+  if (kind !== 'performance' && kind !== 'media') return null
   if (actionId === 'ok' || actionId === 'bonus') return actionId
   return null
 }

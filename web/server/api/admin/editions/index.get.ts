@@ -3,6 +3,7 @@ import { getDb } from '../../../utils/db'
 import { editions, teams } from '../../../database/schema'
 import { requireAdmin } from '../../../utils/admin-session'
 import { parseEditionConfig } from '../../../utils/edition-config'
+import { parseLocalizedString } from '#shared/localized'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -23,6 +24,8 @@ export default defineEventHandler(async (event) => {
       fieldCount: e.fieldCount,
       teamCount: countByEdition.get(e.id) ?? 0,
       mapImageUrl: e.mapImagePath ?? null,
+      joinLogoUrl: e.joinLogoPath ?? null,
+      joinDescription: parseLocalizedString(e.joinDescriptionJson),
       config: parseEditionConfig(e.configJson),
     })),
   }

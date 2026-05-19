@@ -18,10 +18,25 @@ export function adminTaskToImportInput(task: AdminTask): AdminTaskInput {
           ...(task.activityPayload.choices ? { choices: task.activityPayload.choices } : {}),
           answers: task.activityPayload.answers,
         }
-      : {
-          type: 'performance' as const,
-          text: task.activityPayload.text,
-        }
+      : task.activityPayload.type === 'coop'
+        ? {
+            type: 'coop' as const,
+            instructions: task.activityPayload.instructions,
+            partnerInstructions: task.activityPayload.partnerInstructions,
+          }
+        : task.activityPayload.type === 'media'
+          ? {
+              type: 'media' as const,
+              text: task.activityPayload.text,
+              allowedKinds: task.activityPayload.allowedKinds,
+              ...(task.activityPayload.maxDurationSec != null
+                ? { maxDurationSec: task.activityPayload.maxDurationSec }
+                : {}),
+            }
+          : {
+              type: 'performance' as const,
+              text: task.activityPayload.text,
+            }
   return {
     field: task.fieldNumber,
     slug: task.slug,

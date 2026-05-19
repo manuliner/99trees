@@ -1,7 +1,7 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { getDb } from '../utils/db'
-import { editions, teams, turns } from '../database/schema'
+import { editions, tasks, teams, turns } from '../database/schema'
 import { parseEditionConfig } from '../utils/edition-config'
 import { confirmTurn } from '../services/game'
 
@@ -10,13 +10,21 @@ export default defineNitroPlugin(() => {
     try {
       const db = getDb()
       const awaiting = await db
-        .select({ turn: turns, teamId: teams.id, editionId: teams.editionId })
+        .select({
+          turn: turns,
+          teamId: teams.id,
+          editionId: teams.editionId,
+          activityType: tasks.activityType,
+        })
         .from(turns)
         .innerJoin(teams, eq(turns.teamId, teams.id))
-        .where(eq(turns.state, 'awaiting_crew'))
+        .leftJoin(tasks, eq(turns.taskId, tasks.id))
+        .where(inArray(turns.state, ['awaiting_crew', 'awaiting_crew_bg']))
 
       const now = Date.now()
       for (const row of awaiting) {
+        if (row.activityType !== 'performance') continue
+
         const edition = (
           await db.select().from(editions).where(eq(editions.id, row.editionId)).limit(1)
         )[0]

@@ -6,6 +6,8 @@ import {
   type LocalizedString,
 } from '#shared/localized'
 import {
+  buildCoopActivityPayload,
+  buildMediaActivityPayload,
   buildPerformanceActivityPayload,
   buildQuizActivityPayload,
   parseActivityPayload,
@@ -26,10 +28,23 @@ export function buildActivityPayloadJson(
           ...(activity.choices ? { choices: activity.choices } : {}),
           answers: activity.answers!,
         })
-      : buildPerformanceActivityPayload({
-          type: 'performance',
-          text: activity.text!,
-        })
+      : activity.type === 'coop'
+        ? buildCoopActivityPayload({
+            type: 'coop',
+            instructions: activity.instructions!,
+            partnerInstructions: activity.partnerInstructions!,
+          })
+        : activity.type === 'media'
+          ? buildMediaActivityPayload({
+              type: 'media',
+              text: activity.text!,
+              allowedKinds: activity.allowedKinds ?? ['photo'],
+              ...(activity.maxDurationSec != null ? { maxDurationSec: activity.maxDurationSec } : {}),
+            })
+          : buildPerformanceActivityPayload({
+              type: 'performance',
+              text: activity.text!,
+            })
   return JSON.stringify(payload)
 }
 
@@ -64,7 +79,7 @@ export function taskRowToAdminTask(row: TaskRow): AdminTask {
     hintLevel2: parseHintColumn(row.hintLevel2),
     mapX: row.mapX,
     mapY: row.mapY,
-    activityType: row.activityType as 'quiz' | 'performance',
+    activityType: row.activityType as 'quiz' | 'performance' | 'coop' | 'media',
     activityPayload,
   }
 }

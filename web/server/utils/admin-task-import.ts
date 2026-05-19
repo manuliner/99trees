@@ -5,7 +5,7 @@ import {
   normalizeImportSlug,
   resolveImportItemSlug,
 } from '#shared/admin-task-import'
-import { tasks, turns } from '../database/schema'
+import { coopDepots, tasks, turns } from '../database/schema'
 import type { getDb } from './db'
 
 type TaskRow = typeof tasks.$inferSelect
@@ -112,6 +112,7 @@ export async function stageExistingTasksForOverwrite(
 
 export async function deleteEditionTasks(db: Db, taskIds: number[]): Promise<number> {
   if (taskIds.length === 0) return 0
+  await db.delete(coopDepots).where(inArray(coopDepots.taskId, taskIds))
   await db.update(turns).set({ taskId: null }).where(inArray(turns.taskId, taskIds))
   await db.delete(tasks).where(inArray(tasks.id, taskIds))
   return taskIds.length

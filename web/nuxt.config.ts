@@ -56,6 +56,38 @@ export default defineNuxtConfig({
   nitro: {
     nodeModulesDirs: [resolve(rootDir, 'node_modules'), resolve(workspaceRoot, 'node_modules')],
     moduleSideEffects: ['better-sqlite3'],
+    routeRules: {
+      '/api/turns/**/submission': {
+        headers: { 'x-upload-limit': '22mb' },
+      },
+      ...(process.env.NODE_ENV === 'production'
+        ? {
+            '/**': {
+              headers: {
+                'X-Frame-Options': 'DENY',
+                'X-Content-Type-Options': 'nosniff',
+                'Referrer-Policy': 'strict-origin-when-cross-origin',
+                'Permissions-Policy': 'camera=(self), microphone=(self), geolocation=()',
+                'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+                'Content-Security-Policy': [
+                  "default-src 'self'",
+                  "script-src 'self' 'unsafe-inline'",
+                  "style-src 'self' 'unsafe-inline'",
+                  "img-src 'self' data: blob:",
+                  "media-src 'self' blob:",
+                  "connect-src 'self'",
+                  "font-src 'self' data:",
+                  "worker-src 'self' blob:",
+                  "frame-ancestors 'none'",
+                  "base-uri 'self'",
+                  "form-action 'self'",
+                  "object-src 'none'",
+                ].join('; '),
+              },
+            },
+          }
+        : {}),
+    },
   },
 
   alias: {
@@ -64,7 +96,8 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@vueuse/core', '@zxing/browser'],
+      include: ['@vueuse/core', '@zxing/browser', 'browser-image-compression'],
+      exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
     },
     server: {
       fs: { allow: [rootDir, workspaceRoot] },

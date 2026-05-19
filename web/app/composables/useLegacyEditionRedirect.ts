@@ -1,6 +1,6 @@
 import { editionPath, parseEditionId } from '#shared/edition-urls'
 
-type LegacyTarget = 'join' | 'rejoin' | 'leaderboard' | 'crew/login'
+type LegacyTarget = 'join' | 'rejoin' | 'onboarding' | 'leaderboard' | 'crew/login'
 
 export async function useLegacyEditionRedirect(target: LegacyTarget) {
   const route = useRoute()

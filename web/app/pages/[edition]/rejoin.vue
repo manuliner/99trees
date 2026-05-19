@@ -6,6 +6,7 @@ import {
   TEAM_NAME_MIN,
 } from '~/utils/team-form'
 import { mapApiError } from '~/utils/api-errors'
+import { playPathForTeam, type MePayload } from '~/composables/useOnboardingRedirect'
 
 definePageMeta({ layout: 'player' })
 
@@ -67,7 +68,7 @@ async function rejoin() {
   }
   loading.value = true
   try {
-    await api('/api/teams/rejoin', {
+    const payload = await api<MePayload>('/api/teams/rejoin', {
       method: 'POST',
       body: {
         editionId: editionId.value,
@@ -75,7 +76,7 @@ async function rejoin() {
         pin: pin.value,
       },
     })
-    await navigateTo('/play')
+    await navigateTo(playPathForTeam(payload))
   }
   catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string }; statusMessage?: string }
@@ -96,6 +97,8 @@ async function rejoin() {
     <PixelJoinHero
       variant="rejoin"
       :edition-name="editionPublic?.name ?? null"
+      :join-description="editionPublic?.joinDescription ?? null"
+      :join-logo-url="editionPublic?.joinLogoUrl ?? null"
       :loading="editionLoading"
     />
 
@@ -108,17 +111,14 @@ async function rejoin() {
       class="pixel-card p-4 space-y-4"
       @submit.prevent="rejoin"
     >
-      <label class="block space-y-2">
-        <span class="pixel-body text-sm">{{ $t('rejoin.teamName') }}</span>
-        <input
-          v-model="name"
-          class="pixel-input w-full p-3"
-          :placeholder="$t('rejoin.teamNamePlaceholder')"
-          autocomplete="organization"
-          :maxlength="TEAM_NAME_MAX"
-          required
-        >
-      </label>
+      <h2 class="pixel-title text-sm">
+        {{ $t('rejoin.signInHeading') }}
+      </h2>
+      <PixelTeamDirectoryPicker
+        v-if="editionId != null"
+        v-model="name"
+        :edition-id="editionId"
+      />
       <label class="block space-y-2">
         <span class="pixel-body text-sm">{{ $t('rejoin.pin') }}</span>
         <input
@@ -149,12 +149,12 @@ async function rejoin() {
     </form>
 
     <nav v-if="showForm" class="join-page-nav" :aria-label="$t('rejoin.navAria')">
-      <NuxtLink
-        :to="pathWithEdition('/join')"
-        class="pixel-body join-page-nav__primary underline"
-      >
-        {{ $t('rejoin.newTeam') }}
-      </NuxtLink>
+      <p class="pixel-title join-page-nav__primary">
+        {{ $t('rejoin.newTeamPromptBefore') }}<NuxtLink
+          :to="pathWithEdition('/join')"
+          class="join-page-nav__link"
+        >{{ $t('rejoin.newTeamPromptLink') }}</NuxtLink>.
+      </p>
     </nav>
   </main>
 </template>

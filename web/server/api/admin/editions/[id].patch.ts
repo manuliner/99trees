@@ -1,11 +1,15 @@
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import { analyzeEditionBoard } from '#shared/edition-board-checklist'
+import { validateEditionSlug } from '#shared/edition-urls'
+import { serializeLocalizedString } from '#shared/localized'
 import { getDb } from '../../../utils/db'
 import { editions, tasks } from '../../../database/schema'
 import { requireAdmin } from '../../../utils/admin-session'
 import { assertEditionSlugAvailable } from '../../../utils/edition-slug'
-import { validateEditionSlug } from '#shared/edition-urls'
+import { parseEditionConfig } from '../../../utils/edition-config'
+import type { EditionConfig } from '#shared/types'
 
 const schema = z.object({
   status: z.enum(['draft', 'live', 'paused', 'ended']).optional(),
@@ -13,6 +17,7 @@ const schema = z.object({
   slug: z.string().min(1).optional(),
   crewPassword: z.string().min(4).optional(),
   config: z.record(z.unknown()).optional(),
+  joinDescription: z.object({ de: z.string(), en: z.string() }).optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -27,20 +32,24 @@ export default defineEventHandler(async (event) => {
   if (body.status === 'live') {
 
     const taskRows = await db.select().from(tasks).where(eq(tasks.editionId, id))
-    const issues: string[] = []
-    if (taskRows.length === 0) issues.push('No tasks imported')
-    if (taskRows.length !== edition.fieldCount) {
-      issues.push(`Task count ${taskRows.length} != field_count ${edition.fieldCount}`)
+    const board = analyzeEditionBoard(
+      taskRows.map((s) => s.fieldNumber),
+      edition.fieldCount,
+    )
+    const issues: string[] = [...board.issues]
+
+    if (board.trailingEmptySlots > 0) {
+      await db
+        .update(editions)
+        .set({ fieldCount: board.effectiveFieldCount })
+        .where(eq(editions.id, id))
     }
+
     if (!edition.crewPasswordHash && !body.crewPassword) issues.push('Crew password not set')
     if (!edition.mapImagePath) issues.push('Festival map image not uploaded')
     const slugToCheck = body.slug?.trim().toLowerCase() ?? edition.slug
     if (!slugToCheck || validateEditionSlug(slugToCheck)) {
       issues.push('Edition slug not set or invalid')
-    }
-    const fields = new Set(taskRows.map((s) => s.fieldNumber))
-    for (let i = 1; i <= edition.fieldCount; i++) {
-      if (!fields.has(i)) issues.push(`Missing task for field ${i}`)
     }
     if (issues.length > 0) {
       throw createError({
@@ -67,8 +76,15 @@ export default defineEventHandler(async (event) => {
   if (body.status) patch.status = body.status
   if (body.name) patch.name = body.name
   if (body.slug) patch.slug = body.slug.trim().toLowerCase()
-  if (body.config) patch.configJson = JSON.stringify(body.config)
+  if (body.config) {
+    patch.configJson = JSON.stringify(
+      parseEditionConfig(JSON.stringify(body.config as unknown as EditionConfig)),
+    )
+  }
   if (body.crewPassword) patch.crewPasswordHash = await bcrypt.hash(body.crewPassword, 10)
+  if (body.joinDescription) {
+    patch.joinDescriptionJson = serializeLocalizedString(body.joinDescription)
+  }
 
   const updated = await db.update(editions).set(patch).where(eq(editions.id, id)).returning()
   if (!updated[0]) throw createError({ statusCode: 404, statusMessage: 'Edition not found' })

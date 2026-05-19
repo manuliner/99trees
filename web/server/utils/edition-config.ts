@@ -1,5 +1,6 @@
 import type { EditionConfig } from '#shared/types'
-import { DEFAULT_EDITION_CONFIG } from '#shared/types'
+import { DEFAULT_EDITION_CONFIG, resolveClientTranscodePolicy } from '#shared/types'
+import { resolveEditionColorPalette } from '#shared/pixel-palettes'
 
 export function parseEditionConfig(json: string): EditionConfig {
   try {
@@ -9,6 +10,8 @@ export function parseEditionConfig(json: string): EditionConfig {
       ...parsed,
       hintTimerMinutes: parsed.hintTimerMinutes ?? DEFAULT_EDITION_CONFIG.hintTimerMinutes,
       hintCosts: { ...DEFAULT_EDITION_CONFIG.hintCosts, ...parsed.hintCosts },
+      clientTranscode: resolveClientTranscodePolicy(parsed.clientTranscode),
+      colorPalette: resolveEditionColorPalette(parsed.colorPalette),
     }
   }
   catch {

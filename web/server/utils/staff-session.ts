@@ -14,7 +14,7 @@ export async function resolveStaffEditionId(event: H3Event): Promise<number> {
     }
     return editionId
   }
-  const crewEditionId = getCrewEditionId(event)
+  const crewEditionId = await getCrewEditionId(event)
   if (!crewEditionId) {
     throw createError({ statusCode: 401, statusMessage: 'Staff session required' })
   }
@@ -25,7 +25,7 @@ export async function requireStaffEdition(event: H3Event, editionId: number): Pr
   const admin = await getAdminFromSession(event)
   if (admin) return
 
-  const crewEditionId = getCrewEditionId(event)
+  const crewEditionId = await getCrewEditionId(event)
   if (crewEditionId === editionId) return
 
   throw createError({ statusCode: 403, statusMessage: 'Not allowed for this edition' })
@@ -39,7 +39,7 @@ export async function requireStaffForTeam(event: H3Event, teamId: number): Promi
   const admin = await getAdminFromSession(event)
   if (admin) return team.editionId
 
-  const crewEditionId = getCrewEditionId(event)
+  const crewEditionId = await getCrewEditionId(event)
   if (!crewEditionId) {
     throw createError({ statusCode: 401, statusMessage: 'Staff session required' })
   }

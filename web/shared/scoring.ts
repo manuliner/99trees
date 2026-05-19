@@ -73,3 +73,7 @@ export function calculateTurnScoreBreakdown(input: TurnScoreInput): TurnScoreBre
 export function calculateTurnScore(input: TurnScoreInput): number {
   return scoreParts(input).total
 }
+
+export function coopLinkBonusPoints(config: EditionConfig): number {
+  return config.coopBonusPoints
+}

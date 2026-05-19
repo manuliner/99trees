@@ -12,6 +12,6 @@ export default defineEventHandler(async (event) => {
   await getEditionOrThrow(body.editionId)
   const ok = await verifyCrewLogin(body.editionId, body.password)
   if (!ok) throw createError({ statusCode: 401, statusMessage: 'Invalid crew password' })
-  setCrewSession(event, body.editionId)
+  await setCrewSession(event, body.editionId)
   return { ok: true, editionId: body.editionId }
 })

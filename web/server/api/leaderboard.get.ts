@@ -1,4 +1,4 @@
-import { eq, desc } from 'drizzle-orm'
+import { and, eq, desc, isNotNull } from 'drizzle-orm'
 import { getDb } from '../utils/db'
 import { editions, teams } from '../database/schema'
 
@@ -17,7 +17,12 @@ export default defineEventHandler(async (event) => {
   const allTeams = await db
     .select()
     .from(teams)
-    .where(eq(teams.editionId, editionId))
+    .where(
+      and(
+        eq(teams.editionId, editionId),
+        isNotNull(teams.onboardingCompletedAt),
+      ),
+    )
     .orderBy(desc(teams.scoreTotal))
 
   const qualified = allTeams
@@ -52,6 +57,8 @@ export default defineEventHandler(async (event) => {
       scoreTotal: t.scoreTotal,
       reachedGoal: t.reachedGoalAt != null,
       underWay: t.reachedGoalAt == null,
+      avatarId: t.avatarId,
+      motto: t.motto,
     })),
     officialRanking: showOfficialOnly && qualified.length > 0,
   }

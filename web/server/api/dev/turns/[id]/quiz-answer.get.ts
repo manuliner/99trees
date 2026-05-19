@@ -5,13 +5,13 @@ import { getDb } from '../../../../utils/db'
 import { tasks } from '../../../../database/schema'
 import { requireTeam } from '../../../../utils/team-session'
 import { assertDevOnly } from '../../../../utils/dev-only'
-import { getOpenTurn } from '../../../../services/game'
+import { getActivePlayTurn } from '../../../../services/game'
 
 export default defineEventHandler(async (event) => {
   assertDevOnly()
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
-  const open = await getOpenTurn(team.id)
+  const open = await getActivePlayTurn(team.id)
   if (!open || open.id !== turnId || open.state !== 'scanned') {
     throw createError({ statusCode: 400, statusMessage: 'No quiz task active' })
   }

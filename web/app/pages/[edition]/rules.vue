@@ -16,7 +16,7 @@ watch(
   <main v-if="!editionError" class="p-4 max-w-md mx-auto space-y-4 pixel-card p-4">
     <h1 class="pixel-title text-base text-center">{{ $t('rules.title') }}</h1>
     <GameRulesContent />
-    <NuxtLink :to="pathWithEdition('/join')" class="pixel-body text-sm underline block text-center">
+    <NuxtLink :to="pathWithEdition('/')" class="pixel-body text-sm underline block text-center">
       {{ $t('common.back') }}
     </NuxtLink>
   </main>

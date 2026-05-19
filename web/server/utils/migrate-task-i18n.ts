@@ -41,7 +41,7 @@ function wrapLocalizedStringList(value: unknown): { de: string[], en: string[] }
 
 function migrateActivityPayload(raw: string): string {
   const payload = JSON.parse(raw) as Record<string, unknown>
-  if (payload.type === 'performance') {
+  if (payload.type === 'performance' || payload.type === 'media') {
     if (typeof payload.text === 'string') {
       payload.text = { de: payload.text, en: payload.text }
     }

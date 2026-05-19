@@ -1,10 +1,14 @@
 import type { Ref } from 'vue'
+import { playPathForTeam } from '~/composables/useOnboardingRedirect'
 
-type MeTeam = { editionId: number }
+type MeTeam = { editionId: number; onboardingComplete?: boolean }
 
-type MePayload = { team?: MeTeam | null } | null | undefined
+type MePayload = {
+  team?: MeTeam | null
+  edition?: { slug: string } | null
+} | null | undefined
 
-/** After edition slug lookup settles, redirect to /play or flag cross-edition session. */
+/** After edition slug lookup settles, redirect to play/onboarding or flag cross-edition session. */
 export function useJoinSessionGate(options: {
   editionId: Ref<number | null>
   editionSlugLookupSettled: Ref<boolean>
@@ -30,7 +34,7 @@ export function useJoinSessionGate(options: {
         return
       }
       if (team.editionId === editionId) {
-        await navigateTo('/play')
+        await navigateTo(playPathForTeam(options.existingSession.value))
         return
       }
       sessionMismatch.value = true

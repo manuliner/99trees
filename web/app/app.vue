@@ -8,3 +8,7 @@
     </div>
   </UApp>
 </template>
+
+<script setup lang="ts">
+useEditionTheme()
+</script>

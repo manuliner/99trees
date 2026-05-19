@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 @import './pixel-theme.css';
+@import './pixel-palettes.css';
 
 body {
   margin: 0;

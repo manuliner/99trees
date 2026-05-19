@@ -150,7 +150,7 @@ function onLeaderboard() {
   z-index: 55;
   pointer-events: auto;
   overflow: hidden;
-  background: rgb(26 28 44 / 0.45);
+  background: color-mix(in srgb, var(--pixel-forest-dark) 45%, transparent);
 }
 
 .goal-celebration--classic {
@@ -171,7 +171,7 @@ function onLeaderboard() {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgb(10 40 20 / 0.42);
+  background: color-mix(in srgb, var(--pixel-forest-mid) 42%, transparent);
 }
 
 .goal-celebration__end-card {
@@ -209,13 +209,13 @@ function onLeaderboard() {
 .goal-celebration__end-badge--classic {
   width: 3.25rem;
   height: 4.5rem;
-  background: #fffef8;
-  border: 2px solid #1a1c2c;
+  background: var(--pixel-cream);
+  border: 2px solid var(--pixel-forest-dark);
   border-radius: 3px;
   box-shadow:
-    1px 1px 0 #1a1c2c,
-    3px 3px 0 rgb(26 28 44 / 0.25);
-  color: #c62828;
+    1px 1px 0 var(--pixel-forest-dark),
+    3px 3px 0 color-mix(in srgb, var(--pixel-forest-dark) 25%, transparent);
+  color: var(--pixel-dice-pip-accent);
 }
 
 .goal-celebration__playing-corner {

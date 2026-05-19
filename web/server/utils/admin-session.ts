@@ -3,23 +3,32 @@ import { eq } from 'drizzle-orm'
 import { getDb } from './db'
 import { adminUsers } from '../database/schema'
 
-const ADMIN_COOKIE = 'admin_session'
+const ADMIN_ROLE = 'admin' as const
 
 export async function setAdminSession(event: H3Event, adminId: number) {
-  setCookie(event, ADMIN_COOKIE, String(adminId), {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 60 * 60 * 24,
+  const db = getDb()
+  const admin = (await db.select().from(adminUsers).where(eq(adminUsers.id, adminId)).limit(1))[0]
+  if (!admin) {
+    throw createError({ statusCode: 404, statusMessage: 'Admin not found' })
+  }
+
+  await setUserSession(event, {
+    user: {
+      id: admin.id,
+      email: admin.email,
+      role: ADMIN_ROLE,
+    },
+    loggedInAt: Date.now(),
   })
 }
 
 export async function getAdminFromSession(event: H3Event) {
-  const id = Number(getCookie(event, ADMIN_COOKIE))
-  if (!Number.isFinite(id)) return null
+  const session = await getUserSession(event)
+  const user = session.user
+  if (!user?.id || user.role !== ADMIN_ROLE) return null
+
   const db = getDb()
-  return (await db.select().from(adminUsers).where(eq(adminUsers.id, id)).limit(1))[0] ?? null
+  return (await db.select().from(adminUsers).where(eq(adminUsers.id, user.id)).limit(1))[0] ?? null
 }
 
 export async function requireAdmin(event: H3Event) {
@@ -28,6 +37,6 @@ export async function requireAdmin(event: H3Event) {
   return admin
 }
 
-export function clearAdminSession(event: H3Event) {
-  deleteCookie(event, ADMIN_COOKIE, { path: '/' })
+export async function clearAdminSession(event: H3Event) {
+  await clearUserSession(event)
 }

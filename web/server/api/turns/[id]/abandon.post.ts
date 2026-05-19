@@ -5,8 +5,9 @@ import { requireTeam } from '../../../utils/team-session'
 import {
   deductHintCost,
   getEditionOrThrow,
-  getOpenTurn,
+  getActivePlayTurn,
   parseHintsUsed,
+  revertTeamOverflowAfterAbandon,
 } from '../../../services/game'
 import { parseEditionConfig } from '../../../utils/edition-config'
 import { assertEditionLive } from '../../../utils/edition-live'
@@ -15,12 +16,12 @@ import { hintPenalty } from '#shared/scoring'
 export default defineEventHandler(async (event) => {
   const team = await requireTeam(event)
   const turnId = Number(getRouterParam(event, 'id'))
-  const open = await getOpenTurn(team.id)
+  const open = await getActivePlayTurn(team.id)
   if (!open || open.id !== turnId) {
     throw createError({ statusCode: 400, statusMessage: 'Cannot abandon this turn' })
   }
 
-  const allowedStates = ['rolled', 'awaiting_crew']
+  const allowedStates = ['rolled', 'awaiting_crew', 'awaiting_coop']
   if (!allowedStates.includes(open.state)) {
     throw createError({ statusCode: 400, statusMessage: 'Cannot abandon this turn' })
   }
@@ -52,6 +53,8 @@ export default defineEventHandler(async (event) => {
     .update(turns)
     .set({ state: 'abandoned', scoreDelta: 0, confirmedAt: new Date() })
     .where(eq(turns.id, turnId))
+
+  await revertTeamOverflowAfterAbandon(team.id, open)
 
   return {
     ok: true,
