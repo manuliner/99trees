@@ -9,7 +9,7 @@
 
 ## 🐛 Bug Fixes
 
-<!-- Add bug fixes here -->
+- Hinweis 3 im Suche-/QR-Scanner-Modal: „Festivalplan öffnen“-Button statt Verweis auf die Karte unten (war vom Modal verdeckt)
 
 ## 🔧 Improvements
 

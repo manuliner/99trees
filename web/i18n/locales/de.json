@@ -249,7 +249,7 @@
   },
   "hints": {
     "nextHintIn": "Nächster Hinweis in",
-    "mapBelow": "Siehe Festivalplan unten.",
+    "openMap": "Festivalplan öffnen",
     "mapUnavailable": "Karte nicht verfügbar — Festivalplan nicht hochgeladen.",
     "revealNextAria": "Nächsten Hinweis aufdecken",
     "revealHintsAria": "Hinweise aufdecken",

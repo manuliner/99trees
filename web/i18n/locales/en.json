@@ -249,7 +249,7 @@
   },
   "hints": {
     "nextHintIn": "Next hint in",
-    "mapBelow": "See festival map below.",
+    "openMap": "Open festival map",
     "mapUnavailable": "Map unavailable — festival map not uploaded.",
     "revealNextAria": "Reveal next hint",
     "revealHintsAria": "Reveal hints",

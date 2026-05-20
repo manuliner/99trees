@@ -543,23 +543,10 @@ const hintCosts = computed(() => edition.value?.config?.hintCosts)
 
 const {
   hintVisible,
-  hint3Text,
-} = useTurnHints(turn, hintCosts, now, {
-  hasMapImage: computed(() => Boolean(edition.value?.mapImageUrl)),
-})
+} = useTurnHints(turn, hintCosts, now)
 
 const showHintBar = computed(
   () => turn.value?.state === 'rolled' && edition.value?.config?.hintCosts,
-)
-
-watch(
-  () => hintVisible(3) && showFestivalMap.value,
-  (show) => {
-    if (!show) return
-    nextTick(() => {
-      mapSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    })
-  },
 )
 
 const MOVE_PATH_HIGHLIGHT_STATES = ['rolled', 'scanned', 'awaiting_crew', 'awaiting_coop'] as const
@@ -1681,15 +1668,22 @@ onUnmounted(() => {
           <p v-if="hintVisible(2)" class="pixel-body text-sm seeking-card__hint-line">
             {{ taskHintLevel2 }}
           </p>
-          <p v-if="hintVisible(3)" class="pixel-body text-sm seeking-card__hint-line">
-            {{ hint3Text }}
+          <p v-if="hintVisible(3) && !hasFestivalMap" class="pixel-body text-sm seeking-card__hint-line">
+            {{ $t('hints.mapUnavailable') }}
           </p>
+          <PixelButton
+            v-if="hintVisible(3) && hasFestivalMap"
+            variant="secondary"
+            class="w-full"
+            @click="showFestivalMapFullscreen = true"
+          >
+            {{ $t('hints.openMap') }}
+          </PixelButton>
           <div v-if="showHintBar && edition" class="seeking-card__hint-controls">
             <PixelHintBar
               embedded
               :turn="turn"
               :hint-costs="edition.config.hintCosts"
-              :has-map-image="Boolean(edition.mapImageUrl)"
               :disabled="loading"
               :now="now"
               @show-now="(level: 1 | 2 | 3) => useHint(level)"
@@ -1740,6 +1734,14 @@ onUnmounted(() => {
         @scanned="onQrScanned"
         @close="showScanner = false"
       />
+      <PixelButton
+        v-if="hintVisible(3) && hasFestivalMap"
+        variant="secondary"
+        class="mt-3 w-full"
+        @click="showFestivalMapFullscreen = true"
+      >
+        {{ $t('hints.openMap') }}
+      </PixelButton>
       <PixelButton
         v-if="showDevSimulation && canScan"
         variant="secondary"

@@ -5,7 +5,6 @@ import type { TurnForHints } from '~/composables/useTurnHints'
 const props = defineProps<{
   turn: TurnForHints
   hintCosts: EditionConfig['hintCosts']
-  hasMapImage: boolean
   disabled?: boolean
   now: number
   /** Rows inside the play-page seeking card body */
@@ -22,7 +21,6 @@ const { t } = useI18n()
 const turnRef = toRef(() => props.turn)
 const costsRef = toRef(() => props.hintCosts)
 const nowRef = toRef(() => props.now)
-const hasMapRef = toRef(() => props.hasMapImage)
 
 const {
   nextClaimableLevel,
@@ -32,7 +30,7 @@ const {
   showAllVisible,
   showNowPenalty,
   showAllPenalty,
-} = useTurnHints(turnRef, costsRef, nowRef, { hasMapImage: hasMapRef })
+} = useTurnHints(turnRef, costsRef, nowRef)
 
 const showNextRow = computed(() => showCountdown.value || showNowVisible.value)
 

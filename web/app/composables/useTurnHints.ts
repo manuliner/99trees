@@ -20,7 +20,6 @@ export function useTurnHints(
   turn: Ref<TurnForHints | null | undefined>,
   hintCosts: Ref<EditionConfig['hintCosts'] | undefined>,
   now: Ref<number>,
-  options?: { hasMapImage?: Ref<boolean> },
 ) {
   const { t } = useI18n()
   function hintUnlocked(level: number) {
@@ -93,11 +92,6 @@ export function useTurnHints(
     return cost != null ? t('common.pointsPenalty', { n: cost }) : ''
   })
 
-  const hint3Text = computed(() => {
-    const mapOk = options?.hasMapImage?.value !== false
-    return mapOk ? t('hints.mapBelow') : t('hints.mapUnavailable')
-  })
-
   const revealedHintCount = computed(() => {
     if (turn.value?.hintMode === 'reveal_all') return 3
     const used = turn.value?.hintsUsed ?? []
@@ -125,7 +119,6 @@ export function useTurnHints(
     showAllVisible,
     showNowPenalty,
     showAllPenalty,
-    hint3Text,
     revealedHintCount,
     showRevealedCount,
   }
