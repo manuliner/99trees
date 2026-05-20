@@ -17,7 +17,7 @@
 
 ## 📚 Documentation
 
-- `.vibe/docs/play-flow.md`: hint 3 opens fullscreen festival map from seeking/scanner modals
+<!-- Add documentation changes here -->
 
 ## ⚠️ Breaking Changes
 
