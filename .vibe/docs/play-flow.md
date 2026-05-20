@@ -9,7 +9,7 @@
 ## Flow
 
 1. **Idle:** No open turn — `POST /api/turns/roll`; board shows position, overflow (hellblau), path highlights.
-2. **Rolled:** Hints via `POST …/hint`; optional festival map pins.
+2. **Rolled:** Hints via `POST …/hint`; hint 3 opens the fullscreen festival map (target pin) via **Festivalplan öffnen** in the seeking and QR-scanner modals — the inline map below the board is not reachable while those modals are open.
 3. **Scan:** Task QR → `POST …/scan` — quiz, performance, coop (initiator/partner/depot), or media path.
 4. **Quiz:** `POST …/answer` auto-confirms on success.
 5. **Performance / media:** `awaiting_crew` until crew `rate`; media may `POST …/submission` first.
