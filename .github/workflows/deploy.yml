@@ -192,7 +192,7 @@ jobs:
 
           echo "Version: $VERSION_URL"
           VERSION_RESPONSE=$(curl -sf --retry 5 --retry-delay 5 --retry-connrefused "$VERSION_URL")
-          DEPLOYED_VERSION=$(echo "$VERSION_RESPONSE" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "")
+          DEPLOYED_VERSION=$(echo "$VERSION_RESPONSE" | jq -r '.version // empty')
           if [ -z "$DEPLOYED_VERSION" ]; then
             echo "::error::Could not extract version from version.json"
             echo "$VERSION_RESPONSE"

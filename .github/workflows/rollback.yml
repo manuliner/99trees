@@ -98,7 +98,7 @@ jobs:
           [[ "$STATUS" == "ok" ]] || { echo "::error::Health check failed"; echo "$HEALTH"; exit 1; }
 
           VERSION_JSON=$(curl -sf --retry 5 --retry-delay 5 --retry-connrefused "${{ env.PROD_VERSION_URL }}")
-          GOT=$(echo "$VERSION_JSON" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+          GOT=$(echo "$VERSION_JSON" | jq -r '.version // empty')
           [[ "$GOT" == "$VERSION" ]] || { echo "::error::Version mismatch (expected $VERSION, got $GOT)"; echo "$VERSION_JSON"; exit 1; }
 
       - name: Summary
