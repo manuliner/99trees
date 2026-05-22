@@ -3,10 +3,10 @@
 ## Kontext
 
 - **Produkt:** Progressive Web App für das Geländespiel „Zugvögel“ (Zugvögel Festival, Udenbreth)
-- **Repo:** Nuxt-Monolith unter `web/` (`app`, `server`, `shared`); Agent-Kontext: `AGENTS.md`, `web/README.md`, `.vibe/docs/`
-- **Implementierungsstand:** MVP-Kern (Team-Loop, Crew, Leaderboard, Admin minimal) — Details siehe Codemaps; Abweichungen von diesem Plan in Code prüfen
-- **Deployment-Kontext:** Docker auf NixOS über [ticketing](file:///Users/manuel.huettel/Repos/privat/ticketing)-Infrastruktur (analog Schwarmplaner-Subdomain)
-- **Entscheidungen (von dir):** MVP fürs erste Festival · **„99“ = Spielname**, nicht Feldanzahl · **Felder = Anzahl Aufgaben/Stationen** (z.B. 30–50, editionabhängig) · Brett zentral (Würfeln + Fortschritt) · **Highscore** entscheidet unter Teams, die das **Ziel-Feld** erreicht haben · **UI-Sprache: Englisch** (alle sichtbaren Texte)
+- **Repo:** Nuxt-Monolith unter `web/` (`app`, `server`, `shared`); Agent-Kontext: `AGENTS.md`, `web/README.md`, `docs/AGENTS_ARCHITECTURE.md`
+- **Implementierungsstand:** MVP-Kern (Team-Loop, Crew, Leaderboard, Admin minimal) — Details in [`docs/AGENTS_ARCHITECTURE.md`](AGENTS_ARCHITECTURE.md); Abweichungen von diesem Plan in Code prüfen
+- **Deployment-Kontext:** Docker auf NixOS über ticketing-Infrastruktur — [`DEPLOY.md`](DEPLOY.md)
+- **Entscheidungen (von dir):** MVP fürs erste Festival · **„99“ = Spielname**, nicht Feldanzahl · **Felder = Anzahl Aufgaben/Stationen** (z.B. 30–50, editionabhängig) · Brett zentral (Würfeln + Fortschritt) · **Highscore** entscheidet unter Teams, die das **Ziel-Feld** erreicht haben · **Spieler-UI DE/EN** — siehe § Sprache & Copy
 
 ---
 
@@ -1144,7 +1144,7 @@ flowchart TD
 
 1. **Spielregel-Klärer:** Default bei „nicht gefunden, keine Hinweise“ final bestätigen (siehe oben)
 2. **Repo-Scaffold** nach Schwarmplaner-Muster (`web/`, pnpm, Nuxt 4, Drizzle, SQLite)
-3. **`.cursor/skills` + `AGENTS.md`** von schwarmplaner/audio-transcriber adaptieren (docs-init, docs-sync, docs-commit, core rules)
+3. **Doc skills** — canonical five under `.cursor/skills/` (`docs-init cursor full`); core rules in `.cursor/rules/`
 4. **Implementierung in Wellen:** Domain/DB → Team-Loop → Crew → Leaderboard → PWA → Deploy
 
 ---

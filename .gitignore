@@ -12,5 +12,7 @@ web/server/database/db.sqlite
 !.env.example
 web/public/version.json
 docs/defrag-report.md
+.docs-trace.json
+docs/.docs-trace.json
 web/server/database/uploads/**
 !web/server/database/uploads/**/.gitkeep

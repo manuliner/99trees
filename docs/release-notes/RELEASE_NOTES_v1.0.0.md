@@ -4,7 +4,7 @@
 
 ## 🎉 What's New
 
-- **Co-op Model B (async depot):** initiator opens a depot after station instructions; partner joins on the same field; team-QR linking grants configurable bonus points (`docs/COOP_V2.md`, migration `0011_coop_depots`).
+- **Co-op Model B (async depot):** initiator opens a depot after station instructions; partner joins on the same field; team-QR linking grants configurable bonus points (`docs/AGENTS_ARCHITECTURE.md` § Co-op, migration `0011_coop_depots`).
 - **Media tasks:** photo/video upload with client-side transcode (`@ffmpeg/ffmpeg`), server storage, and crew approval flow (`turn_submissions`, migration `0012`).
 - **Team onboarding:** avatar picker, optional motto, team directory search; gates play until complete (`0013_team_onboarding`).
 - **Edition pixel palettes** and per-edition join hero (bilingual description + logo upload).
@@ -25,10 +25,10 @@
 
 ## 📚 Documentation
 
-- `AGENTS.md`: coop/media/onboarding pointers, overflow and crew-session gotchas, `COOP_V2` doc index.
-- Product spec updates in `docs/SCOPE.md`; coop operator notes in `docs/COOP_V2.md`.
-- Regenerated `web/**/README.md` module docs and `web/README.md` index (`docs-update`) for coop, media, onboarding, and new API routes.
-- Refreshed `.vibe/docs` architecture, requirements, design, play-flow, and dependency graph (`docs-concepts`).
+- `AGENTS.md`: coop/media/onboarding pointers, overflow and crew-session gotchas.
+- Product spec updates in `docs/SCOPE.md`; co-op flow in `docs/AGENTS_ARCHITECTURE.md`.
+- Regenerated `web/**/README.md` module docs and `web/README.md` index for coop, media, onboarding, and new API routes.
+- Updated architecture and product docs for coop, media, and onboarding flows.
 
 ## ⚠️ Breaking Changes
 

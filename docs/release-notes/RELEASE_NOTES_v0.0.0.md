@@ -37,17 +37,14 @@
 
 ## 📚 Documentation
 
-- Agent docs: hybrid layout (`AGENTS.md`, `web/README.md`, `.vibe/docs/`), unified doc skills
-- `docs/SCOPE.md`: repo status no longer “greenfield”
+- Agent entrypoints: `AGENTS.md`, `web/README.md`, `docs/AGENTS_ARCHITECTURE.md`
+- `docs/SCOPE.md`: repo status no longer “greenfield”; edition URLs use `/{slug}/join` and `/{slug}/crew/login`
 - `.cursor/rules/main.mdc` points to project context files
-- Cursor doc skills: `docs-sync`, `docs-commit`, `docs-update`, `docs-concepts`, `docs-defrag`, vendor `docs-init`; `release` skill
-- Agent docs: hybrid layout (`AGENTS.md`, `web/README.md`, `.vibe/docs/`); removed `ARCHITECTURE.md` and `docs/AGENTS_*`
-- `docs/SCOPE.md`: edition URLs use `/{slug}/join` and `/{slug}/crew/login`
-- Vendor `docs-init` templates renamed to `skill.template.md` to avoid duplicate Cursor skill registration
+- Doc skills: `docs-sync`, `docs-commit`, `docs-defrag`, `docs-writer`, `release`
 - `docs/SCOPE.md` and implementation status reference `GameBoard.vue` (not BirdBoard)
 - Module READMEs for `web/app/components/admin/` and `web/app/layouts/`
-- Regenerated module READMEs/traces for festival map, `GameBoard` layout, and expanded `web/README.md` index
-- `.vibe/docs/`: play flow, architecture, and requirements aligned with festival map and board UX
+- Regenerated module READMEs for festival map, `GameBoard` layout, and expanded `web/README.md` index
+- Play flow, architecture, and requirements aligned with festival map and board UX
 
 ## ⚠️ Breaking Changes
 

@@ -1,51 +1,17 @@
 ---
 name: docs-commit
-description: >
-  Logical commits, change_notes.md, and doc gate when staged code makes agent docs wrong.
-  Use docs-sync for bulk refactors. Formerly docs-commit-check.
+description: Commit and changelog discipline for documentation changes; principle checks on staged paths.
 ---
 
-# Docs commit
+# docs-commit
 
-**Role:** Commit-time hygiene — not full doc rewrite.
+## Workflow
 
-Shared: [`../docs-shared/README.md`](../docs-shared/README.md)  
-Selector: [`../docs-shared/reference/doc-type-selector.md`](../docs-shared/reference/doc-type-selector.md)
+1. Ensure MOC entries point at new/changed leaves (`verify-docs-principles.sh`).
+2. Run `check-dead-paths.sh` when markdown under `docs/` changed.
+3. Reference `docs-shared` scripts for full structural verify on release branches.
 
----
+## Scripts
 
-## Rules
-
-- Commit **only on explicit user request**. Never auto-commit.
-- One logical unit per commit; one changelog bullet each.
-
----
-
-## Doc gate (same commit if factually wrong)
-
-| If commit changes… | Update |
-|--------------------|--------|
-| Commands, structure, invariants, gotchas | `AGENTS.md` |
-| Module contracts, routes, services | relevant `web/**/README.md` |
-| Boundaries, flows, cross-cutting architecture | `.vibe/docs/architecture.md` (or `docs-concepts`) |
-| Doc index pointers | `AGENTS.md` Doc index section |
-
-If only incomplete (not wrong), follow-up **docs-sync** / **docs-update** is OK.
-
----
-
-## Changelog
-
-`change_notes.md` sections: What's New, Bug Fixes, Improvements, Documentation, Breaking Changes.
-
-```bash
-bash .cursor/skills/docs-commit/scripts/change-notes-template.sh
-```
-
----
-
-## Verify (optional after batch)
-
-```bash
-bash .cursor/skills/docs-shared/scripts/verify-docs.sh
-```
+- `scripts/verify-docs-principles.sh`
+- `scripts/check-dead-paths.sh`

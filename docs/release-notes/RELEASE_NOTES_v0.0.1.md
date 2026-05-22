@@ -19,8 +19,7 @@
 
 ## 📚 Documentation
 
-- `docs/DEPLOYMENT.md` operator runbook; `docs/DEPLOY.md` CI/hosting and SOPS env-files
-- `docs/SCOPE.md`: player DE/EN UI, bilingual task import schema (`tasks` / `activity`)
+- `docs/DEPLOY.md` deploy runbook; `docs/SCOPE.md`: player DE/EN UI, bilingual task import schema (`tasks` / `activity`)
 - `AGENTS.md`: i18n, tasks rename, `demo-tasks.json`, deployment doc index
 
 ## ⚠️ Breaking Changes

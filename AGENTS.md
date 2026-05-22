@@ -39,34 +39,33 @@ web/
   shared/        # types, Zod schemas, scoring (pure — importable both sides)
   data/          # demo-tasks.json (seed/import sample; seed falls back to demo-stations.json if present)
   scripts/       # seed.mjs, db-reset.mjs
-docs/            # SCOPE (product spec), DEPLOY, release notes
-.vibe/docs/      # architecture, requirements, design, flows
+docs/            # SCOPE, DEPLOY, AGENTS_ARCHITECTURE.md, release notes
 ```
 
 ## Conventions
 
-- **Imports:** `web/app/` uses `#shared/*` alias — never import `web/server/`.
+- **Imports:** `web/app/` uses `#shared/*` alias — never import `web/server/` (see § Invariants).
 - **API client:** `useGameApi()` → `$fetch` with `credentials: 'include'`.
-- **State:** Server owns turns/positions/points; UI polls/refreshes `GET /api/me`.
 - **Scoring:** Change `web/shared/scoring.ts` only — handlers call `calculateTurnScore`.
-- **UI language:** Player flows (join, rejoin, play, rules, privacy) — **DE default / EN** via `@nuxtjs/i18n` (`web/i18n/locales/`, `layouts/player.vue` switcher). Admin and crew stay English. **Task content** (quiz, hints, performance text) is **bilingual edition data** (`de`/`en` per field in import/DB); player UI resolves by active locale. Product spec in `docs/SCOPE.md` is German.
-- **Styling:** Pixel tokens in `app/assets/css/pixel-theme.css`; components in `app/components/pixel/`.
+- **UI language:** Player flows (join, rejoin, play, rules, privacy) — **DE default / EN** via `@nuxtjs/i18n` (`web/i18n/locales/`, `web/app/layouts/player.vue` switcher). Admin and crew stay English. **Task content** (quiz, hints, performance text) is **bilingual edition data** (`de`/`en` per field in import/DB); player UI resolves by active locale. Product spec in `docs/SCOPE.md` is German.
+- **Styling:** Pixel tokens in `web/app/assets/css/pixel-theme.css`; components in `web/app/components/pixel/`.
 
 ## Invariants
 
+Session-critical — do not break:
+
 - `web/app/` MUST NOT import `web/server/`.
 - N fields = N stations per edition; **"99" is branding**, not `field_count`.
-- Leaderboard uses `position_confirmed` only (not pending mid-turn).
-- Completed fields are skipped on subsequent dice rolls (`resolvePendingPosition` in `game.ts`).
-- Zero-round abandon: `score_delta = 0`, `position_confirmed` unchanged.
-- Sessions: team / crew / admin use separate httpOnly cookies (`server/utils/*-session.ts`).
+- Server owns turns, positions, and points; UI reflects `GET /api/me` only.
+
+Full game and deploy invariants: [`docs/AGENTS_ARCHITECTURE.md` § Invariants](docs/AGENTS_ARCHITECTURE.md#invariants).
 
 ## Where to change what
 
 | Task | Start here |
 |------|------------|
 | Turn rules, roll/scan/confirm | `web/server/services/game.ts` + `web/server/api/turns/` |
-| Co-op depots (async partner) | `web/server/services/coop.ts`, `docs/COOP_V2.md` |
+| Co-op depots (async partner) | `web/server/services/coop.ts`, `docs/AGENTS_ARCHITECTURE.md` § Co-op |
 | Media photo/video submissions | `web/server/services/media-submission.ts`, `web/app/utils/media/` |
 | Team onboarding (avatar, motto) | `web/server/services/team-onboarding.ts`, `web/app/pages/onboarding.vue` |
 | Points formula | `web/shared/scoring.ts` |
@@ -77,13 +76,13 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 
 ## Gotchas
 
-- Migrations run on Nitro boot (`server/plugins/00-database-migration.ts`) — restart dev after schema changes.
-- Performance tasks auto-complete after `performanceTimeoutMinutes` (`server/plugins/01-performance-timeout.ts`).
-- `pnpm db:seed` reads `web/data/demo-tasks.json` (optional legacy `demo-stations.json` if tasks file missing); import API for admin is YAML-shaped JSON.
-- Task `activity_type`: `quiz`, `performance`, `coop`, `media` — see `web/shared/quiz-payload.ts` and `docs/COOP_V2.md` for coop.
+- Migrations run on Nitro boot (`web/server/plugins/00-database-migration.ts`) — restart dev after schema changes.
+- Performance tasks auto-complete after `performanceTimeoutMinutes` (`web/server/plugins/01-performance-timeout.ts`).
+- `pnpm db:seed` reads `web/data/demo-tasks.json` (optional legacy `web/data/demo-stations.json` if tasks file missing); import API for admin is YAML-shaped JSON.
+- Task `activity_type`: `quiz`, `performance`, `coop`, `media` — see `web/shared/quiz-payload.ts`; co-op flow in `docs/AGENTS_ARCHITECTURE.md` § Co-op.
 - Board **overflow** (passed fields without solve) uses `overflow_fields_json` / hellblau tiles (`web/shared/board-overflow.ts`).
-- Media uploads: client transcode via `@ffmpeg/ffmpeg`; server stores under `server/database/uploads/submissions/` (gitignored).
-- iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`TaskQrScanner.vue`).
+- Media uploads: client transcode via `@ffmpeg/ffmpeg`; server stores under `web/server/database/uploads/submissions/` (gitignored).
+- iOS QR: prefer `@zxing/browser` fallback when `BarcodeDetector` missing (`web/app/components/TaskQrScanner.vue`).
 - Rejoin invalidates prior team session token (single active device per team).
 - Crew login issues a per-edition session token (migration `0014`); existing crew cookies may need re-login after deploy.
 
@@ -93,10 +92,8 @@ docs/            # SCOPE (product spec), DEPLOY, release notes
 |----------|------------|
 | Commands, env, invariants | This file (`AGENTS.md`) |
 | Module map (where is X?) | [`web/README.md`](web/README.md) → per-folder README |
-| Architecture, flows, design | [`.vibe/docs/`](.vibe/docs/) (`architecture.md`, `play-flow.md`, …) |
-| Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) |
-| Co-op depot flow (Model B) | [`docs/COOP_V2.md`](docs/COOP_V2.md) |
-| Deploy, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md), operator runbook [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
-| Implementation checklist | [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) |
+| Architecture | [`docs/AGENTS_ARCHITECTURE.md`](docs/AGENTS_ARCHITECTURE.md) |
+| Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) — on demand |
+| Deploy, release, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
-**Maintain docs:** `docs-sync` (factual patches), `docs-update` (module README regen), `docs-concepts` (vibe regen), `docs-defrag` (audit). Verify: `bash .cursor/skills/docs-shared/scripts/verify-docs.sh`
+**Maintain docs:** `/docs-writer`, `/docs-sync`, `/docs-commit`, `/docs-defrag` — see `CLAUDE.md` § Doc Skills and [`.cursor/skills/README.md`](.cursor/skills/README.md)
