@@ -202,7 +202,12 @@ log "📦 Bumping version in web/package.json..."
 (cd "$APP_ROOT" && npm version "$VERSION_TYPE" --no-git-tag-version >/dev/null 2>&1)
 log "✅ Version bumped: $CURRENT_VERSION → $NEW_VERSION" "$GREEN"
 
-# 10. Add files and commit
+# 10. Pin immutable image in ticketing repo (pretix-server-01 Nix + CI deploy)
+log "📌 Pinning 99trees prod image in ticketing..."
+update_ticketing_99trees_pin "$NEW_VERSION"
+echo ""
+
+# 11. Add files and commit
 log "📦 Adding files..."
 git add web/package.json "$RELEASE_NOTES_FILE" "$CHANGE_NOTES"
 [[ -f package-lock.json ]] && git add package-lock.json
@@ -212,7 +217,7 @@ log "💾 Creating commit..."
 git commit -m "Release v${NEW_VERSION}"
 log "✅ Commit created" "$GREEN"
 
-# 11. Push and tag
+# 12. Push and tag
 log "🚀 Pushing changes..."
 git push
 

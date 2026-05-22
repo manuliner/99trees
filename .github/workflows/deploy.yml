@@ -1,7 +1,8 @@
 name: Deploy via SSH + container restart
 
-# Triggers after a successful build.yml run, or manually via workflow_dispatch.
-# Backs up SQLite data, pulls image on pretix-server-01, restarts docker-99trees-<env>.
+# Production only (trees.loco.vision). Triggers after build.yml or manual dispatch.
+# SSH: backup → 99trees-restart-container prod <tag> → /api/health + /version.json.
+# Does NOT run nixos-rebuild — host/module changes via ticketing ./deploy.sh.
 
 on:
   workflow_run:
@@ -10,15 +11,8 @@ on:
       - completed
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        type: choice
-        options:
-          - test
-          - production
       version:
-        description: 'Specific version to deploy (e.g. 0.0.2, test-0.0.1-3, or empty for auto)'
+        description: 'Immutable image tag (e.g. 1.0.2) — empty = read ticketing/environments/99trees-prod.nix'
         required: false
         type: string
 
@@ -27,145 +21,12 @@ env:
   IMAGE_NAME: manulinger/99trees
   SERVER_HOST_DEFAULT: 185.232.69.172
   SERVER_HOST_ALIAS: pretix-server-01
-  TEST_HEALTH_URL: https://test.spiel.zugvoegelfestival.org/api/health
-  PROD_HEALTH_URL: https://spiel.zugvoegelfestival.org/api/health
+  PROD_BASE_URL: https://trees.loco.vision
+  PROD_HEALTH_URL: https://trees.loco.vision/api/health
+  PROD_VERSION_URL: https://trees.loco.vision/version.json
+  TICKETING_REPO: zugvoegel-festival/ticketing
 
 jobs:
-  deploy-test:
-    name: Deploy to Test ${{ github.event.workflow_run.head_branch != '' && format('({0})', github.event.workflow_run.head_branch) || '' }}
-    runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       (github.event.workflow_run.head_branch == 'refs/tags/test' ||
-        (github.event.workflow_run.head_branch != '' && startsWith(github.event.workflow_run.head_branch, 'refs/tags/test-')) ||
-        github.event.workflow_run.head_branch == 'test' ||
-        (github.event.workflow_run.head_branch != '' && startsWith(github.event.workflow_run.head_branch, 'test-')))) ||
-      (github.event_name == 'workflow_dispatch' &&
-       github.event.inputs.environment == 'test')
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-
-      - name: Compute expected version
-        id: expected-version
-        run: |
-          REPO_ROOT=$(git rev-parse --show-toplevel)
-          PKG_PATH="$REPO_ROOT/web/package.json"
-          BASE_VERSION=$(node -p "require('$PKG_PATH').version")
-
-          TAG_NAME=""
-          HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
-          if [[ "$HEAD_BRANCH" =~ ^refs/tags/(.+)$ ]]; then
-            TAG_NAME="${BASH_REMATCH[1]}"
-          elif [[ "$HEAD_BRANCH" == "test" ]] || [[ "$HEAD_BRANCH" =~ ^test- ]]; then
-            TAG_NAME="$HEAD_BRANCH"
-          fi
-
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            EXPECTED_VERSION="${{ github.event.inputs.version }}"
-          elif [[ "$TAG_NAME" =~ ^test-([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)$ ]]; then
-            EXPECTED_VERSION="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
-          elif [[ -n "$TAG_NAME" ]] && ([[ "$TAG_NAME" == "test" ]] || [[ "$TAG_NAME" =~ ^test- ]]); then
-            EXPECTED_VERSION="${BASE_VERSION}-${TAG_NAME#test-}"
-          else
-            EXPECTED_VERSION="$BASE_VERSION"
-          fi
-
-          echo "version=$EXPECTED_VERSION" >> $GITHUB_OUTPUT
-          echo "base=$BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "Expected version: $EXPECTED_VERSION (base: $BASE_VERSION)"
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          SSH_HOST="${{ secrets.SSH_HOST }}"
-          if [ -z "$SSH_HOST" ]; then
-            SSH_HOST="${{ env.SERVER_HOST_DEFAULT }}"
-          fi
-          {
-            echo "Host ${{ env.SERVER_HOST_ALIAS }}"
-            echo "  HostName $SSH_HOST"
-            echo "  User deploy"
-            echo "  StrictHostKeyChecking no"
-          } >> ~/.ssh/config
-          chmod 600 ~/.ssh/config
-          if [ -n "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
-            echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          fi
-
-      - name: Verify SSH connection
-        run: ssh ${{ env.SERVER_HOST_ALIAS }} "echo 'SSH connection successful'"
-
-      - name: Pre-deployment backup
-        run: |
-          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo 99trees-deploy-backup test predeploy" \
-            || echo "⚠️  Backup step failed, continuing with deployment..."
-
-      - name: Pull latest image and restart container
-        run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-latest"
-          echo "Pulling $IMAGE on ${{ env.SERVER_HOST_ALIAS }}..."
-          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo docker pull $IMAGE"
-
-          echo "Restarting docker-99trees-test.service..."
-          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo systemctl restart docker-99trees-test.service"
-
-          PROD_STATUS=$(ssh ${{ env.SERVER_HOST_ALIAS }} "systemctl is-active docker-99trees-prod.service 2>/dev/null || echo 'inactive'")
-          echo "Production container status: $PROD_STATUS"
-
-      - name: Wait for service
-        run: sleep 10
-
-      - name: Health check with version verification
-        id: health-check
-        run: |
-          HEALTH_URL="${{ env.TEST_HEALTH_URL }}"
-          echo "Checking $HEALTH_URL ..."
-          HEALTH_RESPONSE=$(curl -sf --retry 5 --retry-delay 5 --retry-connrefused "$HEALTH_URL")
-
-          DEPLOYED_VERSION=$(echo "$HEALTH_RESPONSE" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "")
-          if [ -z "$DEPLOYED_VERSION" ]; then
-            echo "::error::Could not extract version from health response"
-            echo "$HEALTH_RESPONSE"
-            exit 1
-          fi
-          echo "deployed_version=$DEPLOYED_VERSION" >> $GITHUB_OUTPUT
-
-          EXPECTED_VERSION="${{ steps.expected-version.outputs.version }}"
-          EXPECTED_BASE="${{ steps.expected-version.outputs.base }}"
-
-          if [[ "$DEPLOYED_VERSION" == "$EXPECTED_VERSION" ]] || [[ "$DEPLOYED_VERSION" == "$EXPECTED_BASE"* ]]; then
-            echo "✅ Version match: $DEPLOYED_VERSION"
-          else
-            echo "::error::Version mismatch: expected $EXPECTED_VERSION (or $EXPECTED_BASE-*), got $DEPLOYED_VERSION"
-            echo "$HEALTH_RESPONSE" | jq . 2>/dev/null || echo "$HEALTH_RESPONSE"
-            exit 1
-          fi
-
-      - name: Deployment summary
-        run: |
-          {
-            echo "## Test Deployment Summary - v${{ steps.health-check.outputs.deployed_version }}"
-            echo "- **Environment:** Test"
-            echo "- **Server:** ${{ env.SERVER_HOST_ALIAS }}"
-            echo "- **Version:** ${{ steps.health-check.outputs.deployed_version }}"
-            echo "- **URL:** https://test.spiel.zugvoegelfestival.org"
-            echo "- **Deployed at:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          } >> $GITHUB_STEP_SUMMARY
-
   deploy-production:
     name: Deploy to Production ${{ github.event.workflow_run.head_branch != '' && format('({0})', github.event.workflow_run.head_branch) || '' }}
     runs-on: ubuntu-latest
@@ -176,8 +37,7 @@ jobs:
        !startsWith(github.event.workflow_run.head_branch, 'test') &&
        (startsWith(github.event.workflow_run.head_branch, 'refs/tags/v') ||
         (github.event.workflow_run.head_branch != '' && startsWith(github.event.workflow_run.head_branch, 'v')))) ||
-      (github.event_name == 'workflow_dispatch' &&
-       github.event.inputs.environment == 'production')
+      github.event_name == 'workflow_dispatch'
     environment: production
     permissions:
       contents: read
@@ -188,6 +48,14 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Checkout ticketing (image pins)
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ env.TICKETING_REPO }}
+          path: ticketing
+          ref: main
 
       - name: Extract and validate version tag
         id: version
@@ -228,14 +96,40 @@ jobs:
           fi
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            REPO_ROOT=$(git rev-parse --show-toplevel)
-            VERSION=$(node -p "require('$REPO_ROOT/web/package.json').version")
+            if [[ -n "${{ github.event.inputs.version }}" ]]; then
+              VERSION="${{ github.event.inputs.version }}"
+            else
+              VERSION=$(grep 'app-image' ticketing/environments/99trees-prod.nix \
+                | sed -n 's/.*app-image = "manulinger\/99trees:\([^"]*\)";.*/\1/p')
+            fi
+            if [[ -z "$VERSION" ]]; then
+              echo "::error::Could not resolve version for manual deploy"
+              exit 1
+            fi
             echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "⚠️  Manual deploy: using package.json version $VERSION"
+            echo "⚠️  Manual deploy: using version $VERSION"
           else
             echo "::error::Could not extract version for production deployment"
             exit 1
           fi
+
+      - name: Resolve Docker image tag
+        id: docker-tag
+        run: |
+          NIX_TAG=$(grep 'app-image' ticketing/environments/99trees-prod.nix \
+            | sed -n 's/.*app-image = "manulinger\/99trees:\([^"]*\)";.*/\1/p')
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            DOCKER_TAG="${{ github.event.inputs.version }}"
+          elif [[ -n "${{ steps.version.outputs.version }}" ]]; then
+            DOCKER_TAG="${{ steps.version.outputs.version }}"
+          elif [[ -n "$NIX_TAG" ]]; then
+            DOCKER_TAG="$NIX_TAG"
+          else
+            echo "::error::Could not resolve Docker image tag"
+            exit 1
+          fi
+          echo "tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "Docker tag: $DOCKER_TAG (nix pin: ${NIX_TAG:-none})"
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -246,6 +140,10 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+          if [ -z "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
+            echo "::error::SSH_KNOWN_HOSTS secret is required. Populate with: ssh-keyscan -H 185.232.69.172"
+            exit 1
+          fi
           SSH_HOST="${{ secrets.SSH_HOST }}"
           if [ -z "$SSH_HOST" ]; then
             SSH_HOST="${{ env.SERVER_HOST_DEFAULT }}"
@@ -254,32 +152,25 @@ jobs:
             echo "Host ${{ env.SERVER_HOST_ALIAS }}"
             echo "  HostName $SSH_HOST"
             echo "  User deploy"
-            echo "  StrictHostKeyChecking no"
+            echo "  StrictHostKeyChecking yes"
           } >> ~/.ssh/config
           chmod 600 ~/.ssh/config
-          if [ -n "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
-            echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          fi
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Verify SSH connection
         run: ssh ${{ env.SERVER_HOST_ALIAS }} "echo 'SSH connection successful'"
 
       - name: Pre-deployment backup with version
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.docker-tag.outputs.tag }}"
           ssh ${{ env.SERVER_HOST_ALIAS }} "sudo 99trees-deploy-backup prod predeploy-v${VERSION}"
 
-      - name: Pull latest image and restart container
+      - name: Deploy image (runtime pin + restart)
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prod-latest"
-          echo "Pulling $IMAGE on ${{ env.SERVER_HOST_ALIAS }}..."
-          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo docker pull $IMAGE"
-
-          echo "Restarting docker-99trees-prod.service..."
-          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo systemctl restart docker-99trees-prod.service"
-
-          TEST_STATUS=$(ssh ${{ env.SERVER_HOST_ALIAS }} "systemctl is-active docker-99trees-test.service 2>/dev/null || echo 'inactive'")
-          echo "Test container status: $TEST_STATUS"
+          TAG="${{ steps.docker-tag.outputs.tag }}"
+          echo "Deploying 99trees prod → $TAG"
+          ssh ${{ env.SERVER_HOST_ALIAS }} "sudo 99trees-restart-container prod $TAG"
 
       - name: Wait for service
         run: sleep 10
@@ -288,33 +179,47 @@ jobs:
         id: health-check
         run: |
           HEALTH_URL="${{ env.PROD_HEALTH_URL }}"
-          echo "Checking $HEALTH_URL ..."
+          VERSION_URL="${{ env.PROD_VERSION_URL }}"
+          echo "Liveness: $HEALTH_URL"
           HEALTH_RESPONSE=$(curl -sf --retry 5 --retry-delay 5 --retry-connrefused "$HEALTH_URL")
-
-          DEPLOYED_VERSION=$(echo "$HEALTH_RESPONSE" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "")
-          if [ -z "$DEPLOYED_VERSION" ]; then
-            echo "::error::Could not extract version from health response"
+          HEALTH_STATUS=$(echo "$HEALTH_RESPONSE" | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "")
+          if [[ "$HEALTH_STATUS" != "ok" ]]; then
+            echo "::error::Health check failed (expected status ok)"
             echo "$HEALTH_RESPONSE"
+            exit 1
+          fi
+          echo "✅ Liveness OK"
+
+          echo "Version: $VERSION_URL"
+          VERSION_RESPONSE=$(curl -sf --retry 5 --retry-delay 5 --retry-connrefused "$VERSION_URL")
+          DEPLOYED_VERSION=$(echo "$VERSION_RESPONSE" | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "")
+          if [ -z "$DEPLOYED_VERSION" ]; then
+            echo "::error::Could not extract version from version.json"
+            echo "$VERSION_RESPONSE"
             exit 1
           fi
           echo "deployed_version=$DEPLOYED_VERSION" >> $GITHUB_OUTPUT
 
           EXPECTED_VERSION="${{ steps.version.outputs.version }}"
+          if [[ -z "$EXPECTED_VERSION" ]]; then
+            EXPECTED_VERSION="${{ steps.docker-tag.outputs.tag }}"
+          fi
           if [[ "$DEPLOYED_VERSION" == "$EXPECTED_VERSION" ]]; then
             echo "✅ Version match: $DEPLOYED_VERSION"
           else
             echo "::error::Version mismatch: expected $EXPECTED_VERSION, got $DEPLOYED_VERSION"
-            echo "$HEALTH_RESPONSE" | jq . 2>/dev/null || echo "$HEALTH_RESPONSE"
+            echo "$VERSION_RESPONSE" | jq . 2>/dev/null || echo "$VERSION_RESPONSE"
             exit 1
           fi
 
       - name: Deployment summary
         run: |
           {
-            echo "## Production Deployment Summary - v${{ steps.version.outputs.version }}"
+            echo "## Production Deployment Summary - v${{ steps.health-check.outputs.deployed_version }}"
             echo "- **Environment:** Production"
             echo "- **Server:** ${{ env.SERVER_HOST_ALIAS }}"
             echo "- **Version:** ${{ steps.health-check.outputs.deployed_version }}"
-            echo "- **URL:** https://spiel.zugvoegelfestival.org"
+            echo "- **Image:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.docker-tag.outputs.tag }}"
+            echo "- **URL:** https://trees.loco.vision"
             echo "- **Deployed at:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           } >> $GITHUB_STEP_SUMMARY

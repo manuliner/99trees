@@ -26,9 +26,9 @@ docker run -p 3000:3000 -v 99trees-data:/data \
 | Deploy (SSH pull + restart) | `.github/workflows/deploy.yml` |
 | Rollback | `.github/workflows/rollback.yml` |
 | NixOS module | `ticketing/modules/99trees` (`zugvoegel.services.trees99`) |
-| Prod / test URLs | `spiel.zugvoegelfestival.org`, `test.spiel.zugvoegelfestival.org` |
+| Production URL | `https://trees.loco.vision` |
 
-Tags `test-*` → test; `v*.*.*` → production. See release skill.
+Tags `v*.*.*` → production (no separate test deploy). See release skill.
 
 ## Env (production)
 
@@ -40,16 +40,17 @@ Tags `test-*` → test; `v*.*.*` → production. See release skill.
 | `NUXT_SQLITE_DATABASE_PATH` | optional | Default `/data/db.sqlite` |
 | `NUXT_ENVIRONMENT` | optional | `production` / `test` (health endpoint) |
 
-Provisioned via SOPS env-files on the host (`99trees-prod-envfile`, `99trees-test-envfile`).
+Provisioned via SOPS env-file on the host (`99trees-prod-envfile`).
 
 ## Health & logs
 
-- **Health:** `GET /api/health`
+- **Liveness:** `GET /api/health` → `{ "status": "ok" }` (production omits version)
+- **Deployed version:** `GET /version.json` → `{ "version": "X.Y.Z", "buildTime": "..." }`
 - **Game events:** JSON lines on stdout (`turn.roll`, `turn.scan`, `crew.rate`) via `server/utils/logger.ts`
 
 ## Backups
 
-**On host** (automated): `/var/backups/99trees-{prod,test}/` via `99trees-deploy-backup` before each deploy.
+**On host** (automated): `/var/backups/99trees-prod/` via `99trees-deploy-backup` before each deploy.
 
 **Manual** (inside container data volume):
 
@@ -58,7 +59,7 @@ cp /data/db.sqlite /backup/db-$(date -u +%Y%m%d).sqlite
 cp -r /data/uploads /backup/uploads-$(date -u +%Y%m%d)
 ```
 
-Restore: stop container, replace files under `/var/lib/99trees-<env>/data`, start container (migrations are idempotent).
+Restore: stop container, replace files under `/var/lib/99trees-prod/data`, start container (migrations are idempotent).
 
 ## Rate limits (MVP)
 

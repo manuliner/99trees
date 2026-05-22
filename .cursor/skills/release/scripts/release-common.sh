@@ -107,3 +107,57 @@ create_and_push_tag() {
   git push origin "$tag_name"
   log "✅ Tag pushed: $tag_name" "$GREEN"
 }
+
+ticketing_repo_path() {
+  local ticketing="${TICKETING_REPO:-$ROOT/../ticketing}"
+  if [[ ! -d "$ticketing/environments" ]]; then
+    log "❌ Ticketing repo not found at $ticketing (set TICKETING_REPO)" "$RED"
+    exit 1
+  fi
+  echo "$ticketing"
+}
+
+update_ticketing_app_image() {
+  local nix_file="$1"
+  local image_name="$2"
+  local tag="$3"
+  local image="${image_name}:${tag}"
+  if [[ ! -f "$nix_file" ]]; then
+    log "❌ Missing $nix_file" "$RED"
+    exit 1
+  fi
+  if grep -q "app-image = \"${image}\";" "$nix_file"; then
+    log "ℹ️  app-image already pinned to ${image}" "$BLUE"
+    return 0
+  fi
+  perl -i -pe "s|app-image = \"${image_name}:[^\"]*\";|app-image = \"${image}\";|" "$nix_file"
+  log "✅ Updated $nix_file → ${image}" "$GREEN"
+}
+
+commit_and_push_ticketing_pin() {
+  local rel_path="$1"
+  local message="$2"
+  local ticketing
+  ticketing="$(ticketing_repo_path)"
+  (
+    cd "$ticketing"
+    git add "$rel_path"
+    if git diff --cached --quiet; then
+      log "ℹ️  No ticketing pin change to commit" "$BLUE"
+      return 0
+    fi
+    git commit -m "$message"
+    git push origin HEAD
+  )
+  log "✅ Ticketing pin pushed ($rel_path)" "$GREEN"
+}
+
+update_ticketing_99trees_pin() {
+  local tag="$1"
+  local ticketing nix_file
+  ticketing="$(ticketing_repo_path)"
+  nix_file="$ticketing/environments/99trees-prod.nix"
+  update_ticketing_app_image "$nix_file" "manulinger/99trees" "$tag"
+  commit_and_push_ticketing_pin "environments/99trees-prod.nix" \
+    "chore(deploy): pin 99trees prod to ${tag}"
+}

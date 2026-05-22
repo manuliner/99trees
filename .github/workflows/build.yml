@@ -2,25 +2,20 @@ name: Build Docker Image
 
 # Sibling workflow: deploy.yml (auto-triggered after a successful build).
 #
-# Version format:
-# - Production (v*.*.* tags): "X.Y.Z"
-# - Test  (test, test-X.Y.Z-N tags): "X.Y.Z-N" (or fall-through suffix)
+# Production only (trees.loco.vision). Version format: v*.*.* -> "X.Y.Z".
 #
 # Trigger:
-# - v*.*.* tags        -> Production build, image tagged :latest, :X.Y.Z, :prod-latest
-# - test / test-* tags -> Test build, image tagged :test, :<TAG_NAME>, :test-latest
+# - v*.*.* tags        -> Production build, image tagged :X.Y.Z + :prod-latest
 # - workflow_dispatch  -> Manual build of any tag/ref
 
 on:
   push:
     tags:
       - 'v*.*.*'
-      - 'test'
-      - 'test-*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Git tag or ref to build (e.g. v0.0.2, test, test-0.0.1-3)'
+        description: 'Git tag or ref to build (e.g. v1.0.3)'
         required: false
         type: string
 
