@@ -1,28 +1,27 @@
 # Change Notes
 
+<!-- Collect changes here during development -->
+<!-- This file will be converted to RELEASE_NOTES_v*.md during production release -->
+
 ## 🎉 What's New
 
-<!-- No user-facing features in this release -->
+<!-- Add new features here -->
 
 ## 🐛 Bug Fixes
 
-<!-- None -->
+<!-- Add bug fixes here -->
 
 ## 🔧 Improvements
 
-<!-- None -->
+<!-- Add improvements here -->
 
 ## 📚 Documentation
 
-- Adopt canonical five-repo doc skills under `.cursor/skills/`
-- Add `docs/AGENTS_ARCHITECTURE.md` as primary agent architecture doc
-- Merge deploy runbooks into single `docs/DEPLOY.md`; fold co-op flow into architecture
-- Remove legacy `.vibe/docs/`, hybrid doc skills, and redundant doc files
-- Slim agent doc index; `SCOPE.md` marked on-demand for UX work only
+<!-- Add documentation changes here -->
 
 ## ⚠️ Breaking Changes
 
-<!-- None -->
+<!-- Add breaking changes here (if any) -->
 
 ---
 *This file is automatically converted to release notes during production release.*
