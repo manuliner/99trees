@@ -404,3 +404,8 @@
     transform: translateY(-24px) scale(1);
   }
 }
+
+.scroll-contained {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}

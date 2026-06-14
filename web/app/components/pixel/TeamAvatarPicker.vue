@@ -19,7 +19,7 @@ function avatarLabel(id: TeamAvatarId): string {
 
 <template>
   <div
-    class="team-avatar-picker max-h-[min(60vh,28rem)] overflow-y-auto pr-1"
+    class="team-avatar-picker scroll-contained max-h-[min(60vh,28rem)] overflow-y-auto pr-1"
     role="radiogroup"
     :aria-label="t('onboarding.avatarGroupAria')"
   >

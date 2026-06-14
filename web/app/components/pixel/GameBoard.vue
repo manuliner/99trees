@@ -401,7 +401,7 @@ defineExpose({ scrollToFocus })
 
     <div
       ref="viewportRef"
-      class="game-board-viewport relative overflow-x-hidden overflow-y-auto"
+      class="game-board-viewport scroll-contained relative overflow-x-hidden overflow-y-auto"
       :class="[
         compact ? 'game-board-viewport--compact' : 'game-board-viewport--play',
         selectable && 'game-board-viewport--admin',

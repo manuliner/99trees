@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { repoPath, resolveSqliteDatabasePath } from '../utils/resolve-sqlite-path'
+import { writeLog } from '../utils/log'
 
 const DEFAULT_SESSION_PASSWORD = 'change-me-in-production-at-least-32-chars'
 const DEFAULT_CREW_SESSION_PASSWORD = 'change-me-crew-session-32-chars-min'
@@ -117,6 +118,17 @@ export default defineNitroPlugin(async () => {
       ? dbRelative
       : dbAbsolute
 
+    if (isProduction) {
+      writeLog('info', 'startup', {
+        component: 'env',
+        version,
+        buildTime,
+        environment: config.environment,
+        database: dbDisplay,
+      })
+      return
+    }
+
     const banner = `
 ╔═══════════════════════════════════════════════════════════════╗
 ║                        Zugvögel                               ║
@@ -135,6 +147,9 @@ export default defineNitroPlugin(async () => {
     console.log(banner)
   }
   catch (error) {
-    console.error('[env] Failed to display startup banner:', error)
+    writeLog('error', 'failed to display startup banner', {
+      component: 'env',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 })

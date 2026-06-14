@@ -4,6 +4,7 @@ import { getDb } from '../utils/db'
 import { editions, tasks, teams, turns } from '../database/schema'
 import { parseEditionConfig } from '../utils/edition-config'
 import { confirmTurn } from '../services/game'
+import { writeLog } from '../utils/log'
 
 export default defineNitroPlugin(() => {
   const interval = setInterval(async () => {
@@ -43,7 +44,10 @@ export default defineNitroPlugin(() => {
       }
     }
     catch (e) {
-      console.warn('[performance-timeout]', e)
+      writeLog('warn', 'performance timeout sweep failed', {
+        component: 'performance-timeout',
+        error: e instanceof Error ? e.message : String(e),
+      })
     }
   }, 60_000)
 

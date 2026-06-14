@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { repoPath, resolveSqliteDatabasePath } from '../utils/resolve-sqlite-path'
 import { migrateTaskContentToI18n } from '../utils/migrate-task-i18n'
+import { writeLog } from '../utils/log'
 
 const MIGRATIONS_TABLE = '__drizzle_migrations'
 
@@ -58,7 +59,7 @@ export default defineNitroPlugin(async () => {
   const databaseDir = dirname(databasePath)
   if (!existsSync(databaseDir)) mkdirSync(databaseDir, { recursive: true })
 
-  console.log('[db-migration] Starting database migration check')
+  writeLog('info', 'database migration check started', { component: 'db-migration' })
 
   try {
     const client = new Database(databasePath)
@@ -66,9 +67,9 @@ export default defineNitroPlugin(async () => {
 
     const migrationsFolder = resolveMigrationsFolder()
     if (!migrationsFolder) {
-      console.warn(
-        '[db-migration] Migrations folder not found (tried server/database/migrations, ./migrations, …); skipping.',
-      )
+      writeLog('warn', 'migrations folder not found; skipping', {
+        component: 'db-migration',
+      })
       client.close()
       return
     }
@@ -76,7 +77,7 @@ export default defineNitroPlugin(async () => {
     const whenToTag = loadJournalTagsByWhen(migrationsFolder)
     const appliedBefore = new Set(getAppliedCreatedAt(client))
 
-    console.log('[db-migration] Running migrations from', migrationsFolder)
+    writeLog('info', 'running migrations', { component: 'db-migration', migrationsFolder })
 
     migrate(db, { migrationsFolder })
 
@@ -85,22 +86,28 @@ export default defineNitroPlugin(async () => {
     const appliedTags = newlyApplied.map((when) => whenToTag.get(when)).filter(Boolean) as string[]
 
     if (appliedTags.length > 0) {
-      console.log('[db-migration] Applied migrations:', appliedTags.join(', '))
+      writeLog('info', 'applied migrations', {
+        component: 'db-migration',
+        migrations: appliedTags,
+      })
     }
     else {
-      console.log('[db-migration] Schema up to date, no new migrations')
+      writeLog('info', 'schema up to date', { component: 'db-migration' })
     }
 
     const migratedTasks = migrateTaskContentToI18n(client)
     if (migratedTasks > 0) {
-      console.log(`[db-migration] Migrated ${migratedTasks} task row(s) to localized content`)
+      writeLog('info', 'migrated task rows to localized content', {
+        component: 'db-migration',
+        count: migratedTasks,
+      })
     }
 
     client.close()
   }
   catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error('[db-migration] Migration failed:', message)
+    writeLog('error', 'migration failed', { component: 'db-migration', error: message })
     throw new Error(`Database migration failed: ${message}`)
   }
 })

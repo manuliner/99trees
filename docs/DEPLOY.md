@@ -50,15 +50,26 @@ SOPS env-file on host: `99trees-prod-envfile`.
 ## Release flow
 
 1. `release-prod.sh` bumps version, pins `manulinger/99trees:<semver>` in ticketing (`TICKETING_REPO`, default `../ticketing`), tags `vX.Y.Z`.
-2. `build.yml` pushes image; `deploy.yml` SSH backup → pull immutable tag → restart `docker-99trees-prod.service` → health check.
+2. `build.yml` pushes image; `deploy.yml` SSH backup → pull immutable tag → restart `99trees-prod-container.service` → health check.
 
 Host/module changes: edit ticketing `modules/99trees` / `environments/99trees-prod.nix`, then `./deploy.sh` in ticketing — not from app CI.
 
 ## Health & logs
 
-- `GET /api/health` → `{ "status": "ok" }` (prod omits version)
+**systemd unit (production):** `99trees-prod-container.service` — use in Loki queries: `{unit="99trees-prod-container.service"}`.
+
+- `GET /api/health` → `{ "status": "ok" }` when SQLite is reachable (prod omits version); `503` + `{ "status": "unhealthy" }` when DB check fails
 - `GET /version.json` → `{ "version", "buildTime" }`
 - Game events: JSON stdout (`turn.roll`, `turn.scan`, `crew.rate`) via `web/server/utils/logger.ts`
+- Operational logs: JSON lines with `timestamp`, `level`, `message` via `web/server/utils/log.ts` (journal → hub Loki on `pretix-server-01`)
+- No direct Loki push from the app
+
+## Metrics
+
+- `GET /api/metrics` — Prometheus text exposition; gated by `NUXT_METRICS_ENABLED=true`
+- Host Alloy scrapes `127.0.0.1:3323/api/metrics` (prod host port maps to container `:3000`); not intended for public nginx
+- Optional `NUXT_METRICS_TOKEN` for non-localhost scrapes; localhost/private IPs allowed without token
+- HTTP aggregates only (`trees99_http_*`); route labels normalized (no team/user IDs)
 
 ## Backups & rollback
 
@@ -69,9 +80,10 @@ Host/module changes: edit ticketing `modules/99trees` / `environments/99trees-pr
 ## Troubleshooting
 
 ```bash
-systemctl status docker-99trees-prod.service
-journalctl -u docker-99trees-prod.service -f
+systemctl status 99trees-prod-container.service
+journalctl -u 99trees-prod-container.service -f
 curl -sf https://trees.loco.vision/api/health | jq .
+curl -sf http://127.0.0.1:3323/api/metrics   # on pretix-server-01, requires NUXT_METRICS_ENABLED=true
 ```
 
 Ticketing overview: [`ticketing/docs/deploy-overview.md`](https://github.com/zugvoegel-festival/ticketing/blob/main/docs/deploy-overview.md).

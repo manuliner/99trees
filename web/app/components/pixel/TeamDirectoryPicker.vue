@@ -121,7 +121,7 @@ watch(
       id="team-directory-list"
       role="listbox"
       :aria-label="t('rejoin.teamSearchListAria')"
-      class="team-directory-picker__list pixel-card absolute z-20 mt-1 max-h-[min(16rem,40vh)] w-full overflow-y-auto p-1"
+      class="team-directory-picker__list scroll-contained pixel-card absolute z-20 mt-1 max-h-[min(16rem,40vh)] w-full overflow-y-auto p-1"
     >
       <li
         v-for="team in filteredTeams"

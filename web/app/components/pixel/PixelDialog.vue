@@ -39,7 +39,7 @@ onMounted(() => {
           <h2 v-if="title" class="pixel-title text-xs min-w-0 flex-1">{{ title }}</h2>
           <slot name="header-actions" />
         </div>
-        <div :class="scrollable ? 'max-h-[min(85vh,32rem)] overflow-y-auto space-y-4' : 'contents'">
+        <div :class="scrollable ? 'scroll-contained max-h-[min(85vh,32rem)] overflow-y-auto space-y-4' : 'contents'">
           <slot />
         </div>
         <slot name="actions" />

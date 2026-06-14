@@ -10,6 +10,42 @@ const pullToRefreshKey: InjectionKey<PullToRefreshContext> = Symbol('pullToRefre
 const THRESHOLD_PX = 72
 const MAX_PULL_PX = 120
 const PULL_RESISTANCE = 0.45
+const SCROLL_TOLERANCE_PX = 1
+
+const SCROLLABLE_OVERFLOW_Y = new Set(['auto', 'scroll', 'overlay'])
+
+function isDocumentScrollRoot(el: Element): boolean {
+  return el === document.documentElement || el === document.body
+}
+
+export function hasVerticalScrollOverflow(
+  overflowY: string,
+  scrollHeight: number,
+  clientHeight: number,
+): boolean {
+  if (!SCROLLABLE_OVERFLOW_Y.has(overflowY)) return false
+  return scrollHeight > clientHeight + SCROLL_TOLERANCE_PX
+}
+
+/** True when the touch target sits inside a scrollable overflow-y container (not document root). */
+export function isNestedScrollContainer(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+  let el: Element | null = target
+  while (el) {
+    if (isDocumentScrollRoot(el)) {
+      el = el.parentElement
+      continue
+    }
+    if (el instanceof HTMLElement) {
+      const { overflowY } = getComputedStyle(el)
+      if (hasVerticalScrollOverflow(overflowY, el.scrollHeight, el.clientHeight)) {
+        return true
+      }
+    }
+    el = el.parentElement
+  }
+  return false
+}
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false
@@ -60,12 +96,18 @@ export function usePullToRefreshProvider() {
     if (disabled.value || isRefreshing.value) return
     if (window.scrollY > 2) return
     if (isEditableTarget(e.target)) return
+    if (isNestedScrollContainer(e.target)) return
     touchStartY = e.touches[0]?.clientY ?? 0
     tracking = true
   }
 
   function onTouchMove(e: TouchEvent) {
     if (!tracking || disabled.value || isRefreshing.value) return
+    if (isNestedScrollContainer(e.target)) {
+      tracking = false
+      pullDistance.value = 0
+      return
+    }
     const y = e.touches[0]?.clientY ?? 0
     const delta = y - touchStartY
     if (delta <= 0) {
