@@ -1,3 +1,9 @@
+---
+audience: agents
+category: release-notes
+last_verified: 2026-06-14
+load-when: Reviewing changelog or release history for a specific version.
+---
 # Release Notes - v1.0.4
 
 

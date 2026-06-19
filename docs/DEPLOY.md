@@ -1,3 +1,16 @@
+---
+audience: agent
+category: deployment
+type: Runbook
+last_verified: 2026-06-19
+load-when: Release, rollback, production env, backups, or CI/deploy pipeline change.
+sources:
+  - docs/DEPLOY.md
+  - Dockerfile
+  - .github/workflows/
+  - .cursor/skills/release/
+sources_stamp: 3aa4e0cbae9a5593e2b408493471be3a56c9b404
+---
 # Deploy & operations
 
 Production: Docker on `pretix-server-01` (`185.232.69.172`) → **https://trees.loco.vision**.

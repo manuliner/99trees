@@ -1,17 +1,17 @@
 # Cursor Skills
 
-Canonical doc skills live here (SSOT). Invoke via `/docs-writer`, `/docs-sync`, `/docs-commit`, or `/docs-defrag` in Cursor or Claude Code.
+Canonical doc skills live here (SSOT). Invoke via `/docs-write`, `/docs-verify`, `/docs-defrag`, or `/docs-commit` in Cursor or Claude Code.
+
+Shared scripts and reference live in `_shared/` (not a selectable skill).
 
 ## Documentation
 
 | Skill | When to use |
 |-------|-------------|
-| `/docs-writer` | Regenerate `docs/AGENTS_ARCHITECTURE.md` or create an ADR |
-| `/docs-sync` | Keep docs aligned with branches and PRs |
-| `/docs-commit` | Pre-commit doc hygiene — check staged changes |
-| `/docs-defrag` | Audit docs for drift, dead paths, and principle violations |
-
-`docs-shared` holds shared verification scripts; invoke via the skills above.
+| `/docs-write` | Author new leaves, ADRs, runbooks — regenerate `docs/AGENTS_ARCHITECTURE.md` |
+| `/docs-verify` | Structural and MOC gate before commit or merge (`--scope=staged\|branch`) |
+| `/docs-defrag` | Consolidate, prune, and fix doc drift |
+| `/docs-commit` | Commit staged code via agent + catch doc-to-code drift |
 
 Architecture detail: [`docs/AGENTS_ARCHITECTURE.md`](../../docs/AGENTS_ARCHITECTURE.md).
 

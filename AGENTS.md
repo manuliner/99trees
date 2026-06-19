@@ -96,4 +96,4 @@ Full game and deploy invariants: [`docs/AGENTS_ARCHITECTURE.md` § Invariants](d
 | Product rules, UX (German) | [`docs/SCOPE.md`](docs/SCOPE.md) — on demand |
 | Deploy, release, backups | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
-**Maintain docs:** `/docs-writer`, `/docs-sync`, `/docs-commit`, `/docs-defrag` — see `CLAUDE.md` § Doc Skills and [`.cursor/skills/README.md`](.cursor/skills/README.md)
+**Maintain docs:** `/docs-write`, `/docs-verify`, `/docs-defrag`, `/docs-commit` — see `CLAUDE.md` § Doc Skills and [`.cursor/skills/README.md`](.cursor/skills/README.md)

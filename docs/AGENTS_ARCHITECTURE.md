@@ -1,3 +1,14 @@
+---
+audience: agent
+category: architecture
+type: Codemap
+last_verified: 2026-06-19
+load-when: Understand system shape, runtime flow, invariants, or where a feature lives cross-layer.
+sources:
+  - web/
+  - docs/AGENTS_ARCHITECTURE.md
+sources_stamp: 3aa4e0cbae9a5593e2b408493471be3a56c9b404
+---
 # Architecture
 
 ## System goals
@@ -100,5 +111,7 @@ Task payload: `{ "type": "coop", "instructions": {de,en}, "partnerInstructions":
 
 | Doc | When to read |
 |-----|--------------|
+| [AGENTS_SERVER.md](./AGENTS_SERVER.md) | Server/API/DB path lookup |
+| [AGENTS_APP.md](./AGENTS_APP.md) | UI/composable path lookup |
 | [SCOPE.md](./SCOPE.md) | Product UX rules, copy, acceptance criteria (German, human-facing) |
 | [DEPLOY.md](./DEPLOY.md) | Release, rollback, env, backups |

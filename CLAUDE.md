@@ -2,7 +2,7 @@
 
 ## Reading this codebase
 
-Start with **AGENTS.md**. Module map: **web/README.md**. Architecture: **docs/AGENTS_ARCHITECTURE.md**. Stale docs → `/docs-writer`, `/docs-defrag`, or `/docs-commit`.
+Start with **AGENTS.md**. Module map: **web/README.md**. Architecture: **docs/AGENTS_ARCHITECTURE.md**. Stale docs → `/docs-write`, `/docs-defrag`, `/docs-verify`, or `/docs-commit`.
 
 ## Workspace
 
@@ -15,7 +15,7 @@ This repo is an L1 service in a multi-repo workspace. For cross-service context,
 
 | Skill | When to use |
 |-------|-------------|
-| `/docs-writer` | Regenerate `docs/AGENTS_ARCHITECTURE.md` or create an ADR |
-| `/docs-sync` | Keep docs aligned with branches and PRs |
-| `/docs-commit` | Pre-commit gate — check which docs need updating before committing |
-| `/docs-defrag` | Audit docs for drift, dead paths, and principle violations |
+| `/docs-write` | Author new leaves, ADRs, runbooks — regenerate `docs/AGENTS_ARCHITECTURE.md` |
+| `/docs-verify` | Structural and MOC gate before commit or merge (`--scope=staged\|branch`) |
+| `/docs-defrag` | Consolidate, prune, and fix doc drift |
+| `/docs-commit` | Commit staged code via agent + catch doc-to-code drift |
