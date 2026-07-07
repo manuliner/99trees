@@ -1,0 +1,47 @@
+name: CI
+
+# Quality gate for PRs and main/master pushes (including Dependabot branches).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  PNPM_VERSION: "10.33.2"
+  NODE_VERSION: "22"
+
+jobs:
+  ci:
+    name: typecheck and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y python3 make g++
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test

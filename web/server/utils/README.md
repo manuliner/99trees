@@ -7,5 +7,5 @@
 - **edition-config.ts** / **edition-live.ts** — parse config JSON, live-edition guard
 - **admin-task.ts** / **admin-task-import.ts** — CRUD and YAML-shaped import
 - **admin-board-edit.ts** / **admin-task-field-shift.ts** — add/remove fields, renumber tasks
-- **client-ip.ts** / **runtime-env.ts** / **dev-only.ts** — rate limit IP, env label, dev gates
+- **client-ip.ts** / **runtime-env.ts** / **dev-only.ts** — rate limit IP, env label; dev gates when Vite dev or `NUXT_ENVIRONMENT=test`
 - **html-escape.ts** — safe strings for QR HTML export

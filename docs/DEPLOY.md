@@ -35,6 +35,9 @@ docker run -p 3000:3000 -v 99trees-data:/data \
 
 | Piece | Location |
 |-------|----------|
+| PR / main quality gate | `.github/workflows/ci.yml` — `pnpm typecheck` + `pnpm test` |
+| Dependency updates | `.github/dependabot.yml` — weekly npm + GitHub Actions PRs |
+| Dependabot auto-merge | `.github/workflows/dependabot-auto-merge.yml` — patch/minor after CI |
 | Image build + push | `.github/workflows/build.yml` → `manulinger/99trees` |
 | Deploy (SSH pull + restart) | `.github/workflows/deploy.yml` |
 | Rollback | `.github/workflows/rollback.yml` |
@@ -50,7 +53,7 @@ Tags `v*.*.*` → production only. Release: `bash .cursor/skills/release/scripts
 | `NUXT_ADMIN_INIT_SECRET` | yes (once) | `POST /api/admin/init` |
 | `NUXT_CREW_SESSION_PASSWORD` | yes | Crew cookie signing |
 | `NUXT_SQLITE_DATABASE_PATH` | optional | Default `/data/db.sqlite` |
-| `NUXT_ENVIRONMENT` | optional | `production` / `test` (health) |
+| `NUXT_ENVIRONMENT` | optional | `production` / `test` (health); `test` also enables dev simulation shortcuts (simulate scan, force roll) |
 
 SOPS env-file on host: `99trees-prod-envfile`.
 

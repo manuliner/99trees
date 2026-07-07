@@ -124,6 +124,8 @@ Handlers MUST NOT embed game rules; call `web/server/services/game.ts` and `web/
 
 ### Dev-only (`dev-only` guard)
 
+Enabled when `import.meta.dev` (local `pnpm dev`) **or** `NUXT_ENVIRONMENT=test`. Disabled on production deploys.
+
 | Method | Path | Handler focus |
 | ------ | ---- | --------------- |
 | POST | `/api/dev/turns/roll` | Test roll |
