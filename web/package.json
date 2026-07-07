@@ -26,7 +26,7 @@
     "@nuxtjs/i18n": "^10.4.0",
     "@pinia/nuxt": "^0.11.2",
     "@vueuse/core": "^14.2.1",
-    "@zxing/browser": "^0.1.5",
+    "@zxing/browser": "^0.2.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.4.1",
     "browser-image-compression": "^2.0.2",
