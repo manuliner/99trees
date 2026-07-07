@@ -28,7 +28,7 @@
     "@vueuse/core": "^14.2.1",
     "@zxing/browser": "^0.2.1",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3": "^12.11.1",
     "browser-image-compression": "^2.0.2",
     "drizzle-orm": "^0.44.7",
     "file-type": "^22.0.1",
