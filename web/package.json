@@ -30,7 +30,7 @@
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.11.1",
     "browser-image-compression": "^2.0.2",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.2",
     "file-type": "^22.0.1",
     "nuxt": "^4.4.8",
     "nuxt-auth-utils": "^0.5.25",
