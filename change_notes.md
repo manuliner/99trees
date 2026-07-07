@@ -13,7 +13,7 @@
 
 ## 🔧 Improvements
 
-<!-- Add improvements here -->
+- Enable dev simulation shortcuts (simulate scan, force roll, quiz answer reveal) on test stage hosts when `NUXT_ENVIRONMENT=test`
 
 ## 📚 Documentation
 

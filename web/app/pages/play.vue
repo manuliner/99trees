@@ -119,7 +119,7 @@ usePullToRefresh(async () => {
 })
 
 const showDevSimulation = computed(
-  () => import.meta.dev,
+  () => Boolean(me.value?.devSimulation),
 )
 
 type DevFieldActivity = {
