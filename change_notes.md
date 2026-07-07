@@ -13,12 +13,11 @@
 
 ## 🔧 Improvements
 
-- Add GitHub Actions CI (`typecheck` + `test`) on PRs and main pushes
-- Add Dependabot weekly updates for npm and GitHub Actions, with auto-merge for patch/minor after CI
+<!-- Add improvements here -->
 
 ## 📚 Documentation
 
-- Document CI/Dependabot workflows and test-stage dev simulation in deploy and server codemaps
+<!-- Add documentation changes here -->
 
 ## ⚠️ Breaking Changes
 
