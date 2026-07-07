@@ -9,7 +9,7 @@
 
 ## 🐛 Bug Fixes
 
-<!-- Add bug fixes here -->
+- Team QR codes on the play screen are generated client-side (data URLs) instead of loading from `api.qrserver.com`, fixing CSP `img-src` blocks in production.
 
 ## 🔧 Improvements
 

@@ -523,6 +523,8 @@ function refreshTeamQrUrl() {
 watch(() => team.value?.teamQrPath, refreshTeamQrUrl)
 onMounted(refreshTeamQrUrl)
 
+const teamQrDataUrl = useQrDataUrl(teamQrUrl)
+
 const now = ref(Date.now())
 onMounted(() => {
   const id = setInterval(() => { now.value = Date.now() }, 1000)
@@ -1546,8 +1548,8 @@ onUnmounted(() => {
         <p class="pixel-body text-sm">{{ performanceText }}</p>
         <p class="pixel-body text-sm">{{ $t('play.showQrToCrew') }}</p>
         <img
-          v-if="teamQrUrl"
-          :src="`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(teamQrUrl)}`"
+          v-if="teamQrDataUrl"
+          :src="teamQrDataUrl"
           :alt="$t('common.teamQrAlt')"
           class="mx-auto border-4 border-[var(--pixel-forest-dark)]"
           width="220"
@@ -1786,8 +1788,8 @@ onUnmounted(() => {
     <PixelDialog :open="showTeamQr" :title="$t('play.yourTeamQr')" @close="showTeamQr = false">
       <p class="pixel-body text-center text-sm">{{ team?.name }}</p>
       <img
-        v-if="teamQrUrl"
-        :src="`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(teamQrUrl)}`"
+        v-if="teamQrDataUrl"
+        :src="teamQrDataUrl"
         :alt="$t('common.teamQrAlt')"
         class="mx-auto border-4 border-[var(--pixel-forest-dark)]"
         width="220"
