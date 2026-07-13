@@ -16,7 +16,7 @@ const schema = z.object({
   name: z.string().min(1).optional(),
   slug: z.string().min(1).optional(),
   crewPassword: z.string().min(4).optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
   joinDescription: z.object({ de: z.string(), en: z.string() }).optional(),
 })
 
