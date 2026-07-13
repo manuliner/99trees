@@ -44,12 +44,13 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.16.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^22.10.0",
+    "@types/node": "^26.1.1",
     "@types/qrcode": "^1.5.6",
     "drizzle-kit": "^0.31.5",
     "eslint": "^9.38.0",
     "jsdom": "^29.1.1",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.3.7"
   }
 }
