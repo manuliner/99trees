@@ -42,15 +42,15 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.16.0",
+    "@nuxt/eslint": "^1.17.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.6",
-    "drizzle-kit": "^0.31.5",
-    "eslint": "^10.7.0",
+    "drizzle-kit": "^0.31.11",
+    "eslint": "^10.14.0",
     "jsdom": "^29.1.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10",
-    "vue-tsc": "^3.3.7"
+    "vue-tsc": "^3.3.14"
   }
 }
