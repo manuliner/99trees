@@ -37,7 +37,7 @@ const { data, refresh } = await useAsyncData(
 const me = ref<{ team?: { id: number } } | null>(null)
 onMounted(async () => {
   try {
-    me.value = await $fetch('/api/me', { credentials: 'include' })
+    me.value = await $fetch<{ team?: { id: number } }>('/api/me' as string, { credentials: 'include' })
   }
   catch {
     me.value = null
