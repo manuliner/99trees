@@ -9,11 +9,12 @@
 
 ## 🐛 Bug Fixes
 
-<!-- Add bug fixes here -->
+- Fixed release/typecheck compatibility by pinning TypeScript back to the Nuxt/Vue tooling-supported range.
+- Reduced route type inference pressure in leaderboard panel fetch code to avoid editor/typecheck failures.
 
 ## 🔧 Improvements
 
-<!-- Add improvements here -->
+- Merged latest dependency updates: drizzle-orm, nuxt-auth-utils, vitest, and file-type.
 
 ## 📚 Documentation
 
