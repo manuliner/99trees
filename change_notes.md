@@ -13,7 +13,7 @@
 
 ## 🔧 Improvements
 
-<!-- Add improvements here -->
+- Consolidated Dependabot dependency bumps: vue ^3.5.46, tailwindcss ^4.3.5, eslint ^10.15.0, vitest ^5.1.1, jsdom ^31.0.1 (supersedes #35–#38).
 
 ## 📚 Documentation
 
