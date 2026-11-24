@@ -20,7 +20,7 @@ First-time dev: run DB migrate + seed before join/play flows.
 | Var | Purpose |
 |-----|---------|
 | `NUXT_SQLITE_DATABASE_PATH` | SQLite file (default `./server/database/db.sqlite` under `web/`) |
-| `NUXT_SESSION_PASSWORD` | nuxt-auth-utils session encryption (≥32 chars prod) |
+| `NUXT_APP_SECRET` | nuxt-auth-utils session seal via appSecret (≥32 chars prod) |
 | `NUXT_ADMIN_INIT_SECRET` | One-shot `/api/admin/init` bootstrap |
 | `NUXT_CREW_SESSION_PASSWORD` | Crew cookie signing |
 

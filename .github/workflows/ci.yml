@@ -45,3 +45,5 @@ jobs:
 
       - name: Test
         run: pnpm test
+        env:
+          NUXT_APP_SECRET: test-app-secret-at-least-32-characters-long

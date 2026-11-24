@@ -76,7 +76,7 @@ Task payload: `{ "type": "coop", "instructions": {de,en}, "partnerInstructions":
 
 ## Crosscutting concerns
 
-- **Config:** `web/nuxt.config.ts` runtimeConfig — `NUXT_SQLITE_DATABASE_PATH`, `NUXT_SESSION_PASSWORD`, `NUXT_ADMIN_INIT_SECRET`, `NUXT_CREW_SESSION_PASSWORD`; per-edition rules in `config_json` (hint costs, timeouts, coop bonus).
+- **Config:** `web/nuxt.config.ts` runtimeConfig — `NUXT_SQLITE_DATABASE_PATH`, `NUXT_APP_SECRET`, `NUXT_ADMIN_INIT_SECRET`, `NUXT_CREW_SESSION_PASSWORD`; per-edition rules in `config_json` (hint costs, timeouts, coop bonus).
 - **Secrets:** Server-only env; prod startup rejects dev defaults; never expose in `web/app/`.
 - **Sessions:** Four cookie namespaces — team, crew (per-edition token hash), admin (`nuxt-auth-utils`), staff; rejoin invalidates prior team token (single active device).
 - **Security:** Prod CSP + HSTS headers; CSRF origin check on mutating API with session cookies; IP rate limits on auth/roll/turn paths.

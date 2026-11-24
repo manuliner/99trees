@@ -21,7 +21,7 @@ Ticketing repo owns NixOS; this repo owns app, `Dockerfile`, and GitHub Actions.
 ```bash
 docker build -t 99trees:latest .
 docker run -p 3000:3000 -v 99trees-data:/data \
-  -e NUXT_SESSION_PASSWORD="<32+ chars>" \
+  -e NUXT_APP_SECRET="<32+ chars>" \
   -e NUXT_ADMIN_INIT_SECRET="<bootstrap secret>" \
   -e NUXT_CREW_SESSION_PASSWORD="<32+ chars>" \
   99trees:latest
@@ -49,7 +49,7 @@ Tags `v*.*.*` → production only. Release: `bash .cursor/skills/release/scripts
 
 | Variable | Required | Notes |
 |----------|----------|-------|
-| `NUXT_SESSION_PASSWORD` | yes | Team/admin session encryption |
+| `NUXT_APP_SECRET` | yes | App session seal (nuxt-auth-utils ≥0.6) |
 | `NUXT_ADMIN_INIT_SECRET` | yes (once) | `POST /api/admin/init` |
 | `NUXT_CREW_SESSION_PASSWORD` | yes | Crew cookie signing |
 | `NUXT_SQLITE_DATABASE_PATH` | optional | Default `/data/db.sqlite` |

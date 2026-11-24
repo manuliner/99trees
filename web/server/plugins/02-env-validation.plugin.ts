@@ -3,7 +3,7 @@ import { relative, resolve } from 'node:path'
 import { repoPath, resolveSqliteDatabasePath } from '../utils/resolve-sqlite-path'
 import { writeLog } from '../utils/log'
 
-const DEFAULT_SESSION_PASSWORD = 'change-me-in-production-at-least-32-chars'
+const DEFAULT_APP_SECRET = 'change-me-in-production-at-least-32-chars'
 const DEFAULT_CREW_SESSION_PASSWORD = 'change-me-crew-session-32-chars-min'
 const DEFAULT_ADMIN_INIT_SECRET = 'dev-init-secret'
 
@@ -19,7 +19,7 @@ export default defineNitroPlugin(async () => {
   const environment = process.env.NUXT_ENVIRONMENT || process.env.NODE_ENV || 'development'
   const isProduction = environment === 'production'
 
-  const sessionPassword = process.env.NUXT_SESSION_PASSWORD?.trim() || DEFAULT_SESSION_PASSWORD
+  const appSecret = process.env.NUXT_APP_SECRET?.trim() || DEFAULT_APP_SECRET
   const crewSessionPassword = process.env.NUXT_CREW_SESSION_PASSWORD?.trim() || DEFAULT_CREW_SESSION_PASSWORD
   const adminInitSecret = process.env.NUXT_ADMIN_INIT_SECRET?.trim() || DEFAULT_ADMIN_INIT_SECRET
 
@@ -35,7 +35,7 @@ export default defineNitroPlugin(async () => {
         }
       })(),
     ),
-    sessionPassword: secretStatus('NUXT_SESSION_PASSWORD', DEFAULT_SESSION_PASSWORD),
+    appSecret: secretStatus('NUXT_APP_SECRET', DEFAULT_APP_SECRET),
     crewSessionPassword: secretStatus('NUXT_CREW_SESSION_PASSWORD', DEFAULT_CREW_SESSION_PASSWORD),
     adminInitSecret: adminInitSecret === DEFAULT_ADMIN_INIT_SECRET
       ? '✗ Using dev default'
@@ -48,9 +48,9 @@ export default defineNitroPlugin(async () => {
   }
 
   if (isProduction) {
-    if (sessionPassword === DEFAULT_SESSION_PASSWORD || sessionPassword.length < 32) {
+    if (appSecret === DEFAULT_APP_SECRET || appSecret.length < 32) {
       throw new Error(
-        '[env] FATAL: NUXT_SESSION_PASSWORD must be set to a unique value (≥32 chars) in production.',
+        '[env] FATAL: NUXT_APP_SECRET must be set to a unique value (≥32 chars) in production.',
       )
     }
     if (crewSessionPassword === DEFAULT_CREW_SESSION_PASSWORD || crewSessionPassword.length < 32) {
@@ -139,7 +139,7 @@ export default defineNitroPlugin(async () => {
 ║  Started:      ${truncate(startupDate, 43)} ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║  Database:     ${truncatePath(dbDisplay, 43)} ║
-║  Session:      ${truncate(config.sessionPassword, 43)} ║
+║  Session:      ${truncate(config.appSecret, 43)} ║
 ║  Crew session: ${truncate(config.crewSessionPassword, 43)} ║
 ║  Admin init:   ${truncate(config.adminInitSecret, 43)} ║
 ╚═══════════════════════════════════════════════════════════════╝

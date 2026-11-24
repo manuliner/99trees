@@ -41,7 +41,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     sqliteDatabasePath: process.env.NUXT_SQLITE_DATABASE_PATH || './server/database/db.sqlite',
-    sessionPassword: process.env.NUXT_SESSION_PASSWORD || 'change-me-in-production-at-least-32-chars',
+    // nuxt-auth-utils ≥0.6 seals sessions from Nuxt appSecret (NUXT_APP_SECRET).
+    appSecret: process.env.NUXT_APP_SECRET || '',
     adminInitSecret: process.env.NUXT_ADMIN_INIT_SECRET || 'dev-init-secret',
     crewSessionPassword: process.env.NUXT_CREW_SESSION_PASSWORD || 'change-me-crew-session-32-chars-min',
     metricsEnabled: process.env.NUXT_METRICS_ENABLED === 'true',
